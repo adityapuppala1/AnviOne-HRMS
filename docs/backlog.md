@@ -1,6 +1,8 @@
 # Delivery backlog
 
-Current increment: F0.1, foundation preview. Date: 25 October 2026. Owners below are required roles, not assigned people.
+Current increment: F0.2, Anvi Atlas experience on the foundation preview. Date: 25 October 2026. Owners below are required roles, not assigned people.
+
+F0.2 adds the Atlas design system to all available screens, a scoped department/location explorer, profile sections, audit filters/details, display preferences, responsive branding previews and reduced-motion handling. These advance UX-01/UX-02 and EMP-01 without changing their access policy. Activation and the remaining HR domains below are not implemented by this visual increment.
 
 | ID      | Requirement / next action                                                                                        | State                                | Owner / gate                                                         |
 | ------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------- |

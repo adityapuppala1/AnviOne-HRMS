@@ -1,29 +1,30 @@
 import { Link } from "react-router";
-import {
-  ArrowUpRight,
-  Users,
-  Building2,
-  MapPin,
-  Search,
-  Fingerprint,
-  Settings2,
-  History,
-  Check,
-} from "lucide-react";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
+import { MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
+import { Fingerprint } from "@phosphor-icons/react/dist/csr/Fingerprint";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
+import { CalendarBlank } from "@phosphor-icons/react/dist/csr/CalendarBlank";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Avatar, Badge, ErrorState, LoadingState } from "@anvi/ui";
 import { useWorkspace } from "./workspace";
 import { useDashboard } from "../lib/api";
-import { copy } from "../lib/copy";
 import { PersonRow } from "../components/people";
+import { Distribution } from "../components/distribution";
 import type { Me } from "@anvi/contracts";
 
 export default function Home() {
   const { me } = useWorkspace();
-  if (!me.permissions.includes("directory.read")) return <AdminHome me={me} />;
-  return <PeopleHome />;
+  return me.permissions.includes("directory.read") ? (
+    <PeopleHome />
+  ) : (
+    <AdminHome me={me} />
+  );
 }
 function PeopleHome() {
-  const { me, branding } = useWorkspace();
+  const { me } = useWorkspace();
   const { data, error, refetch } = useDashboard();
   if (error)
     return (
@@ -31,239 +32,237 @@ function PeopleHome() {
     );
   if (!data) return <LoadingState />;
   const date = new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "full",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
     timeZone: "Asia/Kolkata",
   }).format(new Date());
   return (
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">A NEW PERSPECTIVE, EVERY DAY</p>
+          <p className="eyebrow">Your workday, in focus</p>
           <h1>
-            {copy.greeting}, {me.name.split(" ")[0]}{" "}
-            <span className="greeting-sun" aria-hidden="true">
-              ✳
-            </span>
+            Good to see you, {me.name.split(" ")[0]}
+            <span className="heading-period">.</span>
           </h1>
-          <p>{copy.subtitle}</p>
+          <p>Here's how your people come together.</p>
         </div>
         <div className="date-pill">
-          <span className="date-icon">
-            {new Intl.DateTimeFormat("en", {
-              day: "2-digit",
-              timeZone: "Asia/Kolkata",
-            }).format(new Date())}
-          </span>
+          <CalendarBlank size={18} />
           <span>{date}</span>
         </div>
       </div>
-      <section className="welcome-card">
-        <div className="welcome-copy">
-          <Badge>YOUR PEOPLE, CONNECTED</Badge>
-          <h2>
-            One workspace.
-            <br />A world of possibilities.
-          </h2>
-          <p>
-            Behind every great workday are great people.
-            <br className="desktop-break" /> Get to know the people who make
-            yours.
-          </p>
-          <Link className="button button-primary" to="/people">
-            Explore your people <ArrowUpRight size={17} />
-          </Link>
-        </div>
-        <div className="connection-art" aria-hidden="true">
-          <div className="art-orbit orbit-one" />
-          <div className="art-orbit orbit-two" />
-          <div className="art-spark spark-one">✳</div>
-          <div className="art-spark spark-two">+</div>
-          <div className="art-card art-card-back">
-            <span className="art-tiny-label">GREAT THINGS START WITH</span>
-            <strong>A connection.</strong>
-            <div className="art-avatar-stack">
+      <section className="summary-grid" aria-label="Workspace summary">
+        <Link to="/people" className="summary-card summary-featured">
+          <div className="summary-top">
+            <span>
+              <Users size={20} weight="duotone" />
+              {me.role === "employee"
+                ? "Your profile"
+                : "People in your workspace"}
+            </span>
+            <ArrowUpRight size={19} />
+          </div>
+          <div className="summary-value">
+            <strong>{String(data.total).padStart(2, "0")}</strong>
+            <div className="avatar-stack">
               {data.recent.slice(0, 3).map((p) => (
-                <Avatar key={p.id} initials={p.initials} />
+                <Avatar key={p.id} initials={p.initials} size="small" />
               ))}
             </div>
           </div>
-          <div className="art-card art-card-front">
-            <div className="art-card-logo">
-              <Users size={22} />
-            </div>
-            <div>
-              <span>Your people</span>
-              <strong>
-                {branding.employeeName}
-                <span className="art-logo-dot">.</span>
-              </strong>
-            </div>
-            <div className="art-line" />
-            <span className="art-connected">
-              <Check size={12} /> Better together
-            </span>
-          </div>
-          <span className="art-floating-dot" />
-        </div>
-      </section>
-      <section className="metrics-grid" aria-label="Workspace summary">
+          <p>Active & notice-period employees</p>
+          <span className="summary-decoration" aria-hidden="true" />
+        </Link>
         {[
-          {
-            label:
-              me.role === "employee"
-                ? "Your profile"
-                : me.role === "manager"
-                  ? "People in your scope"
-                  : "People in your workspace",
-            value: data.total,
-            icon: Users,
-            note: "Active and notice-period employees",
-            tone: "mint",
-          },
           {
             label: "Departments",
             value: data.departments.length,
-            icon: Building2,
-            note: "Different talents. Shared purpose.",
-            tone: "lilac",
+            icon: Buildings,
+            to: "/teams",
+            note: "Find the team behind the work",
           },
           {
             label: "Work locations",
             value: data.locations.length,
             icon: MapPin,
-            note: "Connected, wherever you work.",
-            tone: "peach",
+            to: "/teams?view=locations",
+            note: "Connected across your locations",
           },
-        ].map(({ label, value, icon: Icon, note, tone }) => (
-          <div className="metric" key={label}>
-            <div className="metric-top">
-              <span>{label}</span>
-              <span className={`metric-icon ${tone}`}>
-                <Icon size={19} />
+        ].map(({ label, value, icon: Icon, to, note }) => (
+          <Link className="summary-card" key={label} to={to}>
+            <div className="summary-top">
+              <span>
+                <Icon size={20} weight="duotone" />
+                {label}
               </span>
+              <ArrowUpRight size={18} />
             </div>
-            <strong className="metric-value">
-              {String(value).padStart(2, "0")}
-            </strong>
-            <span className="metric-note">{note}</span>
-          </div>
+            <div className="summary-value">
+              <strong>{String(value).padStart(2, "0")}</strong>
+              <Icon
+                className="summary-category"
+                size={37}
+                weight="duotone"
+                aria-hidden="true"
+              />
+            </div>
+            <p>{note}</p>
+          </Link>
         ))}
       </section>
       <div className="dashboard-grid">
         <section className="panel people-panel">
           <div className="panel-heading">
             <div>
-              <h2>A few familiar faces</h2>
-              <p>Meet the newest people in your workspace.</p>
+              <h2>New faces, shared purpose</h2>
+              <p>Recently joined in your current workspace.</p>
             </div>
             <Link className="text-link" to="/people">
-              View all <ArrowUpRight size={15} />
+              View people <ArrowUpRight size={16} />
             </Link>
           </div>
+          <div className="people-table-labels">
+            <span>Colleague</span>
+            <span>Department</span>
+          </div>
           <div className="people-list">
-            {data.recent.map((person) => (
-              <PersonRow key={person.id} person={person} />
-            ))}
+            {data.recent.length ? (
+              data.recent.map((person) => (
+                <PersonRow key={person.id} person={person} />
+              ))
+            ) : (
+              <p className="panel-empty">
+                No people are visible in this workspace.
+              </p>
+            )}
           </div>
           <div className="panel-footnote">
-            <span className="status-dot" />
-            Based on joining dates · {data.total} people in your current scope
+            <span className="status-dot" /> Ordered by joining date ·{" "}
+            {data.total} {data.total === 1 ? "person" : "people"} in scope
           </div>
         </section>
-        <section className="panel">
+        <section className="panel composition-panel">
           <div className="panel-heading">
             <div>
-              <h2>Many talents. One team.</h2>
-              <p>Your people, by department.</p>
+              <h2>The shape of your team</h2>
+              <p>Select a department to explore.</p>
             </div>
-            <Building2 size={20} className="muted" />
+            <TreeStructure size={21} className="muted" />
           </div>
-          <div className="department-bars">
-            {data.departments.map((dept, index) => (
+          <Distribution data={data} />
+        </section>
+      </div>
+      <div className="dashboard-bottom">
+        <section className="panel location-panel">
+          <div className="panel-heading">
+            <div>
+              <h2>A shared place to work</h2>
+              <p>People by work location.</p>
+            </div>
+            <Link className="text-link" to="/teams?view=locations">
+              Explore <ArrowUpRight size={16} />
+            </Link>
+          </div>
+          <div className="location-cards">
+            {data.locations.map((location) => (
               <Link
-                key={dept.name}
-                to={`/people?department=${encodeURIComponent(dept.name)}`}
-                className="department-row"
+                to={`/people?location=${encodeURIComponent(location.name)}`}
+                key={location.name}
               >
-                <div>
-                  <span>{dept.name}</span>
-                  <strong>{dept.count.toString().padStart(2, "0")}</strong>
-                </div>
-                <div className="bar-track">
-                  <span
-                    className={`bar-fill bar-${index % 4}`}
-                    style={{ width: `${(dept.count / data.total) * 100}%` }}
-                  />
-                </div>
+                <span className="location-icon">
+                  <Buildings size={24} weight="duotone" />
+                </span>
+                <span>
+                  <strong>{location.name}</strong>
+                  <small>
+                    {location.count}{" "}
+                    {location.count === 1 ? "person" : "people"}
+                  </small>
+                </span>
+                <ArrowUpRight size={17} />
               </Link>
             ))}
           </div>
         </section>
+        <Link to={`/people/${me.employeeId}`} className="profile-shortcut">
+          <div className="shortcut-top">
+            <Fingerprint size={25} weight="duotone" />
+            <ArrowUpRight size={20} />
+          </div>
+          <div>
+            <span className="eyebrow">Your place in the picture</span>
+            <h2>Your work profile</h2>
+            <p>Work details. Your team. All together.</p>
+          </div>
+          <div className="shortcut-identity">
+            <Avatar
+              initials={me.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+              size="small"
+            />
+            <strong>{me.name}</strong>
+            <Badge>View profile</Badge>
+          </div>
+        </Link>
       </div>
-      <section className="quick-actions">
-        <div>
-          <span className="eyebrow">A LITTLE SHORTCUT</span>
-          <h2>Where would you like to go?</h2>
-        </div>
-        <Link to="/people">
-          <span className="quick-action-icon">
-            <Search size={20} />
-          </span>
-          <span>
-            <strong>Find a colleague</strong>
-            <small>A name. A team. A new connection.</small>
-          </span>
-          <ArrowUpRight size={18} />
-        </Link>
-        <Link to={`/people/${me.employeeId}`}>
-          <span className="quick-action-icon">
-            <Fingerprint size={20} />
-          </span>
-          <span>
-            <strong>Your work profile</strong>
-            <small>Your place in the bigger picture.</small>
-          </span>
-          <ArrowUpRight size={18} />
-        </Link>
-      </section>
     </div>
   );
 }
 function AdminHome({ me }: { me: Me }) {
+  const auditor = me.role === "auditor";
   return (
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">YOUR WORKSPACE</p>
-          <h1>A considered space for every role.</h1>
-          <p>Choose an action within your current access.</p>
+          <p className="eyebrow">Your workspace, in focus</p>
+          <h1>Good to see you, {me.name.split(" ")[0]}.</h1>
+          <p>
+            {auditor
+              ? "A clear record of your workspace's activity."
+              : "Shape the everyday experience for your organization."}
+          </p>
         </div>
       </div>
-      <div className="admin-welcome">
+      <section className="admin-welcome">
         <div className="admin-welcome-icon">
-          {me.role === "auditor" ? (
-            <History size={32} />
+          {auditor ? (
+            <ClockCounterClockwise size={44} weight="duotone" />
           ) : (
-            <Settings2 size={32} />
+            <SlidersHorizontal size={44} weight="duotone" />
           )}
         </div>
-        <h2>
-          {me.role === "auditor"
-            ? "A clearer view of what changed."
-            : "Make this workspace feel like yours."}
-        </h2>
+        <div>
+          <Badge>
+            {auditor ? "Auditor workspace" : "Platform admin workspace"}
+          </Badge>
+          <h2>
+            {auditor ? "Every change has a story." : "Make AnviOne your own."}
+          </h2>
+          <p>
+            {auditor
+              ? "Review sign-ins, role changes and published settings. Filter the record and open an event for its details."
+              : "Choose a palette, update your workspace names and preview the result before publishing."}
+          </p>
+          <Link
+            className="button button-primary"
+            to={auditor ? "/activity" : "/settings"}
+          >
+            {auditor ? "View activity" : "Customize workspace"}
+            <ArrowUpRight size={18} />
+          </Link>
+        </div>
+      </section>
+      <div className="admin-note">
+        <Fingerprint size={22} />
         <p>
-          {me.role === "auditor"
-            ? "Review recent sign-ins, role changes, and published settings."
-            : "Set the names and colors that bring your organization together."}
+          This role manages{" "}
+          {auditor ? "activity records" : "workspace configuration"}. Switch to
+          an assigned people role to open employee records.
         </p>
-        <Link
-          className="button button-primary"
-          to={me.role === "auditor" ? "/activity" : "/settings"}
-        >
-          {me.role === "auditor" ? "View activity" : "Customize workspace"}
-          <ArrowUpRight size={17} />
-        </Link>
       </div>
     </div>
   );

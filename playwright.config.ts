@@ -4,6 +4,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  timeout: 60000,
+  expect: { timeout: 15000 },
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://127.0.0.1:5173",
@@ -11,10 +13,18 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 90000,
-  },
+  webServer: [
+    {
+      command: "pnpm --filter @anvi/api dev",
+      url: "http://127.0.0.1:4000/readyz",
+      reuseExistingServer: !process.env.CI,
+      timeout: 90000,
+    },
+    {
+      command: "pnpm --filter @anvi/portal preview",
+      url: "http://127.0.0.1:5173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 90000,
+    },
+  ],
 });

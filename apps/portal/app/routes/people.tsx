@@ -1,15 +1,12 @@
 import { useSearchParams } from "react-router";
-import {
-  Search,
-  LayoutGrid,
-  List,
-  SlidersHorizontal,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { MagnifyingGlass as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { SquaresFour as LayoutGrid } from "@phosphor-icons/react/dist/csr/SquaresFour";
+import { List } from "@phosphor-icons/react/dist/csr/List";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { CaretLeft as ChevronLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
+import { CaretRight as ChevronRight } from "@phosphor-icons/react/dist/csr/CaretRight";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { X } from "@phosphor-icons/react/dist/csr/X";
 import { Button, ErrorState, LoadingState } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
@@ -25,7 +22,13 @@ export default function People() {
 }
 function Directory() {
   const [params, setParams] = useSearchParams();
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const view = params.get("view") === "list" ? "list" : "grid";
+  function setView(next: "grid" | "list") {
+    const updated = new URLSearchParams(params);
+    if (next === "list") updated.set("view", "list");
+    else updated.delete("view");
+    void setParams(updated, { replace: true });
+  }
   const query = new URLSearchParams({
     q: params.get("q") ?? "",
     department: params.get("department") ?? "",
@@ -47,7 +50,7 @@ function Directory() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">THE PEOPLE BEHIND THE POSSIBILITIES</p>
+          <p className="eyebrow">People directory</p>
           <h1>{copy.peopleTitle}</h1>
           <p>{copy.peopleSubtitle}</p>
         </div>
@@ -62,6 +65,7 @@ function Directory() {
             <input
               aria-label="Search directory"
               placeholder="Search by name, role, or team…"
+              maxLength={80}
               value={params.get("q") ?? ""}
               onChange={(event) => filter("q", event.target.value)}
             />
@@ -98,7 +102,9 @@ function Directory() {
         </div>
         <div className="directory-meta">
           <div aria-live="polite">
-            <strong>{data?.total ?? "…"} people</strong>
+            <strong>
+              {data?.total ?? "…"} {data?.total === 1 ? "person" : "people"}
+            </strong>
             <span> · Your current workspace</span>
             {filtered && (
               <Button variant="ghost" onPress={() => void setParams({})}>

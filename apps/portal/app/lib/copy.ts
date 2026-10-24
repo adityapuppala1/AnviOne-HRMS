@@ -12,8 +12,8 @@ export const copy = {
   demo: "Demo workspace",
   demoDetail: "Synthetic people. A real space to explore.",
   search: "Find people, teams, or a page…",
-  peopleTitle: "Good work starts with great people.",
-  peopleSubtitle: "Find the right person. Make the next connection.",
+  peopleTitle: "Your people, at a glance.",
+  peopleSubtitle: "Find a colleague. Explore a team. Make a connection.",
   noPeople: "No people found",
   noPeopleDetail: "Try a different name or clear your filters.",
   profileNotice:

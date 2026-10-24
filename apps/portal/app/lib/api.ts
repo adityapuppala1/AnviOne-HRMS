@@ -44,38 +44,42 @@ export async function api<T>(
 export const useMe = () =>
   useQuery({
     queryKey: ["me"],
-    queryFn: () => api("/me", meSchema),
+    queryFn: ({ signal }) => api("/me", meSchema, { signal }),
     staleTime: 0,
   });
 export const useBranding = () =>
   useQuery({
     queryKey: ["branding"],
-    queryFn: () => api("/branding/active", brandingSchema),
+    queryFn: ({ signal }) =>
+      api("/branding/active", brandingSchema, { signal }),
   });
 export const useDashboard = () =>
   useQuery({
     queryKey: ["dashboard"],
-    queryFn: () => api("/dashboard", dashboardSchema),
+    queryFn: ({ signal }) => api("/dashboard", dashboardSchema, { signal }),
   });
 export const useDirectory = (query: string) =>
   useQuery({
     queryKey: ["directory", query],
-    queryFn: () => api(`/employees?${query}`, directorySchema),
+    queryFn: ({ signal }) =>
+      api(`/employees?${query}`, directorySchema, { signal }),
   });
 export const useEmployee = (id: string) =>
   useQuery({
     queryKey: ["employee", id],
-    queryFn: () => api(`/employees/${encodeURIComponent(id)}`, employeeSchema),
+    queryFn: ({ signal }) =>
+      api(`/employees/${encodeURIComponent(id)}`, employeeSchema, { signal }),
   });
 export const useAudit = () =>
   useQuery({
     queryKey: ["audit"],
-    queryFn: () => api("/audit-events", auditSchema),
+    queryFn: ({ signal }) => api("/audit-events", auditSchema, { signal }),
   });
 export const useAuthConfig = () =>
   useQuery({
     queryKey: ["auth-config"],
-    queryFn: () => api("/auth/config", authConfigSchema),
+    staleTime: 60000,
+    queryFn: ({ signal }) => api("/auth/config", authConfigSchema, { signal }),
   });
 export const mutate = (
   path: string,

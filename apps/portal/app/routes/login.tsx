@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ShieldCheck, Layers, Users, Sparkles } from "lucide-react";
-import { Button, Avatar, Badge } from "@anvi/ui";
+import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { Key } from "@phosphor-icons/react/dist/csr/Key";
+import { LockKey } from "@phosphor-icons/react/dist/csr/LockKey";
+import { Sun } from "@phosphor-icons/react/dist/csr/Sun";
+import { Moon } from "@phosphor-icons/react/dist/csr/Moon";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { Button, Badge, DialogPanel } from "@anvi/ui";
 import { z } from "zod";
-import { api, useAuthConfig } from "../lib/api";
-import { copy } from "../lib/copy";
+import { api, ApiError, useAuthConfig } from "../lib/api";
+import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
+import { AtlasArt } from "../components/atlas-art";
+
 export default function Login() {
   const config = useAuthConfig();
   const [params] = useSearchParams();
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [help, setHelp] = useState(false);
+  const { dark, update } = usePreferences();
   const navigate = useNavigate();
   const client = useQueryClient();
   async function demo() {
@@ -19,7 +28,12 @@ export default function Login() {
     setError("");
     try {
       await api("/auth/demo", z.unknown(), { method: "POST" });
-      client.clear();
+      await client.cancelQueries();
+      // Retain only public sign-in configuration while this screen unmounts.
+      // Clearing its active query would immediately refetch it after each login.
+      client.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "auth-config",
+      });
       void navigate("/");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to sign in.");
@@ -30,82 +44,86 @@ export default function Login() {
   return (
     <main className="login-layout">
       <section className="login-story">
-        <Brand light />
+        <Brand />
         <div className="login-story-copy">
-          <span className="login-eyebrow">PEOPLE AT THE HEART OF IT ALL</span>
-          <h1>{copy.signinTitle}</h1>
-          <p>{copy.signinIntro}</p>
-          <div className="login-art" aria-hidden="true">
-            <div className="login-art-panel">
-              <div className="art-avatar-stack">
-                <Avatar initials="MI" />
-                <Avatar initials="NR" />
-                <Avatar initials="AS" />
-              </div>
-              <strong>
-                Great people.
-                <br />
-                Even greater possibilities.
-              </strong>
-              <span>
-                <span className="status-dot" />A place to belong.
-              </span>
-            </div>
-            <span className="login-art-icon one">
-              <Users size={28} />
-            </span>
-            <span className="login-art-icon two">
-              <Layers size={26} />
-            </span>
-            <span className="login-art-star">
-              <Sparkles size={40} />
-            </span>
-          </div>
+          <p className="eyebrow">People make the difference.</p>
+          <h1>
+            A little closer.
+            <br />A lot more <span>possible.</span>
+          </h1>
+          <p>
+            Your people, your teams, your everyday.
+            <br />
+            Find your place in AnviOne.
+          </p>
         </div>
+        <AtlasArt />
         <div className="login-story-footer">
-          <span>A little closer, every day.</span>
           <span>AnviOne / MyAnvi</span>
+          <span>
+            Made for your people <ArrowUpRight size={16} />
+          </span>
         </div>
       </section>
       <section className="login-form-area">
-        <div className="login-mobile-brand">
-          <Brand />
+        <div className="login-top">
+          <div className="login-mobile-brand">
+            <Brand />
+          </div>
+          <Button
+            variant="icon"
+            aria-label={dark ? "Use light theme" : "Use dark theme"}
+            onPress={() => update({ mode: dark ? "light" : "dark" })}
+          >
+            {dark ? <Sun size={21} /> : <Moon size={21} />}
+          </Button>
         </div>
         <div className="login-form">
-          <span className="login-icon">
-            <ShieldCheck size={25} />
-          </span>
-          <Badge>YOUR PEOPLE WORKSPACE</Badge>
+          <div className="login-icon">
+            <Key size={28} weight="duotone" />
+          </div>
+          <Badge>Your people workspace</Badge>
           <h2>Welcome to AnviOne.</h2>
-          <p>A good workday starts here.</p>
+          <p>Settle in. Your workday starts here.</p>
           {config.data?.demo && (
             <div className="demo-login-note">
-              <strong>Explore the foundation preview</strong>
-              <p>
-                Meet a synthetic team and explore your workspace. No real
-                employee data is used.
-              </p>
+              <span className="status-dot" />
+              <div>
+                <strong>A workspace to explore</strong>
+                <p>
+                  Meet a synthetic team, switch roles and try the experience. No
+                  real employee data.
+                </p>
+              </div>
             </div>
           )}
-          {error || params.has("error") ? (
+          {(error || params.has("error")) && (
             <p className="inline-error" role="alert">
               {error ||
                 "We could not verify your access. Try again or contact your HR team."}
             </p>
-          ) : null}
+          )}
           {config.error ? (
             <>
               <p className="inline-error" role="alert">
-                The sign-in service is unavailable.
+                {config.error instanceof ApiError && config.error.status === 429
+                  ? "Too many sign-in requests. Wait a minute, then try again."
+                  : "The sign-in service is unavailable."}
               </p>
-              <Button variant="secondary" onPress={() => void config.refetch()}>
-                Try again
+              <Button
+                variant="secondary"
+                isDisabled={config.isFetching}
+                onPress={() => void config.refetch()}
+              >
+                {config.isFetching ? "Trying again…" : "Try again"}
               </Button>
             </>
-          ) : config.data?.demo ? (
+          ) : !config.data ? (
+            <Button isDisabled>Preparing sign-in…</Button>
+          ) : config.data.demo ? (
             <Button isDisabled={busy} onPress={() => void demo()}>
               {busy ? "Opening your workspace…" : "Explore demo workspace"}
-              <ArrowRight size={18} />
+              <ArrowRight size={19} />
             </Button>
           ) : (
             <a className="button button-primary" href="/api/v1/auth/login">
@@ -116,27 +134,58 @@ export default function Login() {
                 <i />
               </span>
               Sign in with Microsoft
+              <ArrowRight size={19} />
             </a>
           )}
           <p className="login-help">
-            Accounts are created by HR during onboarding.
+            Use the company identity approved by your HR team.
             <br />
-            Use your approved company identity.
+            New here? Your account starts with an invitation.
           </p>
           <div className="login-divider" />
           <div className="login-access-note">
-            <ShieldCheck size={18} />
-            <span>
-              Your access follows your role.
-              <br />
-              Your private information stays protected.
-            </span>
+            <LockKey size={19} />
+            <span>Access is limited to your assigned workspace.</span>
           </div>
         </div>
         <footer className="login-footer">
-          Built around people. Designed with care.
+          <span>AnviOne · People, connected.</span>
+          <Button variant="ghost" onPress={() => setHelp(true)}>
+            Sign-in help <ArrowUpRight size={15} />
+          </Button>
         </footer>
       </section>
+      <DialogPanel
+        open={help}
+        onOpenChange={setHelp}
+        title="Getting into your workspace"
+      >
+        <dl className="guide-list">
+          <div>
+            <dt>Already part of the team?</dt>
+            <dd>
+              Use the company account approved by HR. If sign-in fails, ask HR
+              or your identity administrator to confirm your access.
+            </dd>
+          </div>
+          <div>
+            <dt>Joining the organization?</dt>
+            <dd>
+              Employee access begins after HR approves your activation and binds
+              your company identity. There is no public signup.
+            </dd>
+          </div>
+          {config.data?.demo && (
+            <div>
+              <dt>Exploring the preview?</dt>
+              <dd>
+                The demo opens a synthetic HR workspace. Use your avatar to try
+                other assigned roles.
+              </dd>
+            </div>
+          )}
+        </dl>
+      </DialogPanel>
     </main>
   );
 }

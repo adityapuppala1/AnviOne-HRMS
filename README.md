@@ -2,9 +2,9 @@
 
 A people workspace for HR, managers and employees. **Foundation preview: synthetic data only.**
 
-This first increment contains a responsive portal, scoped employee directory and profiles, role switching, runtime branding, an activity log, PostgreSQL isolation and transactional audit/outbox foundations. Upcoming HR domains are visibly marked and are not operational yet.
+The foundation now includes the **Anvi Atlas** visual system: a responsive people dashboard, scoped team explorer, directory cards/list, profile sections, searchable activity records, branding previews and personal display preferences. Role switching, PostgreSQL isolation and transactional audit/outbox remain enforced. Upcoming HR domains are visibly marked and are not operational yet.
 
-![AnviOne foundation workspace](docs/acceptance-evidence/desktop.png)
+![AnviOne Atlas workspace](docs/acceptance-evidence/atlas-desktop.png)
 
 ## Run locally
 
@@ -44,7 +44,7 @@ docker build -f infra/docker/Dockerfile.api -t anvione-api:foundation .
 pnpm exec node scripts/smoke-image.mjs
 ```
 
-Integration and browser tests use the synthetic local database. They exercise role grants and branding, and must never target a production database. Run the integration suite before the browser suite, not concurrently. See [acceptance evidence](docs/acceptance-evidence/foundation.md) for measured results and limitations.
+Integration and browser tests use the synthetic local database. They exercise role grants and branding, and must never target a production database. Run the integration suite before the browser suite, not concurrently. Build before browser tests: CI starts the API and Vite's local preview of `build/client`; locally, Playwright can reuse an already-running development server. `pnpm --filter @anvi/portal preview` also serves the built portal on port 5173 while the API is running. Vite preview is for local review, not production hosting. See [foundation evidence](docs/acceptance-evidence/foundation.md) and [Atlas evidence](docs/acceptance-evidence/atlas.md) for measured results and limitations.
 
 ## Code map
 
@@ -59,7 +59,7 @@ Integration and browser tests use the synthetic local database. They exercise ro
 | `packages/ui`        | React Aria controls and Anvi design tokens                       |
 | `tests`              | Real PostgreSQL/API tests and browser journeys                   |
 
-Read [the consolidated architecture decision](docs/adr/0001-consolidated-foundation.md), [delivery backlog](docs/backlog.md), [API contract](docs/api/openapi.json), [setup/identity runbook](docs/runbooks/development-and-identity.md), [threat model](docs/threat-model/foundation.md) and [data-protection policy draft](docs/compliance/data-protection-policy.md).
+Read [the consolidated architecture decision](docs/adr/0001-consolidated-foundation.md), [Atlas design decision](docs/adr/0002-atlas-experience.md), [delivery backlog](docs/backlog.md), [API contract](docs/api/openapi.json), [setup/identity runbook](docs/runbooks/development-and-identity.md), [threat model](docs/threat-model/foundation.md) and [data-protection policy draft](docs/compliance/data-protection-policy.md).
 
 ## Release boundary
 

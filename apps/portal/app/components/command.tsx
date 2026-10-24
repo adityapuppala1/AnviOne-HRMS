@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Search, Users, Settings, LayoutDashboard } from "lucide-react";
+import { MagnifyingGlass as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { GearSix as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
+import { SquaresFour as LayoutDashboard } from "@phosphor-icons/react/dist/csr/SquaresFour";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import type { Me } from "@anvi/contracts";
@@ -38,6 +44,7 @@ export function Command({
           autoFocus
           aria-label="Search people and pages"
           placeholder="Search a name, team, or page"
+          maxLength={80}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -60,6 +67,22 @@ export function Command({
             Workspace settings
           </Button>
         )}
+        {me.permissions.includes("directory.read") && (
+          <Button variant="ghost" onPress={() => go("/teams")}>
+            <TreeStructure size={18} />
+            Team explorer
+          </Button>
+        )}
+        {me.permissions.includes("audit.read") && (
+          <Button variant="ghost" onPress={() => go("/activity")}>
+            <ClockCounterClockwise size={18} />
+            Activity log
+          </Button>
+        )}
+        <Button variant="ghost" onPress={() => go("/preferences")}>
+          <SlidersHorizontal size={18} />
+          Display preferences
+        </Button>
       </div>
       {open && me.permissions.includes("directory.read") && (
         <PeopleResults search={search} go={go} />

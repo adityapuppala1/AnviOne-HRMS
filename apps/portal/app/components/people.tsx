@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
 import { Avatar, Badge } from "@anvi/ui";
 import type { Employee } from "@anvi/contracts";
 export function PersonRow({ person }: { person: Employee }) {
@@ -10,7 +11,9 @@ export function PersonRow({ person }: { person: Employee }) {
         <strong>{person.name}</strong>
         <span>{person.title}</span>
       </span>
-      <span className="person-department">{person.department}</span>
+      <span className="person-department">
+        <Badge>{person.department}</Badge>
+      </span>
       <ArrowUpRight size={17} className="row-arrow" />
     </Link>
   );
@@ -18,8 +21,12 @@ export function PersonRow({ person }: { person: Employee }) {
 export function PersonCard({ person }: { person: Employee }) {
   return (
     <Link className="person-card" to={`/people/${person.id}`}>
+      <div className="person-cover" aria-hidden="true">
+        <i />
+        <i />
+      </div>
       <div className="person-card-top">
-        <Avatar initials={person.initials} />
+        <Avatar initials={person.initials} size="large" />
         <ArrowUpRight size={18} />
       </div>
       <h2>{person.name}</h2>
@@ -30,7 +37,7 @@ export function PersonCard({ person }: { person: Employee }) {
           <MapPin size={14} />
           {person.location}
         </span>
-        <Badge tone="green">
+        <Badge tone={person.status === "active" ? "green" : "amber"}>
           {person.status === "active" ? "Active" : "Notice period"}
         </Badge>
       </div>

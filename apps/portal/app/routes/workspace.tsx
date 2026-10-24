@@ -8,24 +8,26 @@ import {
   useOutletContext,
 } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  LayoutDashboard,
-  Users,
-  Settings,
-  History,
-  CalendarDays,
-  Wallet,
-  Boxes,
-  ChevronsUpDown,
-  Search,
-  Sun,
-  Moon,
-  Menu,
-  LogOut,
-  ArrowUpRight,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { SquaresFour } from "@phosphor-icons/react/dist/csr/SquaresFour";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { GearSix } from "@phosphor-icons/react/dist/csr/GearSix";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
+import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
+import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
+import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { Sun } from "@phosphor-icons/react/dist/csr/Sun";
+import { Moon } from "@phosphor-icons/react/dist/csr/Moon";
+import { List } from "@phosphor-icons/react/dist/csr/List";
+import { SignOut } from "@phosphor-icons/react/dist/csr/SignOut";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { Question } from "@phosphor-icons/react/dist/csr/Question";
+import { Command as CommandIcon } from "@phosphor-icons/react/dist/csr/Command";
 import {
   Avatar,
   Button,
@@ -35,7 +37,7 @@ import {
 } from "@anvi/ui";
 import { roleLabels, type Me, type Branding } from "@anvi/contracts";
 import { ApiError, useMe, useBranding, mutate } from "../lib/api";
-import { copy } from "../lib/copy";
+import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
 import { Command } from "../components/command";
 
@@ -46,48 +48,38 @@ type Context = {
 };
 export const useWorkspace = () => useOutletContext<Context>();
 export default function Workspace() {
-  const meQuery = useMe();
-  if (meQuery.error instanceof ApiError && meQuery.error.status === 401)
+  const query = useMe();
+  if (query.error instanceof ApiError && query.error.status === 401)
     return <Navigate to="/login" replace />;
-  if (meQuery.error)
+  if (query.error)
     return (
       <main className="standalone">
         <ErrorState
-          message={meQuery.error.message}
-          onRetry={() => void meQuery.refetch()}
+          message={query.error.message}
+          onRetry={() => void query.refetch()}
         />
       </main>
     );
-  if (!meQuery.data)
+  if (!query.data)
     return (
       <main className="standalone">
         <LoadingState />
       </main>
     );
-  return <Shell me={meQuery.data} />;
+  return <Shell me={query.data} />;
 }
 function Shell({ me }: { me: Me }) {
   const brandingQuery = useBranding();
   const client = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
+  const { preferences, update, dark } = usePreferences();
   const [drawer, setDrawer] = useState(false),
     [command, setCommand] = useState(false),
-    [roles, setRoles] = useState(false);
+    [roles, setRoles] = useState(false),
+    [help, setHelp] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const preference = localStorage.getItem("anvi-mode");
-    setDark(
-      preference
-        ? preference === "dark"
-        : window.matchMedia("(prefers-color-scheme: dark)").matches,
-    );
-  }, []);
-  useEffect(() => {
-    document.documentElement.dataset.mode = dark ? "dark" : "light";
-  }, [dark]);
   useEffect(() => {
     if (brandingQuery.data)
       document.documentElement.dataset.theme = brandingQuery.data.theme;
@@ -96,6 +88,10 @@ function Shell({ me }: { me: Me }) {
     setDrawer(false);
   }, [location.pathname]);
   async function switchRole(role: Me["role"]) {
+    if (role === me.role) {
+      setRoles(false);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -121,37 +117,43 @@ function Shell({ me }: { me: Me }) {
     }
   }
   const brand = brandingQuery.data;
-  const title =
-    location.pathname === "/people"
-      ? copy.people
-      : location.pathname.startsWith("/people/")
-        ? "Employee profile"
-        : location.pathname === "/settings"
-          ? copy.settings
-          : location.pathname === "/activity"
-            ? copy.activity
-            : copy.overview;
   const links = [
-    { to: "/", label: copy.overview, icon: LayoutDashboard, visible: true },
+    { to: "/", label: "Overview", icon: SquaresFour, visible: true },
     {
       to: "/people",
-      label: copy.people,
+      label: "People directory",
       icon: Users,
       visible: me.permissions.includes("directory.read"),
     },
     {
+      to: "/teams",
+      label: "Team explorer",
+      icon: TreeStructure,
+      visible: me.permissions.includes("directory.read"),
+    },
+    {
       to: "/settings",
-      label: copy.settings,
-      icon: Settings,
+      label: "Workspace settings",
+      icon: GearSix,
       visible: me.permissions.includes("branding.write"),
     },
     {
       to: "/activity",
-      label: copy.activity,
-      icon: History,
+      label: "Activity log",
+      icon: ClockCounterClockwise,
       visible: me.permissions.includes("audit.read"),
     },
   ];
+  const title = location.pathname.startsWith("/people/")
+    ? "Employee profile"
+    : location.pathname === "/preferences"
+      ? "Display preferences"
+      : (links.find((link) => link.to === location.pathname)?.label ??
+        "Overview");
+  const initials = me.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("");
   const sidebar = (
     <>
       <div className="sidebar-brand">
@@ -161,78 +163,102 @@ function Shell({ me }: { me: Me }) {
           }
           light
         />
+        <Button
+          className="collapse-toggle"
+          variant="icon"
+          aria-label={
+            preferences.collapsed ? "Expand navigation" : "Collapse navigation"
+          }
+          onPress={() => update({ collapsed: !preferences.collapsed })}
+        >
+          <SidebarSimple size={18} />
+        </Button>
       </div>
       <div className="workspace-label">
-        <span className="workspace-initial">A</span>
+        <span className="workspace-initial">
+          {(brand?.organizationName ?? me.entityName).slice(0, 1)}
+        </span>
         <span>
           {brand?.organizationName ?? me.entityName}
-          <small>People & possibilities</small>
+          <small>Your people workspace</small>
         </span>
       </div>
-      <p className="sidebar-label">WORKSPACE</p>
+      <p className="sidebar-label">Workspace</p>
       <nav aria-label="Main navigation">
         {links
-          .filter((l) => l.visible)
+          .filter((link) => link.visible)
           .map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === "/"}
+              title={label}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
             >
-              <Icon size={19} />
+              <Icon
+                size={21}
+                weight={location.pathname === to ? "duotone" : "regular"}
+              />
               <span>{label}</span>
-              {to === "/" && <span className="nav-active-dot" />}
+              <span className="nav-active-dot" />
             </NavLink>
           ))}
       </nav>
-      <p className="sidebar-label roadmap-label">COMING NEXT</p>
+      <p className="sidebar-label roadmap-label">On the roadmap</p>
       <div className="planned-nav">
         {[
-          { icon: CalendarDays, label: "Time & leave" },
+          { icon: CalendarDots, label: "Time & leave" },
           { icon: Wallet, label: "Payroll & expenses" },
-          { icon: Boxes, label: "Assets & policies" },
+          { icon: Stack, label: "Assets & policies" },
         ].map(({ icon: Icon, label }) => (
-          <div key={label}>
-            <Icon size={18} />
+          <div key={label} title={`${label} · planned`}>
+            <Icon size={20} />
             <span>{label}</span>
             <span className="soon">Soon</span>
           </div>
         ))}
       </div>
       <div className="sidebar-bottom">
-        <div className="privacy-note">
-          <ShieldCheck size={22} />
-          <p>
-            A little more peace of mind.
-            <span>Your workspace follows your access.</span>
-          </p>
-        </div>
+        <NavLink
+          title="Display preferences"
+          to="/preferences"
+          className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+        >
+          <SlidersHorizontal size={20} />
+          <span>Display preferences</span>
+        </NavLink>
+        <Button
+          className="sidebar-help"
+          variant="ghost"
+          aria-label="Workspace guide"
+          onPress={() => setHelp(true)}
+        >
+          <Question size={20} />
+          <span>Workspace guide</span>
+          <kbd>?</kbd>
+        </Button>
         <Button
           className="sidebar-user"
           variant="ghost"
           onPress={() => setRoles(true)}
           aria-label="Switch workspace role"
         >
-          <Avatar
-            initials={me.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
-          />
+          <Avatar initials={initials} />
           <span>
             {me.name}
             <small>{roleLabels[me.role]}</small>
           </span>
-          <ChevronsUpDown size={16} />
+          <CaretUpDown size={16} />
         </Button>
       </div>
     </>
   );
   return (
-    <div className="app-shell">
+    <div
+      className={`app-shell ${preferences.collapsed ? "nav-collapsed" : ""}`}
+    >
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
@@ -247,24 +273,20 @@ function Shell({ me }: { me: Me }) {
       </DialogPanel>
       <div className="main-shell">
         <header className="topbar">
-          <Button
-            variant="icon"
-            className="mobile-menu"
-            aria-label="Open navigation"
-            onPress={() => setDrawer(true)}
-          >
-            <Menu size={22} />
-          </Button>
-          <div className="breadcrumbs">
-            <span>
-              {me.role === "employee"
-                ? copy.employeeHome
-                : me.role === "manager"
-                  ? copy.teamHome
-                  : copy.hrHome}
-            </span>
-            <span>/</span>
-            <strong>{title}</strong>
+          <div className="topbar-context">
+            <Button
+              variant="icon"
+              className="mobile-menu"
+              aria-label="Open navigation"
+              onPress={() => setDrawer(true)}
+            >
+              <List size={23} />
+            </Button>
+            <div className="breadcrumbs">
+              <span>Workspace</span>
+              <span>/</span>
+              <strong>{title}</strong>
+            </div>
           </div>
           <div className="topbar-actions">
             <Button
@@ -273,53 +295,44 @@ function Shell({ me }: { me: Me }) {
               onPress={() => setCommand(true)}
               aria-label="Search people and pages"
             >
-              <Search size={17} />
-              <span>Search anything</span>
+              <MagnifyingGlass size={18} />
+              <span>Search people or pages</span>
               <kbd>⌘ K</kbd>
             </Button>
             <span className="toolbar-divider" />
             <Button
               variant="icon"
-              onPress={() => {
-                setDark(!dark);
-                localStorage.setItem("anvi-mode", dark ? "light" : "dark");
-              }}
+              onPress={() => update({ mode: dark ? "light" : "dark" })}
               aria-label={dark ? "Use light theme" : "Use dark theme"}
             >
-              {dark ? <Sun size={19} /> : <Moon size={19} />}
+              {dark ? <Sun size={20} /> : <Moon size={20} />}
             </Button>
             <Button
               variant="icon"
               onPress={() => void logout()}
               aria-label="Sign out"
             >
-              <LogOut size={18} />
+              <SignOut size={20} />
             </Button>
             <Button
               variant="icon"
               onPress={() => setRoles(true)}
               aria-label="Your workspace role"
             >
-              <Avatar
-                initials={me.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-                size="small"
-              />
+              <Avatar initials={initials} size="small" />
             </Button>
           </div>
         </header>
         <main id="main-content" className="main-content">
-          {me.demo && (
-            <div className="demo-strip">
-              <span>
-                <span className="status-dot" />
-                {copy.demo}
-              </span>
-              <span>{copy.demoDetail}</span>
-            </div>
-          )}
+          <div className="workspace-status">
+            <span className="context-pill">
+              <span className="status-dot" />
+              {roleLabels[me.role]} workspace
+            </span>
+            {me.demo && (
+              <span className="demo-label">Demo · Synthetic employee data</span>
+            )}
+          </div>
           {error && (
             <div className="inline-error" role="alert">
               {error}
@@ -346,12 +359,10 @@ function Shell({ me }: { me: Me }) {
           )}
           <footer className="page-footer">
             <span>
-              {brand?.platformName ?? "AnviOne"} · A little closer, every day.
+              {brand?.platformName ?? "AnviOne"}
+              <span className="footer-dot">/</span>Made for your people.
             </span>
-            <span>
-              Asia/Kolkata <span className="footer-dot">·</span>{" "}
-              {roleLabels[me.role]} workspace
-            </span>
+            <span>Asia/Kolkata · {roleLabels[me.role]}</span>
           </footer>
         </main>
       </div>
@@ -362,8 +373,7 @@ function Shell({ me }: { me: Me }) {
         title="Choose your workspace"
       >
         <p className="muted">
-          You stay signed in as {me.name}. Each workspace uses only its assigned
-          access.
+          Signed in as {me.name}. Each role opens only its assigned workspace.
         </p>
         <div className="role-options">
           {me.roles.map((role) => (
@@ -375,11 +385,46 @@ function Shell({ me }: { me: Me }) {
             >
               {roleLabels[role]}
               <span>
-                {role === me.role ? "Current" : <ArrowUpRight size={16} />}
+                {role === me.role ? "Current" : <ArrowUpRight size={17} />}
               </span>
             </Button>
           ))}
         </div>
+      </DialogPanel>
+      <DialogPanel
+        open={help}
+        onOpenChange={setHelp}
+        title="Make yourself at home"
+      >
+        <div className="guide-intro">
+          <CommandIcon size={28} weight="duotone" />
+          <p>
+            Find colleagues and move between pages with <kbd>Ctrl / ⌘ K</kbd>.
+          </p>
+        </div>
+        <dl className="guide-list">
+          <div>
+            <dt>Your workspace</dt>
+            <dd>
+              Use your avatar to switch between roles assigned to you. People
+              and counts follow your current access.
+            </dd>
+          </div>
+          <div>
+            <dt>Your display</dt>
+            <dd>
+              Choose a light or dark theme, compact spacing and reduced motion
+              in Display preferences.
+            </dd>
+          </div>
+          <div>
+            <dt>Keyboard shortcuts</dt>
+            <dd>
+              <kbd>Tab</kbd> moves focus. <kbd>Enter</kbd> opens an item.{" "}
+              <kbd>Esc</kbd> closes a dialog. Arrow keys move between tabs.
+            </dd>
+          </div>
+        </dl>
       </DialogPanel>
     </div>
   );

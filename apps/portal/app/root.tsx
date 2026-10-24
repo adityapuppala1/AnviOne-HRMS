@@ -1,12 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@fontsource/dm-sans/400.css";
-import "@fontsource/dm-sans/500.css";
-import "@fontsource/dm-sans/600.css";
-import "@fontsource/manrope/500.css";
-import "@fontsource/manrope/600.css";
-import "@fontsource/manrope/700.css";
+import "@fontsource-variable/outfit";
+import "@fontsource-variable/public-sans";
+import { PreferencesProvider } from "./lib/preferences";
 import "@anvi/ui/theme.css";
 import "./styles.css";
 export function Layout({ children }: { children: ReactNode }) {
@@ -17,6 +14,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="color-scheme" content="light dark" />
         <title>AnviOne · Your people workspace</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <Meta />
         <Links />
       </head>
@@ -43,7 +41,9 @@ export default function App() {
   );
   return (
     <QueryClientProvider client={client}>
-      <Outlet />
+      <PreferencesProvider>
+        <Outlet />
+      </PreferencesProvider>
     </QueryClientProvider>
   );
 }

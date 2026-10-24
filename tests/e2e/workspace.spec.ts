@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 async function login(page: import("@playwright/test").Page) {
-  await page.goto("/login");
+  if (!page.url().endsWith("/login")) await page.goto("/login");
   await page.getByRole("button", { name: "Explore demo workspace" }).click();
   await expect(
     page.getByRole("heading", { name: /Good to see you/ }),
@@ -15,7 +15,7 @@ test("directory search, profiles, command menu, reduced access and sign-out", as
     .getByRole("link", { name: "People directory", exact: true })
     .click();
   await page.getByRole("textbox", { name: "Search directory" }).fill("Zara");
-  await expect(page.getByText("1 people", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 person", { exact: true })).toBeVisible();
   await page
     .getByRole("link")
     .filter({ has: page.getByRole("heading", { name: "Zara Khan" }) })

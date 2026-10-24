@@ -1,13 +1,24 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Palette, Check, ArrowUpRight } from "lucide-react";
-import { Button, ErrorState, Badge } from "@anvi/ui";
+import { Palette } from "@phosphor-icons/react/dist/csr/Palette";
+import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { Desktop } from "@phosphor-icons/react/dist/csr/Desktop";
+import { DeviceMobile } from "@phosphor-icons/react/dist/csr/DeviceMobile";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { Button, ErrorState, Badge, MagicCard } from "@anvi/ui";
 import { brandingSchema, type Theme } from "@anvi/contracts";
 import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
 import { Brand } from "../components/brand";
+import { usePreferences } from "../lib/preferences";
 export default function Settings() {
   const { me, branding } = useWorkspace();
+  const { reduceMotion } = usePreferences();
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop",
+  );
   const [form, setForm] = useState(branding),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -52,9 +63,9 @@ export default function Settings() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">A PLACE THAT FEELS LIKE YOU</p>
-          <h1>Your workspace. Your identity.</h1>
-          <p>Bring your organization’s personality into everyday work.</p>
+          <p className="eyebrow">Organization identity</p>
+          <h1>Your workspace. Your signature.</h1>
+          <p>Choose the names and colors your people come home to.</p>
         </div>
         <Badge>Version {branding.version}</Badge>
       </div>
@@ -111,7 +122,7 @@ export default function Settings() {
               <div>
                 {(
                   [
-                    { value: "ocean", label: "Evergreen" },
+                    { value: "ocean", label: "Atlas" },
                     { value: "iris", label: "Iris" },
                     { value: "forest", label: "Woodland" },
                   ] satisfies { value: Theme; label: string }[]
@@ -160,6 +171,7 @@ export default function Settings() {
                 onPress={() => {
                   setForm(branding);
                   setError("");
+                  setSaved(false);
                 }}
               >
                 Discard changes
@@ -172,25 +184,60 @@ export default function Settings() {
           </div>
         </div>
         <aside className={`settings-preview preview-${form.theme}`}>
-          <p className="eyebrow">A LITTLE PREVIEW</p>
-          <div className="preview-window">
-            <div className="preview-sidebar">
-              <Brand name={form.platformName} light />
-              <span className="preview-nav active">Overview</span>
-              <span className="preview-nav">People directory</span>
-              <span className="preview-nav">Workspace settings</span>
-            </div>
-            <div className="preview-content">
-              <span>{form.organizationName}</span>
-              <h3>
-                Welcome to
-                <br />
-                {form.employeeName}.
-              </h3>
-              <div className="preview-block" />
-              <div className="preview-block short" />
+          <div className="preview-heading">
+            <p className="eyebrow">Your workspace, previewed</p>
+            <div className="view-toggle">
+              <Button
+                variant="icon"
+                aria-label="Desktop preview"
+                aria-pressed={previewMode === "desktop"}
+                onPress={() => setPreviewMode("desktop")}
+              >
+                <Desktop size={18} />
+              </Button>
+              <Button
+                variant="icon"
+                aria-label="Mobile preview"
+                aria-pressed={previewMode === "mobile"}
+                onPress={() => setPreviewMode("mobile")}
+              >
+                <DeviceMobile size={18} />
+              </Button>
             </div>
           </div>
+          <MagicCard disabled={reduceMotion} className="brand-preview-magic">
+            <div className={`preview-window preview-device-${previewMode}`}>
+              <div className="preview-sidebar">
+                <Brand name={form.platformName} light />
+                <span className="preview-nav active">Overview</span>
+                <span className="preview-nav">
+                  <Users size={12} />
+                  People
+                </span>
+                <span className="preview-nav">
+                  <TreeStructure size={12} />
+                  Teams
+                </span>
+              </div>
+              <div className="preview-content">
+                <span>{form.organizationName}</span>
+                <h3>
+                  Welcome to
+                  <br />
+                  {form.employeeName}.
+                </h3>
+                <div className="preview-block">
+                  <Users size={22} weight="duotone" />
+                  <strong>Your people, connected.</strong>
+                </div>
+                <div className="preview-block short">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </div>
+            </div>
+          </MagicCard>
           <p>
             Your names and palette update throughout the workspace when you
             publish.

@@ -7,7 +7,9 @@ import {
   ModalOverlay,
   type ButtonProps,
 } from "react-aria-components";
-import { X, ArrowUpRight, AlertCircle } from "lucide-react";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { WarningCircle as AlertCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
 
 export function Button({
   variant = "primary",
@@ -126,3 +128,6 @@ export function LoadingState() {
     </div>
   );
 }
+
+export { MagicCard } from "./magicui/magic-card";
+export { Tabs, TabList, Tab, TabPanel, Switch } from "react-aria-components";

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@anvi/database": "workspace:*"
+    "@anvi/database": "workspace:*",
+    "pg": "8.23.1"
   }
 }

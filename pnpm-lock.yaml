@@ -102,6 +102,9 @@ importers:
       openid-client:
         specifier: 6.8.8
         version: 6.8.8
+      pg:
+        specifier: 8.23.1
+        version: 8.23.1
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
@@ -167,6 +170,9 @@ importers:
       '@anvi/database':
         specifier: workspace:*
         version: link:../../packages/database
+      pg:
+        specifier: 8.23.1
+        version: 8.23.1
 
   packages/authz:
     dependencies:

@@ -41,6 +41,7 @@ pnpm test:integration
 pnpm exec playwright install chromium
 pnpm test:e2e
 docker build -f infra/docker/Dockerfile.api -t anvione-api:foundation .
+pnpm exec node scripts/smoke-image.mjs
 ```
 
 Integration and browser tests use the synthetic local database. They exercise role grants and branding, and must never target a production database. Run the integration suite before the browser suite, not concurrently. See [acceptance evidence](docs/acceptance-evidence/foundation.md) for measured results and limitations.

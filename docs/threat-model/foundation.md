@@ -1,0 +1,24 @@
+# Foundation threat model
+
+Assets: employee work-directory data, active sessions, approved identity bindings, branding configuration, business audit and outbox events. Current deployment uses synthetic data only.
+
+Trust boundaries: browser -> API; external IdP -> callback; API runtime -> PostgreSQL; migration operator -> database ownership; worker -> outbox receipt; developer -> public repository.
+
+| Threat                                             | Implemented defense                                                                                                 | Evidence / remaining gate                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Unknown corporate identity becomes an employee     | Fixed issuer/subject lookup of active binding and employment; no signup                                             | Unknown-subject integration test; live IdP validation outstanding                |
+| Forged role, session fixation or stale privilege   | Server grants, role intersection, new session token and CSRF token, old-session deletion, browser query cache clear | API and browser tests; concurrent in-flight revocation analysis still needed     |
+| CSRF and login CSRF                                | Exact origin, CSRF token for mutations, PKCE/state/nonce with browser-bound attempt cookie                          | Local mutation tests; OIDC provider callback tests outstanding                   |
+| Cross-entity IDOR, search/count leakage            | Same transaction-local RLS for lists, details, facets and summaries; no client tenant selector                      | Negative entity/tenant/profile tests; pool-reuse test                            |
+| Database owner bypass                              | Runtime refuses owner/superuser/BYPASSRLS; FORCE RLS; dedicated NOLOGIN identity-function owner                     | Runtime check and migration 002; runtime cannot read identity table              |
+| SQL injection                                      | Bound parameters; validated UUIDs, limits and query length; wildcard escaping                                       | Query validation tests; security review needed                                   |
+| Failed mandatory audit leaves unaudited change     | Branding, audit and outbox in one transaction                                                                       | Forced audit-permission failure rolls back update                                |
+| Audit tampering                                    | Runtime SELECT/INSERT only; no audit delete/edit endpoint                                                           | Privilege tests; database admin remains trusted until independent archive        |
+| Duplicate worker side effect                       | Transactional `FOR UPDATE SKIP LOCKED`, receipt PK, atomic acknowledge                                              | Concurrent worker/replay tests; external delivery is not implemented             |
+| PII/token leakage                                  | Minimal schema, opaque hashed session tokens, no request-body logging, no-store API                                 | Manual source review; broader log-scanning and telemetry review pending          |
+| Malicious branding input                           | Strict text lengths, named palettes only, React text escaping                                                       | Optimistic version conflict and validation tests; custom CSS/HTML/logos disabled |
+| Dependency compromise or known CVE                 | Exact package versions, lockfile, pinned project Node, pinned CI actions, dependency audit                          | Package audit; API image build; full image scan/SBOM/signing pending             |
+| Demo exposed to a network                          | Requires development + 127.0.0.1 bind/origin + loopback socket and allowed Host                                     | Config and origin tests; never use tunnels for this demo                         |
+| Malicious file, payroll tampering, AI exfiltration | Those capabilities are absent and disabled                                                                          | New domain-specific threat models required before enabling                       |
+
+Production gaps include portal CSP/TLS gateway certification, distributed rate limits, trusted-proxy validation, independent immutable audit storage, secrets/KMS, encrypted storage/backups, admin provisioning, session cleanup, penetration testing, load testing, manual accessibility and the applicable privacy sign-offs. No claim of ASVS or WCAG conformance is made by passing automated tests alone.

@@ -1,0 +1,30 @@
+name: anvione-dev
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: anvione
+      POSTGRES_USER: anvione_migrator
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run pnpm setup:local first}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - anvione_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anvione_migrator -d anvione"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    security_opt: ["no-new-privileges:true"]
+  valkey:
+    image: valkey/valkey:8.1.5-alpine
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
+    # Reserved for future queues; no host port and no dependency for durable work.
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  anvione_postgres:

@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  esbuild: true
+  "@nestjs/core": false
+overrides:
+  multer: 2.5.0
+  ip-address: 10.7.4

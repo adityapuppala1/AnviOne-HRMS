@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+.react-router/
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+.scratch/
+*.log
+*.pem
+*.key
+*.pfx
+.DS_Store
+# Original planning documents remain local; decisions are published separately.
+docs/requirements/*Master*Prompt*.md

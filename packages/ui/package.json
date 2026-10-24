@@ -1,0 +1,15 @@
+{
+  "name": "@anvi/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./theme.css": "./src/theme.css"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-aria-components": "1.22.1",
+    "lucide-react": "1.61.0"
+  }
+}

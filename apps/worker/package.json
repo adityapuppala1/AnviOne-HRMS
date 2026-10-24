@@ -1,0 +1,9 @@
+{
+  "name": "@anvi/worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@anvi/database": "workspace:*"
+  }
+}

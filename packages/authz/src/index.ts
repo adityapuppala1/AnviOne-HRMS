@@ -16,13 +16,17 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
   employee: {
     "directory.read": "self",
     "onboarding.task.update": "self",
+    "leave.request": "self",
   },
   manager: {
     "directory.read": "team",
     "onboarding.task.update": "self",
+    "leave.request": "self",
+    "leave.approve": "team",
   },
   hr_admin: {
     "directory.read": "entity",
+    "leave.approve": "entity",
     "organization.read": "entity",
     "organization.write": "entity",
     "onboarding.manage": "entity",

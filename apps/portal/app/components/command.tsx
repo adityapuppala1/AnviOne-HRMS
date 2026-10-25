@@ -9,6 +9,7 @@ import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
+import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import type { Me } from "@anvi/contracts";
@@ -91,6 +92,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/tasks")}>
             <ClipboardText size={18} />
             My onboarding tasks
+          </Button>
+        )}
+        {(me.permissions.includes("leave.request") ||
+          me.permissions.includes("leave.approve")) && (
+          <Button variant="ghost" onPress={() => go("/leave")}>
+            <AirplaneTilt size={18} />
+            Leave
           </Button>
         )}
         {me.permissions.includes("organization.read") && (

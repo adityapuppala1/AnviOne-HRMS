@@ -10,6 +10,8 @@ import {
   authConfigSchema,
   organizationDirectorySchema,
   assignedTaskListSchema,
+  leaveOverviewSchema,
+  leaveApprovalsSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -94,6 +96,19 @@ export const useAssignedTasks = () =>
     queryKey: ["assigned-onboarding-tasks"],
     queryFn: ({ signal }) =>
       api("/onboarding/tasks", assignedTaskListSchema, { signal }),
+  });
+export const useLeave = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["leave", "mine"],
+    enabled,
+    queryFn: ({ signal }) => api("/leave", leaveOverviewSchema, { signal }),
+  });
+export const useLeaveApprovals = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["leave", "approvals"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/leave/approvals", leaveApprovalsSchema, { signal }),
   });
 export const mutate = (
   path: string,

@@ -13,6 +13,7 @@ import { Users } from "@phosphor-icons/react/dist/csr/Users";
 import { GearSix } from "@phosphor-icons/react/dist/csr/GearSix";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
@@ -152,6 +153,14 @@ function Shell({ me }: { me: Me }) {
       visible: me.permissions.includes("onboarding.task.update"),
     },
     {
+      to: "/leave",
+      label: "Leave",
+      icon: AirplaneTilt,
+      visible:
+        me.permissions.includes("leave.request") ||
+        me.permissions.includes("leave.approve"),
+    },
+    {
       to: "/settings",
       label: "Workspace settings",
       icon: GearSix,
@@ -229,7 +238,7 @@ function Shell({ me }: { me: Me }) {
       <p className="sidebar-label roadmap-label">On the roadmap</p>
       <div className="planned-nav">
         {[
-          { icon: CalendarDots, label: "Time & leave" },
+          { icon: CalendarDots, label: "Attendance" },
           { icon: Wallet, label: "Payroll & expenses" },
           { icon: Stack, label: "Assets & policies" },
         ].map(({ icon: Icon, label }) => (

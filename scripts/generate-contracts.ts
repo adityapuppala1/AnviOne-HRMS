@@ -34,6 +34,12 @@ import {
   assignedTaskListSchema,
   localReviewProposalSchema,
   localReviewDecisionSchema,
+  leaveOverviewSchema,
+  leaveApprovalsSchema,
+  leaveRequestSchema,
+  leaveRequestCreateSchema,
+  leaveCancelSchema,
+  leaveDecisionSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -198,6 +204,55 @@ const spec = {
     },
     "/audit-events": {
       get: read("Auditor-only latest 50 entity audit events", auditSchema),
+    },
+    "/leave": {
+      get: read(
+        "Current actor's leave balances and latest 50 requests",
+        leaveOverviewSchema,
+      ),
+    },
+    "/leave/approvals": {
+      get: read(
+        "Pending and recently decided leave visible to the approver",
+        leaveApprovalsSchema,
+      ),
+    },
+    "/leave/requests": {
+      post: write(
+        "Request leave for the current actor",
+        leaveRequestCreateSchema,
+        leaveRequestSchema,
+      ),
+    },
+    "/leave/requests/{id}/cancel": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Cancel your pending or future approved leave",
+        leaveCancelSchema,
+        leaveRequestSchema,
+      ),
+    },
+    "/leave/requests/{id}/decision": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Approve or decline a routed leave request",
+        leaveDecisionSchema,
+        leaveRequestSchema,
+      ),
     },
     "/organization": {
       get: {

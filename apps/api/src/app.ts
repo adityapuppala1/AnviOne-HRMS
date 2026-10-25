@@ -42,10 +42,14 @@ import {
   localReviewDecisionSchema,
   candidateTaskAssignmentSchema,
   assignedTaskUpdateSchema,
+  leaveRequestCreateSchema,
+  leaveCancelSchema,
+  leaveDecisionSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
 import { OnboardingStore } from "./onboarding.store";
+import { LeaveStore } from "./leave.store";
 import {
   SessionGuard,
   OidcService,
@@ -92,10 +96,12 @@ class PlatformController {
   private readonly oidc;
   private readonly organization;
   private readonly onboarding;
+  private readonly leave;
   constructor(@Inject(PlatformStore) private readonly store: PlatformStore) {
     this.oidc = new OidcService(store);
     this.organization = new OrganizationStore(store);
     this.onboarding = new OnboardingStore(store);
+    this.leave = new LeaveStore(store);
   }
   @Get("healthz") health() {
     return { status: "ok" };
@@ -394,6 +400,46 @@ class PlatformController {
       req.requestId,
       "review",
       input.decision,
+    );
+  }
+  @Get("api/v1/leave") leaveOverview(@Req() req: AppRequest) {
+    return this.leave.overview(req.actor);
+  }
+  @Get("api/v1/leave/approvals") leaveApprovals(@Req() req: AppRequest) {
+    return this.leave.approvals(req.actor);
+  }
+  @Post("api/v1/leave/requests") requestLeave(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.leave.create(
+      req.actor,
+      parse(leaveRequestCreateSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/leave/requests/:id/cancel") cancelLeave(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.leave.cancel(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(leaveCancelSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/leave/requests/:id/decision") decideLeave(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.leave.decide(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(leaveDecisionSchema, body),
+      req.requestId,
     );
   }
   @Post("api/v1/organization") createOrganizationUnit(

@@ -213,6 +213,50 @@ try {
     VALUES ('40000000-0000-4000-8000-000000000001',$1,$2,$3,'urn:anvione:local-demo','maya-demo',true,ARRAY['hr_admin','employee','manager','platform_admin','auditor']) ON CONFLICT DO NOTHING`,
     [tenant, entity, employeeId(1)],
   );
+  // Leave for Maya's direct reports so the manager queue has real work. The
+  // database guards run as each requester; dates follow the entity's calendar.
+  const leave = [
+    [2, "CL", 8, 10, "Sister's wedding in Pune", false],
+    [3, "SL", 15, 15, "Planned minor procedure", true],
+    [4, "EL", 22, 26, "Family trip to Coorg", false],
+  ] as const;
+  const context = (employee: string, scope: string) =>
+    client.query(
+      `SELECT set_config('app.tenant_id',$1,true), set_config('app.entity_id',$2,true),
+        set_config('app.employee_id',$3,true), set_config('app.leave_scope',$4,true),
+        set_config('app.actor_id',$5,true), set_config('app.actor_label','Maya Iyer',true)`,
+      [tenant, entity, employee, scope, randomUUID()],
+    );
+  for (const [n, code, from, to, reason, approve] of leave) {
+    const requester = employeeId(n);
+    if (
+      (
+        await client.query(
+          "SELECT 1 FROM leave_request WHERE tenant_id=$1 AND employee_id=$2",
+          [tenant, requester],
+        )
+      ).rowCount
+    )
+      continue;
+    await context(requester, "self");
+    const id = randomUUID();
+    await client.query(
+      `INSERT INTO leave_request(id,tenant_id,entity_id,employee_id,leave_type_id,start_date,end_date,reason,days,state,approver,version,requested_by_actor)
+       SELECT $1,$2,$3,$4,t.id,
+         date_trunc('week',leave_entity_today())::date+$6::int,
+         date_trunc('week',leave_entity_today())::date+$7::int,
+         $8,1,'pending','hr',1,gen_random_uuid()
+       FROM leave_type t WHERE t.tenant_id=$2 AND t.entity_id=$3 AND t.code=$5`,
+      [id, tenant, entity, requester, code, from, to, reason],
+    );
+    if (approve) {
+      await context(employeeId(1), "team");
+      await client.query(
+        "UPDATE leave_request SET state='approved', version=version+1 WHERE id=$1",
+        [id],
+      );
+    }
+  }
   await client.query("COMMIT");
   console.log(
     "Synthetic people, employment and organization fixtures are initialized; existing records are preserved.",

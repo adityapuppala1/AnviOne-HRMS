@@ -23,6 +23,8 @@ export const permissionSchema = z.enum([
   "organization.write",
   "onboarding.manage",
   "onboarding.task.update",
+  "leave.request",
+  "leave.approve",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -399,6 +401,95 @@ export const candidateDeliverySchema = z.object({
   expiresAt: z.string().nullable(),
   previewOnly: z.literal(true),
 });
+
+// Leave (F0.10). Dates are ISO calendar dates in the legal entity's time zone.
+export const leaveStateSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+  "cancelled",
+]);
+export type LeaveState = z.infer<typeof leaveStateSchema>;
+export const leaveBalanceSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+  paid: z.boolean(),
+  annualDays: z.number().nullable(),
+  used: z.number(),
+  pending: z.number(),
+  available: z.number().nullable(),
+});
+export type LeaveBalance = z.infer<typeof leaveBalanceSchema>;
+export const leaveRequestSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  initials: z.string(),
+  department: z.string(),
+  leaveType: z.strictObject({ code: z.string(), name: z.string() }),
+  startDate: z.iso.date(),
+  endDate: z.iso.date(),
+  days: z.number().positive(),
+  reason: z.string(),
+  state: leaveStateSchema,
+  approver: z.enum(["manager", "hr"]),
+  version: z.number().int().positive(),
+  createdAt: z.string(),
+  decidedAt: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  decisionNote: z.string().nullable(),
+  canDecide: z.boolean(),
+  canCancel: z.boolean(),
+});
+export type LeaveRequest = z.infer<typeof leaveRequestSchema>;
+export const leaveOverviewSchema = z.strictObject({
+  year: z.number().int(),
+  today: z.iso.date(),
+  balances: z.array(leaveBalanceSchema),
+  requests: z.array(leaveRequestSchema),
+});
+export type LeaveOverview = z.infer<typeof leaveOverviewSchema>;
+export const leaveApprovalsSchema = z.strictObject({
+  pending: z.array(leaveRequestSchema),
+  decided: z.array(leaveRequestSchema),
+});
+export type LeaveApprovals = z.infer<typeof leaveApprovalsSchema>;
+export const leaveRequestCreateSchema = z
+  .strictObject({
+    leaveTypeId: z.uuid(),
+    startDate: z.iso.date(),
+    endDate: z.iso.date(),
+    reason: z.string().trim().min(3).max(300),
+  })
+  .refine((v) => v.endDate >= v.startDate, {
+    message: "End date must be on or after the start date",
+    path: ["endDate"],
+  })
+  .refine((v) => v.startDate.slice(0, 4) === v.endDate.slice(0, 4), {
+    message: "A request cannot span two calendar years",
+    path: ["endDate"],
+  })
+  .refine(
+    (v) => Date.parse(v.endDate) - Date.parse(v.startDate) <= 31 * 86400000,
+    {
+      message: "A single request can cover at most 31 days",
+      path: ["endDate"],
+    },
+  );
+export const leaveCancelSchema = z.strictObject({
+  version: z.number().int().positive(),
+});
+export const leaveDecisionSchema = z
+  .strictObject({
+    version: z.number().int().positive(),
+    decision: z.enum(["approve", "reject"]),
+    note: z.string().trim().min(3).max(300).nullable(),
+  })
+  .refine((v) => v.decision === "approve" || v.note !== null, {
+    message: "Explain why the request is declined",
+    path: ["note"],
+  });
 export {
   activationReadiness,
   onboardingStarter,

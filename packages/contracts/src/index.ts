@@ -22,6 +22,7 @@ export const permissionSchema = z.enum([
   "organization.read",
   "organization.write",
   "onboarding.manage",
+  "onboarding.task.update",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -264,6 +265,17 @@ export const candidateTaskCreateSchema = z.strictObject({
 export const candidateTaskUpdateSchema = z.strictObject({
   caseVersion: z.number().int().positive(),
   version: z.number().int().positive(),
+  state: candidateTaskStateSchema,
+  reason: z.string().trim().min(10).max(300),
+});
+export const candidateTaskAssignmentSchema = z.strictObject({
+  caseVersion: z.number().int().positive(),
+  assignmentVersion: z.number().int().positive().nullable(),
+  employeeId: z.uuid(),
+  reason: z.string().trim().min(10).max(300),
+});
+export const assignedTaskUpdateSchema = z.strictObject({
+  taskVersion: z.number().int().positive(),
   state: candidateTaskStateSchema,
   reason: z.string().trim().min(10).max(300),
 });

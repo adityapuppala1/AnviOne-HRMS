@@ -466,6 +466,64 @@ await test("Isolated candidate onboarding", async (t) => {
       },
     );
     await t.test(
+      "task assignments are actor-bound, entity-scoped and self-visible",
+      async () => {
+        await scoped(store.pool, { ...actor, role: "hr_admin" }, (client) =>
+          client.query(
+            `INSERT INTO candidate_task_assignment(task_id,employee_id,version,assigned_by,assigner_label)
+             VALUES($1,$2,1,$3,$4)`,
+            [hrTask.id, actor.employeeId, actor.actorId, actor.name],
+          ),
+        );
+        assert.equal(
+          (
+            await scoped(store.pool, { ...actor, role: "employee" }, (client) =>
+              client.query(
+                "SELECT task_id FROM candidate_task_assignment WHERE task_id=$1",
+                [hrTask.id],
+              ),
+            )
+          ).rowCount,
+          1,
+        );
+        assert.equal(
+          (
+            await scoped(
+              store.pool,
+              {
+                ...actor,
+                actorId: randomUUID(),
+                employeeId: randomUUID(),
+                role: "employee",
+                roles: ["employee"],
+              },
+              (client) =>
+                client.query("SELECT task_id FROM candidate_task_assignment"),
+            )
+          ).rowCount,
+          0,
+        );
+        await assert.rejects(
+          scoped(store.pool, { ...actor, role: "employee" }, (client) =>
+            client.query(
+              `INSERT INTO candidate_task_assignment(task_id,employee_id,version,assigned_by,assigner_label)
+               VALUES($1,$2,1,$3,$4)`,
+              [adminTask.id, actor.employeeId, actor.actorId, actor.name],
+            ),
+          ),
+        );
+        await assert.rejects(
+          scoped(store.pool, { ...actor, role: "hr_admin" }, (client) =>
+            client.query(
+              `INSERT INTO candidate_task_assignment(task_id,employee_id,version,assigned_by,assigner_label)
+               VALUES($1,$2,1,$3,$4)`,
+              [ownTask.id, actor.employeeId, actor.actorId, actor.name],
+            ),
+          ),
+        );
+      },
+    );
+    await t.test(
       "candidate sees only owned tasks and cannot forge metadata or case changes",
       async () => {
         const me = await (await api("session")).json();
@@ -1106,6 +1164,10 @@ await test("Isolated candidate onboarding", async (t) => {
     );
   } finally {
     for (const cleanupId of [id, ...extraCases].filter(Boolean)) {
+      await admin.query(
+        "DELETE FROM candidate_task_assignment WHERE task_id IN (SELECT id FROM candidate_task WHERE candidate_id=$1)",
+        [cleanupId],
+      );
       for (const table of [
         "candidate_local_review",
         "candidate_task",

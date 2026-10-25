@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  candidateTaskAssignmentSchema,
+  assignedTaskUpdateSchema,
   localReviewDecisionSchema,
   localReviewProposalSchema,
   activationReadiness,
@@ -91,6 +93,41 @@ describe("onboarding checklist contracts", () => {
         version: 1,
         state: "completed",
         reason: "done",
+      }).success,
+    ).toBe(false);
+  });
+  it("keeps task assignment and assignee updates identity-free and strict", () => {
+    const employeeId = crypto.randomUUID();
+    expect(
+      candidateTaskAssignmentSchema.safeParse({
+        caseVersion: 4,
+        assignmentVersion: null,
+        employeeId,
+        reason: "Assign this fictional coordination task to a named owner.",
+      }).success,
+    ).toBe(true);
+    expect(
+      candidateTaskAssignmentSchema.safeParse({
+        caseVersion: 4,
+        assignmentVersion: null,
+        employeeId,
+        actorId: crypto.randomUUID(),
+        reason: "Attempt to forge the assigning identity in the request.",
+      }).success,
+    ).toBe(false);
+    expect(
+      assignedTaskUpdateSchema.safeParse({
+        taskVersion: 2,
+        state: "completed",
+        reason: "Completed the fictional preparation and recorded its outcome.",
+      }).success,
+    ).toBe(true);
+    expect(
+      assignedTaskUpdateSchema.safeParse({
+        taskVersion: 2,
+        caseVersion: 9,
+        state: "completed",
+        reason: "The assignee cannot claim or control the parent case version.",
       }).success,
     ).toBe(false);
   });

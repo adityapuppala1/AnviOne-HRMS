@@ -878,7 +878,8 @@
                           "audit.read",
                           "organization.read",
                           "organization.write",
-                          "onboarding.manage"
+                          "onboarding.manage",
+                          "onboarding.task.update"
                         ]
                       }
                     }

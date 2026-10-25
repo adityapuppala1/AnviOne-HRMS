@@ -49,4 +49,17 @@ describe("deny-by-default role contexts", () => {
       scopeFor({ ...actor, roles: ["employee"] }, "organization.write"),
     ).toBeUndefined();
   });
+  it("grants only self-scoped onboarding work to employee contexts", () => {
+    for (const role of ["employee", "manager"] as const)
+      expect(
+        scopeFor({ ...actor, role, roles: [role] }, "onboarding.task.update"),
+      ).toBe("self");
+    expect(scopeFor(actor, "onboarding.task.update")).toBeUndefined();
+    expect(
+      scopeFor(
+        { ...actor, role: "auditor", roles: ["auditor"] },
+        "onboarding.task.update",
+      ),
+    ).toBeUndefined();
+  });
 });

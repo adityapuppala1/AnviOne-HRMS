@@ -13,8 +13,14 @@ export interface Principal {
   name: string;
 }
 const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
-  employee: { "directory.read": "self" },
-  manager: { "directory.read": "team" },
+  employee: {
+    "directory.read": "self",
+    "onboarding.task.update": "self",
+  },
+  manager: {
+    "directory.read": "team",
+    "onboarding.task.update": "self",
+  },
   hr_admin: {
     "directory.read": "entity",
     "organization.read": "entity",

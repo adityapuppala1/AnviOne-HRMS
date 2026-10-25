@@ -828,6 +828,175 @@ await test("Isolated candidate onboarding", async (t) => {
       },
     );
     await t.test(
+      "local readiness proposal requires complete local evidence",
+      async () => {
+        let d = await detail();
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/local-reviews`, {
+              caseVersion: d.candidate.version,
+              reason: "Incomplete synthetic evidence cannot enter review.",
+            })
+          ).status,
+          409,
+        );
+        for (;;) {
+          const next = d.tasks.find(
+            (task: CandidateTask) =>
+              task.required && task.state !== "completed" && !task.waitingOn,
+          );
+          if (!next) break;
+          assert.equal(
+            (
+              await hr(`/candidates/${id}/tasks/${next.id}`, {
+                caseVersion: d.candidate.version,
+                version: next.version,
+                state: "completed",
+                reason,
+              })
+            ).status,
+            201,
+          );
+          d = await detail();
+        }
+        assert.equal(d.readiness.controls[0].status, "passed");
+        assert.equal(d.readiness.controls[1].status, "passed");
+        const eligibleVersion = d.candidate.version;
+        const reviewsBefore = d.localReviews.length;
+        await assert.rejects(
+          new OnboardingStore(store).proposeLocalReview(
+            { ...actor, role: "hr_admin" },
+            id,
+            {
+              caseVersion: eligibleVersion,
+              reason: "This proposal must roll back with its failed audit.",
+            },
+            "invalid-request-uuid",
+          ),
+        );
+        d = await detail();
+        assert.equal(d.candidate.version, eligibleVersion);
+        assert.equal(d.localReviews.length, reviewsBefore);
+        const response = await hr(`/candidates/${id}/local-reviews`, {
+          caseVersion: d.candidate.version,
+          reason: "Request independent review of complete synthetic evidence.",
+        });
+        assert.equal(response.status, 201);
+        d = await detail();
+        version = d.candidate.version;
+        const review = d.localReviews[0];
+        assert.equal(review.state, "pending");
+        const added = d.tasks.find(
+          (task: CandidateTask) =>
+            task.label === "Confirm a fictional induction preference",
+        );
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${added.id}`, {
+              caseVersion: version,
+              version: added.version,
+              state: "pending",
+              reason:
+                "Reopen synthetic evidence to verify decision eligibility.",
+            })
+          ).status,
+          201,
+        );
+        d = await detail();
+        const reopened = d.tasks.find(
+          (task: CandidateTask) => task.id === added.id,
+        );
+        await assert.rejects(
+          new OnboardingStore(store).decideLocalReview(
+            {
+              ...actor,
+              actorId: randomUUID(),
+              role: "hr_admin",
+              name: "Eligibility synthetic reviewer",
+            },
+            id,
+            review.id,
+            {
+              caseVersion: d.candidate.version,
+              reviewVersion: review.version,
+              decision: "approved",
+              reason: "Approval must recheck the complete local evidence.",
+            },
+            randomUUID(),
+          ),
+        );
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${reopened.id}`, {
+              caseVersion: d.candidate.version,
+              version: reopened.version,
+              state: "completed",
+              reason,
+            })
+          ).status,
+          201,
+        );
+        d = await detail();
+        version = d.candidate.version;
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/local-reviews/${review.id}`, {
+              caseVersion: version,
+              reviewVersion: review.version,
+              decision: "approved",
+              reason: "Attempted self approval must remain forbidden.",
+            })
+          ).status,
+          409,
+        );
+        const reviewers = ["First", "Second"].map((label) => ({
+          ...actor,
+          actorId: randomUUID(),
+          role: "hr_admin" as const,
+          name: `${label} independent synthetic reviewer`,
+        }));
+        const decisions = await Promise.allSettled(
+          reviewers.map((reviewer) =>
+            new OnboardingStore(store).decideLocalReview(
+              reviewer,
+              id,
+              review.id,
+              {
+                caseVersion: version,
+                reviewVersion: review.version,
+                decision: "approved",
+                reason:
+                  "Independently approved complete synthetic local evidence.",
+              },
+              randomUUID(),
+            ),
+          ),
+        );
+        assert.deepEqual(decisions.map((result) => result.status).sort(), [
+          "fulfilled",
+          "rejected",
+        ]);
+        d = await detail();
+        version = d.candidate.version;
+        assert.equal(d.localReviews[0].state, "approved");
+        assert.equal(d.readiness.activationReady, false);
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM audit_event WHERE target=$1 AND action IN ('candidate.local_review_proposed','candidate.local_review_decided')",
+              [id],
+            )
+          ).rowCount,
+          2,
+        );
+        assert.equal(
+          (await admin.query("SELECT id FROM employee WHERE id=$1", [id]))
+            .rowCount,
+          0,
+        );
+      },
+    );
+    await t.test(
       "rotation revokes sessions and old invitations, cancellation closes access",
       async () => {
         const oldToken = token;

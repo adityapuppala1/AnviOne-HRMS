@@ -38,6 +38,8 @@ import {
   candidateReviewSchema,
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  localReviewProposalSchema,
+  localReviewDecisionSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
@@ -283,6 +285,32 @@ class PlatformController {
       parse(z.uuid(), id),
       parse(z.uuid(), taskId),
       parse(candidateTaskUpdateSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/local-reviews") proposeLocalReview(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.proposeLocalReview(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(localReviewProposalSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/local-reviews/:reviewId") decideLocalReview(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Param("reviewId") reviewId: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.decideLocalReview(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(z.uuid(), reviewId),
+      parse(localReviewDecisionSchema, body),
       req.requestId,
     );
   }

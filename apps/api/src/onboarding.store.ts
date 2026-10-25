@@ -10,9 +10,12 @@ import {
   candidateSubmissionSchema,
   candidateDeliverySchema,
   activationReadiness,
+  localReviewSchema,
   type candidateCreateSchema,
   type candidateActionSchema,
   type candidateReviewSchema,
+  type localReviewProposalSchema,
+  type localReviewDecisionSchema,
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { Principal } from "@anvi/authz";
@@ -98,10 +101,24 @@ export class OnboardingStore {
         [id],
       );
       const tasks = await readTasks(client, id);
+      const reviews = await client.query(
+        `SELECT id,state,version,proposed_by AS "proposedBy",proposer_label AS "proposerLabel",
+         proposal_note AS "proposalNote",proposed_at AS "proposedAt",decided_by AS "decidedBy",
+         decision_note AS "decisionNote",decided_at AS "decidedAt"
+         FROM candidate_local_review WHERE candidate_id=$1 ORDER BY proposed_at DESC,id`,
+        [id],
+      );
       return {
         candidate,
         tasks,
         readiness: activationReadiness(candidate.state, tasks),
+        localReviews: reviews.rows.map((row) =>
+          localReviewSchema.parse({
+            ...row,
+            proposedAt: row.proposedAt.toISOString(),
+            decidedAt: row.decidedAt?.toISOString() ?? null,
+          }),
+        ),
         submissions: rows.map((r) =>
           candidateSubmissionSchema.parse({
             ...r,
@@ -366,6 +383,111 @@ export class OnboardingStore {
         requestId,
         input.reason,
         { taskId, state: input.state },
+      );
+      return { changed: true };
+    });
+  }
+  async proposeLocalReview(
+    actor: Principal,
+    id: string,
+    input: z.infer<typeof localReviewProposalSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      const candidate = await this.checklistCase(client, id, input.caseVersion);
+      const required = (await readTasks(client, id)).filter(
+        (task) => task.required,
+      );
+      if (
+        candidate.state !== "approved" ||
+        !required.length ||
+        required.some((task) => task.state !== "completed")
+      )
+        throw new ConflictException(
+          "Approve the form and complete every required task before requesting review.",
+        );
+      try {
+        await client.query(
+          `INSERT INTO candidate_local_review(id,candidate_id,proposed_by,proposer_label,proposal_note)
+           VALUES($1,$2,$3,$4,$5)`,
+          [randomUUID(), id, actor.actorId, actor.name, input.reason],
+        );
+      } catch (error) {
+        if ((error as { code?: string }).code === "23505")
+          throw new ConflictException(
+            "An independent review is already pending.",
+          );
+        throw error;
+      }
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        "candidate.local_review_proposed",
+        requestId,
+        input.reason,
+      );
+      return { changed: true };
+    });
+  }
+  async decideLocalReview(
+    actor: Principal,
+    id: string,
+    reviewId: string,
+    input: z.infer<typeof localReviewDecisionSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      const candidate = await this.checklistCase(client, id, input.caseVersion);
+      if (input.decision === "approved") {
+        const required = (await readTasks(client, id)).filter(
+          (task) => task.required,
+        );
+        if (
+          candidate.state !== "approved" ||
+          !required.length ||
+          required.some((task) => task.state !== "completed")
+        )
+          throw new ConflictException(
+            "Local evidence changed. Approve the form and complete every required task before deciding.",
+          );
+      }
+      try {
+        const result = await client.query(
+          `UPDATE candidate_local_review SET state=$3,version=version+1,decided_by=$4,
+           decision_note=$5,decided_at=now() WHERE id=$1 AND candidate_id=$2 AND version=$6 RETURNING id`,
+          [
+            reviewId,
+            id,
+            input.decision,
+            actor.actorId,
+            input.reason,
+            input.reviewVersion,
+          ],
+        );
+        if (!result.rowCount)
+          throw new ConflictException(
+            "This review changed. Reload before deciding.",
+          );
+      } catch (error) {
+        if ((error as { code?: string }).code === "23514")
+          throw new ConflictException(
+            "This decision is not allowed. Maker and checker must be different identities.",
+          );
+        throw error;
+      }
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        input.decision === "withdrawn"
+          ? "candidate.local_review_withdrawn"
+          : "candidate.local_review_decided",
+        requestId,
+        input.reason,
+        { reviewId, decision: input.decision },
       );
       return { changed: true };
     });

@@ -2,11 +2,38 @@ import { describe, it, expect } from "vitest";
 import {
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  localReviewDecisionSchema,
+  localReviewProposalSchema,
   activationReadiness,
   onboardingStarter,
   submissionChanges,
 } from "./index";
 describe("onboarding checklist contracts", () => {
+  it("keeps readiness workflow actors out of strict request bodies", () => {
+    expect(
+      localReviewProposalSchema.safeParse({
+        caseVersion: 1,
+        reason: "Request an independent synthetic readiness review.",
+      }).success,
+    ).toBe(true);
+    expect(
+      localReviewDecisionSchema.safeParse({
+        caseVersion: 2,
+        reviewVersion: 1,
+        decision: "approved",
+        reason: "Independently reviewed the synthetic local evidence.",
+        decidedBy: crypto.randomUUID(),
+      }).success,
+    ).toBe(false);
+    expect(
+      localReviewDecisionSchema.safeParse({
+        caseVersion: 2,
+        reviewVersion: 1,
+        decision: "withdrawn",
+        reason: "Withdraw this synthetic proposal before review.",
+      }).success,
+    ).toBe(true);
+  });
   it("denies activation until every local and external control passes", () => {
     const ready = activationReadiness("approved", [
       { required: true, state: "completed" },

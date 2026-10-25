@@ -267,6 +267,34 @@ export const candidateTaskUpdateSchema = z.strictObject({
   state: candidateTaskStateSchema,
   reason: z.string().trim().min(10).max(300),
 });
+export const localReviewStateSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+  "withdrawn",
+]);
+export const localReviewSchema = z.strictObject({
+  id: z.uuid(),
+  state: localReviewStateSchema,
+  version: z.number().int().positive(),
+  proposedBy: z.uuid(),
+  proposerLabel: z.string(),
+  proposalNote: z.string(),
+  proposedAt: z.string(),
+  decidedBy: z.uuid().nullable(),
+  decisionNote: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+});
+export const localReviewProposalSchema = z.strictObject({
+  caseVersion: z.number().int().positive(),
+  reason: z.string().trim().min(10).max(300),
+});
+export const localReviewDecisionSchema = z.strictObject({
+  caseVersion: z.number().int().positive(),
+  reviewVersion: z.number().int().positive(),
+  decision: z.enum(["approved", "rejected", "withdrawn"]),
+  reason: z.string().trim().min(10).max(300),
+});
 export const activationControlSchema = z.strictObject({
   id: z.enum([
     "form",
@@ -290,6 +318,7 @@ export const candidateDetailSchema = z.object({
   submissions: z.array(candidateSubmissionSchema),
   tasks: z.array(candidateTaskSchema),
   readiness: activationReadinessSchema,
+  localReviews: z.array(localReviewSchema),
 });
 export const candidatePortalSchema = z.object({
   tasks: z.array(candidateOwnTaskSchema),

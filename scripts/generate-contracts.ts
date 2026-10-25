@@ -29,6 +29,8 @@ import {
   candidatePortalSchema,
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  localReviewProposalSchema,
+  localReviewDecisionSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -76,7 +78,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "AnviOne foundation API",
-    version: "0.5.0",
+    version: "0.7.0",
     description:
       "Synthetic foundation preview. Session origin checks apply to all mutations. Production requires separately verified corporate OIDC. Local HTTP uses anvi_dev_session instead of the production cookie.",
   },
@@ -258,6 +260,28 @@ const idParameter = [
   },
 ];
 Object.assign(spec.paths, {
+  "/candidates/{id}/local-reviews": {
+    parameters: idParameter,
+    post: write(
+      "Propose independent synthetic local-readiness review",
+      localReviewProposalSchema,
+    ),
+  },
+  "/candidates/{id}/local-reviews/{reviewId}": {
+    parameters: [
+      ...idParameter,
+      {
+        name: "reviewId",
+        in: "path",
+        required: true,
+        schema: { type: "string", format: "uuid" },
+      },
+    ],
+    post: write(
+      "Independently decide or maker-withdraw a local-readiness review",
+      localReviewDecisionSchema,
+    ),
+  },
   "/candidates/{id}/checklist": {
     parameters: idParameter,
     post: write(

@@ -777,6 +777,57 @@ await test("Isolated candidate onboarding", async (t) => {
       },
     );
     await t.test(
+      "local readiness decisions are actor-bound, independent and terminal",
+      async () => {
+        const reviewId = randomUUID();
+        const maker = { ...actor, role: "hr_admin" as const };
+        const checker = {
+          ...maker,
+          actorId: randomUUID(),
+          name: "Independent synthetic HR reviewer",
+        };
+        await scoped(store.pool, maker, (c) =>
+          c.query(
+            `INSERT INTO candidate_local_review(id,candidate_id,proposed_by,proposer_label,proposal_note)
+             VALUES($1,$2,$3,$4,$5)`,
+            [reviewId, id, maker.actorId, maker.name, reason],
+          ),
+        );
+        await assert.rejects(
+          scoped(store.pool, maker, (c) =>
+            c.query(
+              "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
+              [reviewId, maker.actorId, reason],
+            ),
+          ),
+        );
+        await scoped(store.pool, checker, (c) =>
+          c.query(
+            "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
+            [reviewId, checker.actorId, reason],
+          ),
+        );
+        await assert.rejects(
+          scoped(store.pool, maker, (c) =>
+            c.query(
+              "UPDATE candidate_local_review SET state='rejected',version=3,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
+              [reviewId, maker.actorId, reason],
+            ),
+          ),
+        );
+        const row = await admin.query(
+          "SELECT state,version,proposed_by,decided_by FROM candidate_local_review WHERE id=$1",
+          [reviewId],
+        );
+        assert.deepEqual(row.rows[0], {
+          state: "approved",
+          version: 2,
+          proposed_by: maker.actorId,
+          decided_by: checker.actorId,
+        });
+      },
+    );
+    await t.test(
       "rotation revokes sessions and old invitations, cancellation closes access",
       async () => {
         const oldToken = token;
@@ -808,6 +859,7 @@ await test("Isolated candidate onboarding", async (t) => {
   } finally {
     for (const cleanupId of [id, ...extraCases].filter(Boolean)) {
       for (const table of [
+        "candidate_local_review",
         "candidate_task",
         "candidate_delivery_preview",
         "candidate_challenge",

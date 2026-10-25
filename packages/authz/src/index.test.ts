@@ -33,4 +33,20 @@ describe("deny-by-default role contexts", () => {
       permissionsFor({ ...actor, role: "auditor", roles: ["auditor"] }),
     ).toEqual(["audit.read"]);
   });
+  it("limits organization maintenance to an assigned HR context", () => {
+    expect(scopeFor(actor, "organization.write")).toBe("entity");
+    for (const role of [
+      "employee",
+      "manager",
+      "platform_admin",
+      "auditor",
+    ] as const) {
+      const other = { ...actor, role, roles: [role] };
+      expect(scopeFor(other, "organization.read")).toBeUndefined();
+      expect(scopeFor(other, "organization.write")).toBeUndefined();
+    }
+    expect(
+      scopeFor({ ...actor, roles: ["employee"] }, "organization.write"),
+    ).toBeUndefined();
+  });
 });

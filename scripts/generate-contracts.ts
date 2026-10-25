@@ -10,6 +10,10 @@ import {
   auditSchema,
   authConfigSchema,
   roleSchema,
+  organizationDirectorySchema,
+  organizationUnitSchema,
+  organizationCreateSchema,
+  organizationUpdateSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -57,7 +61,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "AnviOne foundation API",
-    version: "0.1.0",
+    version: "0.3.0",
     description:
       "Synthetic foundation preview. Session origin checks apply to all mutations. Production requires separately verified corporate OIDC. Local HTTP uses anvi_dev_session instead of the production cookie.",
   },
@@ -174,6 +178,59 @@ const spec = {
     },
     "/audit-events": {
       get: read("Auditor-only latest 50 entity audit events", auditSchema),
+    },
+    "/organization": {
+      get: {
+        ...read(
+          "HR-only department/location masters within the current entity",
+          organizationDirectorySchema,
+        ),
+        parameters: [
+          {
+            name: "kind",
+            in: "query",
+            schema: {
+              type: "string",
+              enum: ["department", "location"],
+              default: "department",
+            },
+          },
+          { name: "q", in: "query", schema: { type: "string", maxLength: 80 } },
+          {
+            name: "page",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 10000, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 50, default: 20 },
+          },
+        ],
+      },
+      post: write(
+        "Create a scoped organization master with audit and outbox",
+        organizationCreateSchema,
+        organizationUnitSchema,
+      ),
+    },
+    "/organization/{id}": {
+      put: {
+        ...write(
+          "Rename or change active state with a version and recorded reason",
+          organizationUpdateSchema,
+          organizationUnitSchema,
+          "200",
+        ),
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+      },
     },
   },
 };

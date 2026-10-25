@@ -277,8 +277,8 @@ await test("PostgreSQL and HTTP security boundaries", async (t) => {
         );
         assert.equal(auditResult.rowCount, 1);
         const event = await admin.query(
-          "SELECT 1 FROM outbox_event WHERE aggregate_version=$1",
-          [updated.version],
+          "SELECT 1 FROM outbox_event WHERE aggregate_version=$1 AND event_type='branding.published.v1' AND aggregate_id=$2",
+          [updated.version, actor.entityId],
         );
         assert.equal(event.rowCount, 1);
       },

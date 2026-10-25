@@ -1,4 +1,5 @@
 import pg from "pg";
+import { randomUUID } from "node:crypto";
 if (process.env.NODE_ENV !== "development" || process.env.AUTH_MODE !== "demo")
   throw new Error("Synthetic seed is development/demo only");
 const client = new pg.Client({
@@ -42,8 +43,107 @@ const fixtures = [
     "KS",
   ],
 ];
+async function master(
+  entityId: string,
+  kind: "department" | "location",
+  code: string,
+  name: string,
+) {
+  const existing = await client.query<{ id: string }>(
+    "SELECT id FROM org_unit WHERE tenant_id=$1 AND entity_id=$2 AND kind=$3 AND (code=$4 OR lower(name)=lower($5)) ORDER BY (code=$4) DESC LIMIT 1",
+    [tenant, entityId, kind, code, name],
+  );
+  if (existing.rows[0]) return existing.rows[0].id;
+  const id = randomUUID();
+  await client.query(
+    "INSERT INTO org_unit(id,tenant_id,entity_id,kind,code,name) VALUES ($1,$2,$3,$4,$5,$6)",
+    [id, tenant, entityId, kind, code, name],
+  );
+  return id;
+}
+const departmentCodes: Record<string, string> = {
+  "People & culture": "DEPT-PEOPLE",
+  Design: "DEPT-DESIGN",
+  Engineering: "DEPT-ENGINEERING",
+  Product: "DEPT-PRODUCT",
+  Finance: "DEPT-FINANCE",
+  "Customer experience": "DEPT-CUSTOMER",
+  Testing: "DEPT-TESTING",
+};
+async function employment(input: {
+  id: string;
+  entityId: string;
+  code: string;
+  name: string;
+  title: string;
+  department: string;
+  location: string;
+  email: string;
+  joinedOn: string;
+  managerId: string | null;
+  initials: string;
+}) {
+  // Reruns do not rename edited masters, resurrect erased employments or reissue codes.
+  if (
+    (
+      await client.query(
+        "SELECT 1 FROM employee_code_allocation WHERE tenant_id=$1 AND employee_id=$2",
+        [tenant, input.id],
+      )
+    ).rowCount
+  )
+    return;
+  await client.query(
+    "INSERT INTO person(id,tenant_id,name,initials) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+    [input.id, tenant, input.name, input.initials],
+  );
+  const departmentId = await master(
+    input.entityId,
+    "department",
+    departmentCodes[input.department]!,
+    input.department,
+  );
+  const locationId = await master(
+    input.entityId,
+    "location",
+    input.location === "Hyderabad"
+      ? "LOC-HYDERABAD"
+      : input.location === "Bengaluru"
+        ? "LOC-BENGALURU"
+        : "LOC-TEST",
+    input.location,
+  );
+  await client.query(
+    `INSERT INTO employee_code_allocation(tenant_id,entity_id,employee_id,code,allocation_sequence)
+    VALUES ($1,$2,$3,$4,$5)`,
+    [
+      tenant,
+      input.entityId,
+      input.id,
+      input.code,
+      input.code.startsWith("ANV-") ? input.code.slice(4) : null,
+    ],
+  );
+  await client.query(
+    `INSERT INTO employee(id,tenant_id,entity_id,person_id,code,title,department_id,location_id,email,joined_on,status,manager_id)
+    VALUES ($1,$2,$3,$1,$4,$5,$6,$7,$8,$9,'active',$10)`,
+    [
+      input.id,
+      tenant,
+      input.entityId,
+      input.code,
+      input.title,
+      departmentId,
+      locationId,
+      input.email,
+      input.joinedOn,
+      input.managerId,
+    ],
+  );
+}
 try {
   await client.query("BEGIN");
+  await client.query("SELECT pg_advisory_xact_lock(804211)");
   await client.query(
     "INSERT INTO tenant VALUES ($1,$2) ON CONFLICT DO NOTHING",
     [tenant, "Anvi demo group"],
@@ -53,7 +153,7 @@ try {
     [otherEntity, "Isolated test entity"],
   ]) {
     await client.query(
-      "INSERT INTO legal_entity VALUES ($1,$2,$3) ON CONFLICT DO NOTHING",
+      "INSERT INTO legal_entity(id,tenant_id,name) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING",
       [id, tenant, name],
     );
     await client.query(
@@ -63,29 +163,50 @@ try {
   }
   for (const [index, row] of fixtures.entries()) {
     const [name, title, department, location, initials] = row;
-    await client.query(
-      `INSERT INTO employee(id,tenant_id,entity_id,code,name,title,department,location,email,joined_on,status,manager_id,initials)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'active',$11,$12) ON CONFLICT DO NOTHING`,
-      [
-        employeeId(index + 1),
-        tenant,
-        entity,
-        `ANV-${String(index + 1).padStart(6, "0")}`,
-        name,
-        title,
-        department,
-        location,
-        `demo${index + 1}@anvi.example`,
-        `2026-${index > 7 ? "10" : "09"}-${String(index + 1).padStart(2, "0")}`,
-        index === 0 ? null : employeeId(index < 4 ? 1 : 4),
-        initials,
-      ],
-    );
+    await employment({
+      id: employeeId(index + 1),
+      entityId: entity,
+      code: `ANV-${String(index + 1).padStart(6, "0")}`,
+      name: name!,
+      title: title!,
+      department: department!,
+      location: location!,
+      email: `demo${index + 1}@anvi.example`,
+      joinedOn: `2026-${index > 7 ? "10" : "09"}-${String(index + 1).padStart(2, "0")}`,
+      managerId: index === 0 ? null : employeeId(index < 4 ? 1 : 4),
+      initials: initials!,
+    });
   }
+  await employment({
+    id: employeeId(99),
+    entityId: otherEntity,
+    code: "ISOLATED-1",
+    name: "Isolation fixture",
+    title: "Test record",
+    department: "Testing",
+    location: "Test location",
+    email: "isolation@anvi.example",
+    joinedOn: "2026-01-01",
+    managerId: null,
+    initials: "IF",
+  });
+  for (const name of [
+    "HR",
+    "IT",
+    "Management",
+    "Marketing",
+    "Hardware",
+    "Administration",
+  ]) {
+    await master(entity, "department", `DEPT-${name.toUpperCase()}`, name);
+  }
+  // Do not reset a sequence to the greatest committed row: rolled-back allocations
+  // also reserve gaps. Reconcile upward only, under the allocator's lock.
   await client.query(
-    `INSERT INTO employee(id,tenant_id,entity_id,code,name,title,department,location,email,joined_on,status,initials)
-    VALUES ($1,$2,$3,'ISOLATED-1','Isolation fixture','Test record','Testing','Test location','isolation@anvi.example','2026-01-01','active','IF') ON CONFLICT DO NOTHING`,
-    [employeeId(99), tenant, otherEntity],
+    `SELECT setval('employee_code_sequence',greatest(
+      (SELECT last_value FROM employee_code_sequence),
+      coalesce((SELECT max(allocation_sequence) FROM employee_code_allocation),1)
+    ),true)`,
   );
   await client.query(
     `INSERT INTO identity_binding(id,tenant_id,entity_id,employee_id,issuer,subject,active,roles)
@@ -94,7 +215,7 @@ try {
   );
   await client.query("COMMIT");
   console.log(
-    "Synthetic demo ready: 12 directory records and one isolated test record.",
+    "Synthetic people, employment and organization fixtures are initialized; existing records are preserved.",
   );
 } catch (error) {
   await client.query("ROLLBACK");

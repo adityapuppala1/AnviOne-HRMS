@@ -32,12 +32,18 @@ export async function transaction<T>(
 export async function setContext(client: PoolClient, actor: Principal) {
   await client.query(
     `SELECT set_config('app.tenant_id',$1,true), set_config('app.entity_id',$2,true),
-    set_config('app.employee_id',$3,true), set_config('app.directory_scope',$4,true)`,
+    set_config('app.employee_id',$3,true), set_config('app.directory_scope',$4,true),
+    set_config('app.hr_scope',$5,true)`,
     [
       actor.tenantId,
       actor.entityId,
       actor.employeeId,
       scopeFor(actor, "directory.read") ?? "none",
+      scopeFor(actor, "organization.write")
+        ? "write"
+        : scopeFor(actor, "organization.read")
+          ? "read"
+          : "none",
     ],
   );
 }
@@ -57,10 +63,11 @@ export async function audit(
   action: string,
   target: string,
   requestId: string,
+  metadata?: { reason?: string; details?: Record<string, unknown> },
 ) {
   await client.query(
-    `INSERT INTO audit_event(id,tenant_id,entity_id,actor_id,actor_label,role,action,target,request_id)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    `INSERT INTO audit_event(id,tenant_id,entity_id,actor_id,actor_label,role,action,target,request_id,reason,details)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
     [
       randomUUID(),
       actor.tenantId,
@@ -71,6 +78,8 @@ export async function audit(
       action,
       target,
       requestId,
+      metadata?.reason ?? null,
+      JSON.stringify(metadata?.details ?? {}),
     ],
   );
 }

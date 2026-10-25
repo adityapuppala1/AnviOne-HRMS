@@ -13,6 +13,8 @@ const actionNames: Record<string, string> = {
   "session.ended": "Signed out",
   "session.role_changed": "Changed workspace role",
   "branding.published": "Published workspace settings",
+  "organization.created": "Created an organization record",
+  "organization.updated": "Updated an organization record",
 };
 const formatDate = (date: string) =>
   new Intl.DateTimeFormat("en-IN", {
@@ -76,6 +78,7 @@ function ActivityLog() {
               <option value="all">All activity</option>
               <option value="session.">Access & sessions</option>
               <option value="branding.">Workspace settings</option>
+              <option value="organization.">Organization records</option>
             </select>
           </label>
         </div>
@@ -162,6 +165,9 @@ function ActivityLog() {
                 { name: "When", value: formatDate(event.occurredAt) },
                 { name: "Event ID", value: event.id },
                 { name: "Request ID", value: event.requestId },
+                ...(event.reason
+                  ? [{ name: "Reason", value: event.reason }]
+                  : []),
               ].map((field) => (
                 <div key={field.name}>
                   <dt>{field.name}</dt>

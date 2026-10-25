@@ -5,6 +5,7 @@ import { Users } from "@phosphor-icons/react/dist/csr/Users";
 import { GearSix as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { SquaresFour as LayoutDashboard } from "@phosphor-icons/react/dist/csr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
@@ -77,6 +78,12 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/activity")}>
             <ClockCounterClockwise size={18} />
             Activity log
+          </Button>
+        )}
+        {me.permissions.includes("organization.read") && (
+          <Button variant="ghost" onPress={() => go("/organization")}>
+            <Buildings size={18} />
+            Organization
           </Button>
         )}
         <Button variant="ghost" onPress={() => go("/preferences")}>

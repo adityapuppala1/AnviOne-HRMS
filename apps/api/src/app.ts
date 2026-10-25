@@ -30,8 +30,12 @@ import {
   brandingUpdateSchema,
   directoryQuerySchema,
   roleSchema,
+  organizationCreateSchema,
+  organizationUpdateSchema,
+  organizationQuerySchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
+import { OrganizationStore } from "./organization.store";
 import {
   SessionGuard,
   OidcService,
@@ -76,8 +80,10 @@ class ProblemFilter implements ExceptionFilter {
 @Controller()
 class PlatformController {
   private readonly oidc;
+  private readonly organization;
   constructor(@Inject(PlatformStore) private readonly store: PlatformStore) {
     this.oidc = new OidcService(store);
+    this.organization = new OrganizationStore(store);
   }
   @Get("healthz") health() {
     return { status: "ok" };
@@ -195,6 +201,37 @@ class PlatformController {
   }
   @Get("api/v1/audit-events") audit(@Req() req: AppRequest) {
     return this.store.auditEvents(req.actor);
+  }
+  @Get("api/v1/organization") organizationUnits(
+    @Req() req: AppRequest,
+    @Query() query: unknown,
+  ) {
+    return this.organization.list(
+      req.actor,
+      parse(organizationQuerySchema, query),
+    );
+  }
+  @Post("api/v1/organization") createOrganizationUnit(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.organization.create(
+      req.actor,
+      parse(organizationCreateSchema, body),
+      req.requestId,
+    );
+  }
+  @Put("api/v1/organization/:id") updateOrganizationUnit(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.organization.update(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(organizationUpdateSchema, body),
+      req.requestId,
+    );
   }
 }
 export async function createApp(config: Config) {

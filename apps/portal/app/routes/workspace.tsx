@@ -25,6 +25,7 @@ import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { Question } from "@phosphor-icons/react/dist/csr/Question";
 import { Command as CommandIcon } from "@phosphor-icons/react/dist/csr/Command";
@@ -130,6 +131,12 @@ function Shell({ me }: { me: Me }) {
       label: "Team explorer",
       icon: TreeStructure,
       visible: me.permissions.includes("directory.read"),
+    },
+    {
+      to: "/organization",
+      label: "Organization",
+      icon: Buildings,
+      visible: me.permissions.includes("organization.read"),
     },
     {
       to: "/settings",

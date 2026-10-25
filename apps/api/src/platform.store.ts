@@ -183,21 +183,21 @@ export class PlatformStore {
       const where = `status IN ('active','notice') AND (name ILIKE $1 OR code ILIKE $1 OR title ILIKE $1 OR department ILIKE $1) AND ($2 = '' OR department = $2) AND ($3 = '' OR location = $3)`;
       const params = [term, query.department, query.location];
       const count = await client.query<{ count: string }>(
-        `SELECT count(*) FROM employee WHERE ${where}`,
+        `SELECT count(*) FROM employee_directory WHERE ${where}`,
         params,
       );
       const total = Number(count.rows[0]!.count);
       const pages = Math.max(1, Math.ceil(total / query.limit));
       const page = Math.min(query.page, pages);
       const result = await client.query(
-        `SELECT ${employeeColumns} FROM employee WHERE ${where} ORDER BY name,id LIMIT $4 OFFSET $5`,
+        `SELECT ${employeeColumns} FROM employee_directory WHERE ${where} ORDER BY name,id LIMIT $4 OFFSET $5`,
         [...params, query.limit, (page - 1) * query.limit],
       );
       const facets = await client.query<{
         departments: string[];
         locations: string[];
       }>(
-        `SELECT array_agg(DISTINCT department ORDER BY department) AS departments, array_agg(DISTINCT location ORDER BY location) AS locations FROM employee WHERE status IN ('active','notice')`,
+        `SELECT array_agg(DISTINCT department ORDER BY department) AS departments, array_agg(DISTINCT location ORDER BY location) AS locations FROM employee_directory WHERE status IN ('active','notice')`,
       );
       return {
         items: result.rows.map((row) => employeeSchema.parse(row)),
@@ -213,7 +213,7 @@ export class PlatformStore {
     this.require(actor, "directory.read");
     return scoped(this.pool, actor, async (client) => {
       const result = await client.query(
-        `SELECT ${employeeColumns} FROM employee WHERE id = $1 AND status IN ('active','notice')`,
+        `SELECT ${employeeColumns} FROM employee_directory WHERE id = $1 AND status IN ('active','notice')`,
         [id],
       );
       if (!result.rows[0])
@@ -225,16 +225,16 @@ export class PlatformStore {
     this.require(actor, "directory.read");
     return scoped(this.pool, actor, async (client) => {
       const total = await client.query<{ count: string }>(
-        `SELECT count(*) FROM employee WHERE status IN ('active','notice')`,
+        `SELECT count(*) FROM employee_directory WHERE status IN ('active','notice')`,
       );
       const departments = await client.query<{ name: string; count: number }>(
-        `SELECT department AS name, count(*)::int AS count FROM employee WHERE status IN ('active','notice') GROUP BY department ORDER BY count DESC,department`,
+        `SELECT department AS name, count(*)::int AS count FROM employee_directory WHERE status IN ('active','notice') GROUP BY department ORDER BY count DESC,department`,
       );
       const locations = await client.query<{ name: string; count: number }>(
-        `SELECT location AS name,count(*)::int AS count FROM employee WHERE status IN ('active','notice') GROUP BY location ORDER BY location`,
+        `SELECT location AS name,count(*)::int AS count FROM employee_directory WHERE status IN ('active','notice') GROUP BY location ORDER BY location`,
       );
       const recent = await client.query(
-        `SELECT ${employeeColumns} FROM employee WHERE status IN ('active','notice') ORDER BY joined_on DESC,id LIMIT 4`,
+        `SELECT ${employeeColumns} FROM employee_directory WHERE status IN ('active','notice') ORDER BY joined_on DESC,id LIMIT 4`,
       );
       return {
         total: Number(total.rows[0]!.count),
@@ -281,7 +281,7 @@ export class PlatformStore {
         requestId,
       );
       await client.query(
-        `INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_version) VALUES ($1,$2,$3,'branding.published.v1',$4)`,
+        `INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version) VALUES ($1,$2,$3,'branding.published.v1',$3,$4)`,
         [randomUUID(), actor.tenantId, actor.entityId, updated.version],
       );
       return updated;
@@ -295,7 +295,7 @@ export class PlatformStore {
       async (client) =>
         (
           await client.query(
-            `SELECT id, action, actor_label AS actor, role, target, occurred_at AS "occurredAt", request_id AS "requestId" FROM audit_event ORDER BY occurred_at DESC,id LIMIT 50`,
+            `SELECT id, action, actor_label AS actor, role, target, occurred_at AS "occurredAt", request_id AS "requestId", reason FROM audit_event ORDER BY occurred_at DESC,id LIMIT 50`,
           )
         ).rows,
     );

@@ -8,6 +8,7 @@ import {
   employeeSchema,
   auditSchema,
   authConfigSchema,
+  organizationDirectorySchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -80,6 +81,12 @@ export const useAuthConfig = () =>
     queryKey: ["auth-config"],
     staleTime: 60000,
     queryFn: ({ signal }) => api("/auth/config", authConfigSchema, { signal }),
+  });
+export const useOrganization = (query: string) =>
+  useQuery({
+    queryKey: ["organization", query],
+    queryFn: ({ signal }) =>
+      api(`/organization?${query}`, organizationDirectorySchema, { signal }),
   });
 export const mutate = (
   path: string,

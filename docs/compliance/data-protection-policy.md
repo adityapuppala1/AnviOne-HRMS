@@ -1,12 +1,14 @@
 # Data protection policy — implementation draft
 
-Version 0.1, 25 October 2026. Status: proposed operational policy, not legal approval or a compliance certification. Owners required: HR data owner, Privacy/Legal, Security and Platform Operations. Only synthetic data is permitted in the current preview.
+Version 0.3, 25 October 2026. Status: proposed operational policy, not legal approval or a compliance certification. Owners required: HR data owner, Privacy/Legal, Security and Platform Operations. Only synthetic data is permitted in the current preview.
 
 ## Purpose and minimization
 
 Process personal data only for a documented employment or organizational purpose with an approved lawful basis appropriate to the jurisdiction. Do not assume employee consent is the basis for every process. Keep a category/purpose/recipient/location register and provide notices before collection. Do not collect biometric, continuous location, medical, bank or government-ID data merely because a form could support it.
 
 The current schema stores synthetic professional identity only: name, employee code, work email at `.example`, job title, department, office location, joining date, employment status and a direct manager reference. The application does not currently store salary, private addresses, tax IDs, health details or documents. Future sensitive domains require an explicit inventory update, field-level authorization, masking and envelope encryption before implementation is enabled.
+
+Person records now hold canonical names/initials; employment records reference that person and scoped organization masters. Code-allocation tombstones contain opaque employment references and codes, without names/emails, and remain controlled data because they can be linked. Identity-operation attestations additionally retain the verified official email, approval/verification references, declared operator identifier and authenticated database principal. These are purpose-limited access evidence, not proof that the software verified email ownership. Audit output exposes the change reason; restricted proof metadata is not returned by the activity API. Operators must keep reasons/references free of unnecessary private data and secrets.
 
 ## Access and accountability
 
@@ -27,14 +29,16 @@ The preview runs on loopback, uses generated local credentials, hashes session t
 
 Legal/HR must approve durations and statutory holds before each category is collected. Do not invent a blanket seven-year retention rule or a universal candidate purge deadline.
 
-| Category                       | Current collection       | Retention decision owner | Disposal boundary                                                                                                                                    |
-| ------------------------------ | ------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Professional employee record   | Synthetic only           | HR + Legal               | Approved record disposal, derived views and backups; employee code allocation tombstone handled separately                                           |
-| Candidate/invitation/documents | Disabled                 | HR + Privacy             | Candidate workspace, objects, tokens, scans and derived text                                                                                         |
-| Payroll/bank/tax/medical       | Disabled                 | Finance/HR + Legal       | Statutory retention and holds; managed key lifecycle                                                                                                 |
-| Session and OIDC attempt       | Active during preview    | Security                 | 8-hour absolute session limit; 15-minute privileged or 30-minute employee/manager idle limit; 5-minute OIDC attempt; production cleanup job required |
-| Business audit                 | Synthetic only           | Security + Legal         | Independent archive, retention and lawful disposal; no app-role deletion                                                                             |
-| Operational telemetry          | Minimal request metadata | Security + Operations    | Short purpose-limited retention, restricted access and provider deletion                                                                             |
+| Category                       | Current collection       | Retention decision owner    | Disposal boundary                                                                                                                                    |
+| ------------------------------ | ------------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Professional employee record   | Synthetic only           | HR + Legal                  | Approved record disposal, derived views and backups; employee code allocation tombstone handled separately                                           |
+| Code allocation tombstone      | Synthetic only           | HR + Security + Legal       | Preserve non-reuse invariant; govern linkable identifiers and restore reconciliation separately                                                      |
+| Identity approval attestation  | Synthetic only           | Identity + Security + Legal | Restricted evidence retention, revoked bindings and lawful disposal; no operator/runtime update or delete interface                                  |
+| Candidate/invitation/documents | Disabled                 | HR + Privacy                | Candidate workspace, objects, tokens, scans and derived text                                                                                         |
+| Payroll/bank/tax/medical       | Disabled                 | Finance/HR + Legal          | Statutory retention and holds; managed key lifecycle                                                                                                 |
+| Session and OIDC attempt       | Active during preview    | Security                    | 8-hour absolute session limit; 15-minute privileged or 30-minute employee/manager idle limit; 5-minute OIDC attempt; production cleanup job required |
+| Business audit                 | Synthetic only           | Security + Legal            | Independent archive, retention and lawful disposal; no app-role deletion                                                                             |
+| Operational telemetry          | Minimal request metadata | Security + Operations       | Short purpose-limited retention, restricted access and provider deletion                                                                             |
 
 Soft deletion is not erasure. Approved disposal must cover databases, objects, indexes, caches, exports, processors and restoration workflows, with documented backup expiry and legal-hold exceptions. Automatic disposal is not enabled in this increment.
 

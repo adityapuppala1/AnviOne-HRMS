@@ -15,6 +15,14 @@ export const roleLabels: Record<Role, string> = {
   platform_admin: "Platform admin",
   auditor: "Auditor",
 };
+export const permissionSchema = z.enum([
+  "directory.read",
+  "branding.write",
+  "audit.read",
+  "organization.read",
+  "organization.write",
+]);
+export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
   id: z.uuid(),
   code: z.string(),
@@ -64,9 +72,7 @@ export const meSchema = z.object({
   csrfToken: z.string(),
   entityName: z.string(),
   demo: z.boolean(),
-  permissions: z.array(
-    z.enum(["directory.read", "branding.write", "audit.read"]),
-  ),
+  permissions: z.array(permissionSchema),
 });
 export type Me = z.infer<typeof meSchema>;
 export const dashboardSchema = z.object({
@@ -86,9 +92,59 @@ export const auditSchema = z.array(
     target: z.string(),
     occurredAt: z.string(),
     requestId: z.string(),
+    reason: z.string().nullable(),
   }),
 );
 export const authConfigSchema = z.object({
   mode: z.enum(["demo", "oidc"]),
   demo: z.boolean(),
 });
+
+export const organizationKindSchema = z.enum(["department", "location"]);
+const organizationNameSchema = z.string().trim().min(2).max(60);
+const changeReasonSchema = z.string().trim().min(10).max(300);
+export const organizationUnitSchema = z.object({
+  id: z.uuid(),
+  kind: organizationKindSchema,
+  code: z.string(),
+  name: z.string(),
+  active: z.boolean(),
+  version: z.number().int().positive(),
+  employeeCount: z.number().int().nonnegative(),
+});
+export type OrganizationUnit = z.infer<typeof organizationUnitSchema>;
+export const organizationQuerySchema = z
+  .object({
+    kind: organizationKindSchema.default("department"),
+    q: z.string().trim().max(80).default(""),
+    page: z.coerce.number().int().min(1).max(10000).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+  })
+  .strict();
+export const organizationDirectorySchema = z.object({
+  entityName: z.string(),
+  items: z.array(organizationUnitSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pages: z.number().int().positive(),
+});
+export type OrganizationDirectory = z.infer<typeof organizationDirectorySchema>;
+export const organizationCreateSchema = z
+  .object({
+    kind: organizationKindSchema,
+    code: z
+      .string()
+      .trim()
+      .regex(/^[A-Z][A-Z0-9_-]{1,19}$/),
+    name: organizationNameSchema,
+    reason: changeReasonSchema,
+  })
+  .strict();
+export const organizationUpdateSchema = z
+  .object({
+    name: organizationNameSchema,
+    active: z.boolean(),
+    version: z.number().int().positive(),
+    reason: changeReasonSchema,
+  })
+  .strict();

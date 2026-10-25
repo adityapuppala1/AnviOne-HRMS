@@ -1,6 +1,7 @@
-import type { Role } from "@anvi/contracts";
+import { permissionSchema, type Role } from "@anvi/contracts";
+export type { Permission } from "@anvi/contracts";
+import type { Permission } from "@anvi/contracts";
 
-export type Permission = "directory.read" | "branding.write" | "audit.read";
 export type Scope = "self" | "team" | "entity";
 export interface Principal {
   actorId: string;
@@ -14,7 +15,11 @@ export interface Principal {
 const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
   employee: { "directory.read": "self" },
   manager: { "directory.read": "team" },
-  hr_admin: { "directory.read": "entity" },
+  hr_admin: {
+    "directory.read": "entity",
+    "organization.read": "entity",
+    "organization.write": "entity",
+  },
   platform_admin: { "branding.write": "entity" },
   auditor: { "audit.read": "entity" },
 };
@@ -26,9 +31,7 @@ export function scopeFor(
   return policy[actor.role][permission];
 }
 export function permissionsFor(actor: Principal): Permission[] {
-  return (["directory.read", "branding.write", "audit.read"] as const).filter(
-    (p) => scopeFor(actor, p),
-  );
+  return permissionSchema.options.filter((p) => scopeFor(actor, p));
 }
 export function canSwitch(actor: Principal, role: Role): boolean {
   return actor.roles.includes(role);

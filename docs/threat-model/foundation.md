@@ -1,8 +1,20 @@
 # Foundation threat model
 
-Assets: employee work-directory data, active sessions, approved identity bindings, branding configuration, business audit and outbox events. Current deployment uses synthetic data only.
+Assets: person/employment work-directory data, organization masters, permanent code allocations, active sessions, approved identity bindings and their attestations, branding configuration, business audit and outbox events. Current deployment uses synthetic data only.
 
 Trust boundaries: browser -> API; external IdP -> callback; API runtime -> PostgreSQL; migration operator -> database ownership; worker -> outbox receipt; developer -> public repository.
+
+F0.3 adds a separate identity-operator login -> fixed binding function boundary. Its NOLOGIN writer can read eligibility records and insert an Employee-only binding/attestation/audit; the login itself cannot read those tables or create employment. Human approval references are external attestations, not automatic provider verification. Keep that credential out of API/worker environments. See [ADR 0003](../adr/0003-people-organization-identity.md) and the [operations runbook](../runbooks/identity-operations.md).
+
+| Additional threat                                           | Implemented defense                                                                                  | Evidence / remaining gate                                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Master write crosses entity or role                         | Server HR permission, strict scope-free body, composite FKs, scoped RLS and column grants            | Non-HR/ungranted-context/cross-entity integration cases                                               |
+| Concurrent edit silently loses an update                    | Transaction row lock and version conflict; explicit browser reload                                   | Concurrent HTTP and two-window browser cases                                                          |
+| Master mutation survives failed audit/outbox                | One transaction with required reason and before/after snapshots                                      | Forced audit and outbox permission failures roll back changes                                         |
+| Code reuse after deletion, rollback or rehire               | Sequence, append-only ledger, immutable employment identity and composite allocation FK              | Concurrent/replay/gap/tombstone/rehire tests; external restore reconciliation remains outstanding     |
+| Inactive or foreign master assigned to employment           | Typed same-entity FKs and active-record checks under shared locks                                    | Inactive, foreign-entity and wrong-kind assignment tests                                              |
+| Operator credential grants HR/admin or replaces an identity | Fixed Employee-only function, one active binding per employment, no reassignment or raw table grants | Dedicated-role, concurrency/replay/conflict and audit-rollback tests                                  |
+| CLI leaks subject/email or secret-bearing SQL errors        | Private stdin/file payload, bounded strict inputs, safe structured output/errors                     | Parser/error unit tests and CLI dry-run; organizational secret distribution remains a deployment gate |
 
 | Threat                                             | Implemented defense                                                                                                 | Evidence / remaining gate                                                        |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |

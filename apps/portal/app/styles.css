@@ -142,7 +142,6 @@
   font-size: 13px;
   color: #d2dcd4;
   margin-bottom: 5px;
-  transition: color 0.18s;
   position: relative;
 }
 .nav-link:hover {

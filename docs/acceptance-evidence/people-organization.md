@@ -25,7 +25,7 @@ The new browser journey creates and edits departments/locations, exercises a rea
 
 Organization overflow checks cover 320, 768, 1440 and 2560px. Axe WCAG-tagged checks cover the Organization page in the persisted Iris light/dark palette, mobile layout and create dialog. Existing core-page palette coverage remains in the Atlas suite. Screenshots were visually reviewed on desktop and mobile; live Chrome also loaded the delivered Organization route. This is tested-state coverage, not a WCAG conformance declaration.
 
-Review found and corrected an ambiguous PL/pgSQL column in binding replay, a form label that included its help text and HTML pattern escaping. The completed suite was rerun after those corrections.
+Review found and corrected an ambiguous PL/pgSQL column in binding replay, a form label that included its help text, HTML pattern escaping and transient sidebar contrast during navigation. Palette coverage uses normal client navigation and checks for throttled responses; CI retains only synthetic failure context/screenshots for diagnosis. The completed suite was rerun after those corrections.
 
 ## Screenshots
 

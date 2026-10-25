@@ -14,6 +14,19 @@ import {
   organizationUnitSchema,
   organizationCreateSchema,
   organizationUpdateSchema,
+  candidateListSchema,
+  candidateOptionsSchema,
+  candidateDetailSchema,
+  candidateCreateSchema,
+  candidateSchema,
+  candidateActionSchema,
+  candidateReviewSchema,
+  candidateDeliverySchema,
+  candidateChallengeSchema,
+  candidateExchangeSchema,
+  candidateSaveSchema,
+  candidateSubmitSchema,
+  candidatePortalSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -234,5 +247,140 @@ const spec = {
     },
   },
 };
+const idParameter = [
+  {
+    name: "id",
+    in: "path",
+    required: true,
+    schema: { type: "string", format: "uuid" },
+  },
+];
+Object.assign(spec.paths, {
+  "/candidates": {
+    get: {
+      ...read(
+        "Latest 50 HR intake cases in current legal entity",
+        candidateListSchema,
+      ),
+      parameters: [
+        { name: "q", in: "query", schema: { type: "string", maxLength: 80 } },
+      ],
+    },
+    post: write(
+      "Create synthetic candidate intake",
+      candidateCreateSchema,
+      candidateSchema,
+    ),
+  },
+  "/candidates/options": {
+    get: read("Active scoped intake assignments", candidateOptionsSchema),
+  },
+  "/candidates/{id}": {
+    parameters: idParameter,
+    get: read("Intake and immutable submissions", candidateDetailSchema),
+  },
+  "/candidates/{id}/delivery-preview": {
+    parameters: idParameter,
+    get: read(
+      "Audited encrypted local delivery preview; no email sent",
+      candidateDeliverySchema,
+    ),
+  },
+  "/candidates/{id}/invitation": {
+    parameters: idParameter,
+    post: write(
+      "Rotate invitation and revoke old credentials",
+      candidateActionSchema,
+      candidateSchema,
+    ),
+  },
+  "/candidates/{id}/revoke": {
+    parameters: idParameter,
+    post: write(
+      "Cancel intake and revoke candidate access",
+      candidateActionSchema,
+      candidateSchema,
+    ),
+  },
+  "/candidates/{id}/review": {
+    parameters: idParameter,
+    post: write(
+      "Review form only; does not activate employment",
+      candidateReviewSchema,
+      candidateSchema,
+    ),
+  },
+});
+const candidateSpec = {
+  openapi: "3.1.0",
+  info: {
+    title: "MyAnvi synthetic candidate preview",
+    version: "0.4.0",
+    description:
+      "Development/demo only. Separate hostname and database role. Exact Origin required on mutations. No real email or employment activation.",
+  },
+  servers: [{ url: "http://127.0.0.2:5174/api/candidate" }],
+  security: [{ session: [] }],
+  components: {
+    securitySchemes: {
+      session: { type: "apiKey", in: "cookie", name: "anvi_candidate_preview" },
+      csrf: { type: "apiKey", in: "header", name: "X-CSRF-Token" },
+    },
+  },
+  paths: {
+    "/challenge": {
+      post: {
+        ...write(
+          "Request local OTP preview; generic response",
+          candidateChallengeSchema,
+          z.object({ challengeId: z.uuid() }),
+        ),
+        security: [],
+      },
+    },
+    "/exchange": {
+      post: {
+        ...write(
+          "Exchange single use invitation and OTP",
+          candidateExchangeSchema,
+          z.object({ verified: z.boolean() }),
+        ),
+        security: [],
+      },
+    },
+    "/session": {
+      get: read(
+        "Candidate's own minimal form and CSRF token",
+        candidatePortalSchema,
+      ),
+    },
+    "/draft": {
+      put: write(
+        "Versioned autosave",
+        candidateSaveSchema,
+        candidatePortalSchema,
+        "200",
+      ),
+    },
+    "/submit": {
+      post: write(
+        "Create immutable submission and atomic audit/outbox",
+        candidateSubmitSchema,
+        candidatePortalSchema,
+      ),
+    },
+    "/logout": {
+      post: write(
+        "Revoke current candidate session",
+        z.strictObject({}),
+        z.object({ signedOut: z.boolean() }),
+      ),
+    },
+  },
+};
 await mkdir("docs/api", { recursive: true });
+await writeFile(
+  "docs/api/candidate-openapi.json",
+  JSON.stringify(candidateSpec, null, 2) + "\n",
+);
 await writeFile("docs/api/openapi.json", JSON.stringify(spec, null, 2) + "\n");

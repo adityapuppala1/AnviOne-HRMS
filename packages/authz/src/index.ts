@@ -19,6 +19,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "directory.read": "entity",
     "organization.read": "entity",
     "organization.write": "entity",
+    "onboarding.manage": "entity",
   },
   platform_admin: { "branding.write": "entity" },
   auditor: { "audit.read": "entity" },

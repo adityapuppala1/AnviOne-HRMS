@@ -15,7 +15,7 @@
     "node": ">=24.18.0 <25"
   },
   "scripts": {
-    "contracts:generate": "tsx scripts/generate-contracts.ts && prettier --write docs/api/openapi.json",
+    "contracts:generate": "tsx scripts/generate-contracts.ts && prettier --write docs/api/*.json",
     "dev": "pnpm --parallel --filter @anvi/api --filter @anvi/portal dev",
     "db:up": "docker compose up -d --wait",
     "db:migrate": "tsx --env-file=.env packages/database/src/migrate.ts",
@@ -28,8 +28,10 @@
     "test": "vitest run",
     "test:integration": "tsx --env-file=.env --test --test-concurrency=1 tests/*.integration.ts",
     "identity:bind": "tsx --env-file=.env scripts/bind-identity.ts",
+    "candidate:api": "pnpm --filter @anvi/api candidate:dev",
+    "candidate:dev": "pnpm --filter @anvi/candidate dev",
     "test:e2e": "playwright test",
-    "build": "node scripts/build-server.mjs && pnpm --filter @anvi/portal build",
+    "build": "node scripts/build-server.mjs && pnpm --filter @anvi/portal build && pnpm --filter @anvi/candidate build",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "worker": "tsx --env-file=.env apps/worker/src/main.ts"
   },

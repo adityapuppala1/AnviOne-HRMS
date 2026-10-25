@@ -8,6 +8,12 @@ const schema = z.object({
   API_PORT: z.coerce.number().int().min(1024).max(65535).default(4000),
   APP_ORIGIN: z.url(),
   DATABASE_URL: z.string().min(1),
+  CANDIDATE_DATABASE_URL: z.string().optional(),
+  ONBOARDING_PREVIEW_KEY: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
+  CANDIDATE_ORIGIN: z.url().default("http://127.0.0.2:5174"),
   OIDC_ISSUER: z.url().optional(),
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),

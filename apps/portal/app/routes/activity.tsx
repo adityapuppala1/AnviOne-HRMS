@@ -15,6 +15,12 @@ const actionNames: Record<string, string> = {
   "branding.published": "Published workspace settings",
   "organization.created": "Created an organization record",
   "organization.updated": "Updated an organization record",
+  "candidate.created": "Created candidate intake",
+  "candidate.invited": "Rotated candidate invitation preview",
+  "candidate.revoked": "Revoked candidate access",
+  "candidate.reviewed": "Reviewed candidate form",
+  "candidate.submitted": "Submitted candidate form",
+  "candidate.delivery_previewed": "Inspected local delivery preview",
 };
 const formatDate = (date: string) =>
   new Intl.DateTimeFormat("en-IN", {
@@ -76,6 +82,7 @@ function ActivityLog() {
               onChange={(e) => setFilter(e.target.value)}
             >
               <option value="all">All activity</option>
+              <option value="candidate.">Candidate onboarding</option>
               <option value="session.">Access & sessions</option>
               <option value="branding.">Workspace settings</option>
               <option value="organization.">Organization records</option>

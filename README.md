@@ -23,6 +23,8 @@ Open **http://127.0.0.1:5173** and choose **Explore demo workspace**. Use `127.0
 
 `setup:local` generates random credentials in ignored `.env` and never replaces an existing file. The seed is development-only and idempotent. All names and `anvi.example` addresses are fictional. The profile button opens assigned roles: HR admin, Employee, Team manager, Platform admin and Auditor. Employee sees only self; manager sees direct reports; platform admin configures branding; auditor reads activity.
 
+For synthetic onboarding, run `pnpm setup:local` and `pnpm db:migrate` after updating, then start `pnpm candidate:api` and `pnpm candidate:dev` in two additional terminals. Select **HR admin → Candidate intake** in the employee portal. Create an `@anvi.example` intake and invitation preview, then open the local delivery tray. The candidate opens **http://127.0.0.2:5174**, requests a code, and HR refreshes the tray to retrieve it. No email is sent. The separate hostname isolates candidate cookies; do not substitute the employee hostname. Candidate startup refuses production mode. Form approval does not activate employment. See [candidate design](docs/adr/0004-candidate-preview.md) and [requirements coverage](docs/requirements-traceability.md).
+
 The internal outbox receipt worker can be run separately:
 
 ```sh
@@ -63,6 +65,6 @@ Read [the consolidated architecture decision](docs/adr/0001-consolidated-foundat
 
 ## Release boundary
 
-Corporate OIDC is implemented but has **not** been verified against the organization's Entra tenant. Real identity provisioning, candidate onboarding, file handling, attendance, leave, payroll, AI, MCP and TimeSphere remain future slices. Production requires the identity, privacy, security and operations gates in the backlog, including TLS/CSP, managed keys, independent audit storage, backup restore evidence and security review. Automated tests are not a compliance certification.
+Corporate OIDC is implemented but has **not** been verified against the organization's Entra tenant. Real identity provisioning, complete onboarding/activation, file handling, attendance, leave, payroll, AI, MCP and TimeSphere remain future slices. Production requires the identity, privacy, security and operations gates in the backlog, including TLS/CSP, managed keys, independent audit storage, backup restore evidence and security review. Automated tests are not a compliance certification.
 
 No paid UI assets, third-party profile photographs, remote fonts or tracking scripts are included. Third-party licenses and design inspiration are described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Original planning prompts remain local; reviewed decisions and synthetic implementation are published.

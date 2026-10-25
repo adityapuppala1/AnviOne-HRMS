@@ -52,6 +52,12 @@ On suspected exposure, contain access, revoke affected sessions/credentials, pre
 
 Maintain approved processors, processing locations, subprocessor/retention/training terms and contractual safeguards. AI, MCP, analytics exporters and TimeSphere remain disabled until authorized contracts and data-flow reviews are complete. Payroll and employment decisions cannot be delegated to an AI tool.
 
+## Synthetic candidate preview
+
+The local preview accepts only fictional `@anvi.example` intake records. HR records a proposed assignment and reviews a preferred name, professional introduction and preview acknowledgement. It collects no bank, tax, health, private contact or document data. The acknowledgement is a preview-use instruction, not a legal consent mechanism.
+
+Invitation hashes expire after 72 hours; OTP challenges expire after 10 minutes with five attempts. Candidate sessions have a one-hour absolute and 15-minute idle limit. A development-only AES-GCM encrypted delivery tray temporarily contains the invitation/code, is HR-scoped and audited on read, and is deleted after successful verification or credential rotation/revocation. Expiry denies access; scheduled physical cleanup is still pending. Form drafts/submissions currently have no automated disposal and must remain synthetic. A real deployment requires approved retention, notices/legal basis, delivery providers and key management before collecting personal data.
+
 ## Legal validation
 
 India is an initial planning assumption. Assess entity-specific obligations rather than inferring jurisdiction from developer location. Review the [official MeitY DPDP Rules and enforcement resources](https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa?pageTitle=Digital-Personal-Data-Protection-Rules-2025%3B) and [government announcement](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&lang=1&reg=3), including phased commencement, with qualified owners. Additional-country rules require their own review. This draft supplies control intent and current implementation boundaries, not a determination of legal obligations.

@@ -15,6 +15,18 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
     {
+      command: "pnpm candidate:api",
+      url: "http://127.0.0.1:4001/readyz",
+      reuseExistingServer: !process.env.CI,
+      timeout: 90000,
+    },
+    {
+      command: "pnpm --filter @anvi/candidate preview",
+      url: "http://127.0.0.2:5174",
+      reuseExistingServer: !process.env.CI,
+      timeout: 90000,
+    },
+    {
       command: "pnpm --filter @anvi/api dev",
       url: "http://127.0.0.1:4000/readyz",
       reuseExistingServer: !process.env.CI,

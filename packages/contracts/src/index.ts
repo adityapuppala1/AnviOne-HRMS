@@ -21,6 +21,7 @@ export const permissionSchema = z.enum([
   "audit.read",
   "organization.read",
   "organization.write",
+  "onboarding.manage",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -148,3 +149,111 @@ export const organizationUpdateSchema = z
     reason: changeReasonSchema,
   })
   .strict();
+
+export const candidateStateSchema = z.enum([
+  "draft",
+  "invited",
+  "in_progress",
+  "submitted",
+  "changes_requested",
+  "approved",
+  "cancelled",
+]);
+export const candidateDraftSchema = z
+  .object({
+    preferredName: z.string().trim().max(120),
+    introduction: z.string().trim().max(2000),
+    acknowledged: z.boolean(),
+  })
+  .strict();
+export type CandidateDraft = z.infer<typeof candidateDraftSchema>;
+export const candidateCreateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120),
+    email: z
+      .email()
+      .max(254)
+      .refine(
+        (value) => value.endsWith("@anvi.example"),
+        "Use a synthetic @anvi.example address",
+      ),
+    title: z.string().trim().min(2).max(80),
+    departmentId: z.uuid(),
+    locationId: z.uuid(),
+    managerId: z.uuid(),
+    joinedOn: z.iso.date(),
+  })
+  .strict();
+export const candidateActionSchema = z
+  .object({
+    version: z.number().int().positive(),
+    reason: z.string().trim().min(10).max(300),
+  })
+  .strict();
+export const candidateReviewSchema = candidateActionSchema
+  .extend({ decision: z.enum(["changes_requested", "approved"]) })
+  .strict();
+export const candidateSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  email: z.email(),
+  title: z.string(),
+  joinedOn: z.string(),
+  state: candidateStateSchema,
+  version: z.number().int(),
+  invitationExpiresAt: z.string().nullable(),
+  reviewNote: z.string().nullable(),
+  draft: candidateDraftSchema,
+  department: z.string(),
+  location: z.string(),
+  manager: z.string(),
+});
+export type Candidate = z.infer<typeof candidateSchema>;
+export const candidateListSchema = z.object({
+  items: z.array(candidateSchema),
+});
+export const candidateOptionsSchema = z.object({
+  departments: z.array(organizationUnitSchema),
+  locations: z.array(organizationUnitSchema),
+  managers: z.array(z.object({ id: z.uuid(), name: z.string() })),
+});
+export const candidateSubmissionSchema = z.object({
+  version: z.number().int(),
+  payload: candidateDraftSchema,
+  submittedAt: z.string(),
+});
+export const candidateDetailSchema = z.object({
+  candidate: candidateSchema,
+  submissions: z.array(candidateSubmissionSchema),
+});
+export const candidatePortalSchema = z.object({
+  candidate: candidateSchema.pick({
+    id: true,
+    name: true,
+    title: true,
+    joinedOn: true,
+    state: true,
+    version: true,
+    reviewNote: true,
+    draft: true,
+  }),
+  csrfToken: z.string(),
+});
+export const candidateSaveSchema = z
+  .object({ version: z.number().int().positive(), draft: candidateDraftSchema })
+  .strict();
+export const candidateSubmitSchema = z
+  .object({ version: z.number().int().positive() })
+  .strict();
+export const candidateChallengeSchema = z
+  .object({ token: z.string().regex(/^[A-Za-z0-9_-]{43}$/) })
+  .strict();
+export const candidateExchangeSchema = candidateChallengeSchema
+  .extend({ challengeId: z.uuid(), code: z.string().regex(/^\d{6}$/) })
+  .strict();
+export const candidateDeliverySchema = z.object({
+  invitationUrl: z.string().optional(),
+  code: z.string().optional(),
+  expiresAt: z.string().nullable(),
+  previewOnly: z.literal(true),
+});

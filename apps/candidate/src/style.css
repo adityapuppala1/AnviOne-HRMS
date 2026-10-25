@@ -1,0 +1,322 @@
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+}
+.candidate-shell {
+  max-width: 1600px;
+  margin: auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.candidate-top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 25px 48px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+.candidate-logo {
+  font:
+    600 29px "Outfit Variable",
+    sans-serif;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+.candidate-logo span {
+  color: var(--brand);
+}
+.candidate-top > .button {
+  margin-left: auto;
+}
+.candidate-main {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  flex: 1;
+}
+.candidate-story {
+  position: relative;
+  padding: 65px 60px;
+  background: #e5eddc;
+  overflow: hidden;
+  color: #283e2c;
+}
+.candidate-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.candidate-story h1 {
+  font:
+    500 clamp(38px, 4.5vw, 64px)/1.05 "Outfit Variable",
+    sans-serif;
+  letter-spacing: -2px;
+  margin: 22px 0;
+}
+.candidate-story h1 span {
+  color: #547140;
+}
+.candidate-story > p:not(.candidate-eyebrow) {
+  max-width: 390px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.candidate-rings {
+  height: 185px;
+  position: relative;
+  margin: 30px 0;
+}
+.candidate-rings i {
+  position: absolute;
+  width: 150px;
+  height: 140px;
+  border: 30px solid #a8c18e;
+  border-radius: 50%;
+  transform: rotate(-35deg) skewY(12deg);
+  left: 40px;
+  top: 15px;
+  box-shadow:
+    inset 5px 6px 9px #516b4822,
+    8px 10px 0 #8da875;
+}
+.candidate-rings i + i {
+  left: 140px;
+  top: 30px;
+  border-color: #c4d4ad;
+  transform: rotate(35deg) skewY(-12deg);
+}
+.candidate-progress {
+  list-style: none;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+  margin: 30px 0;
+}
+.candidate-progress li {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding: 14px 0;
+  font-size: 13px;
+  color: #536348;
+}
+.candidate-progress span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #afc39f;
+  border-radius: 50%;
+  font-size: 11px;
+}
+.candidate-progress .complete span {
+  background: #2e5f40;
+  border-color: #2e5f40;
+  color: white;
+}
+.candidate-story .candidate-preview {
+  font-size: 11px !important;
+  color: #536348;
+}
+.candidate-panel {
+  padding: 65px 45px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.candidate-card {
+  width: min(100%, 490px);
+  padding: 12px 0;
+}
+.candidate-card h2 {
+  font:
+    500 clamp(28px, 3vw, 38px)/1.2 "Outfit Variable",
+    sans-serif;
+  letter-spacing: -0.8px;
+  margin: 12px 0 20px;
+}
+.candidate-card p {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.candidate-card label:not(.candidate-check) {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 25px 0 9px;
+}
+.candidate-card input,
+.candidate-card textarea {
+  width: 100%;
+  font:
+    400 14px "Public Sans Variable",
+    sans-serif;
+}
+.candidate-card textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  resize: vertical;
+  line-height: 1.8;
+}
+.candidate-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.candidate-card .button-primary {
+  width: 100%;
+  margin-top: 24px;
+}
+.candidate-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 24px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.candidate-check input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.candidate-save {
+  font-size: 11px !important;
+}
+.candidate-error {
+  background: #fff0ed;
+  border: 1px solid #e1b7ac;
+  color: #8c3020 !important;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.candidate-privacy,
+.candidate-receipt {
+  margin-top: 35px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 22px;
+  font-size: 13px;
+}
+.candidate-privacy p {
+  margin: 8px 0 0;
+}
+.candidate-card .candidate-small {
+  font-size: 11px;
+  margin-top: 24px;
+}
+.candidate-otp {
+  font-size: 26px !important;
+  letter-spacing: 9px;
+  text-align: center;
+  max-width: 100%;
+}
+.candidate-review-note {
+  background: var(--brand-soft);
+  color: var(--brand-ink) !important;
+  border-radius: 12px;
+  padding: 15px;
+  margin: 24px 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.candidate-review-note p {
+  color: inherit;
+  margin: 6px 0;
+}
+.candidate-finish-mark {
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 29px;
+  margin-bottom: 30px;
+}
+.candidate-receipt p {
+  white-space: pre-wrap;
+}
+.candidate-shell > footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 48px;
+  font-size: 10px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 800px) {
+  .candidate-top {
+    padding: 20px;
+  }
+  .candidate-main {
+    grid-template-columns: 1fr;
+  }
+  .candidate-story {
+    padding: 35px 25px;
+  }
+  .candidate-story h1 {
+    font-size: 42px;
+  }
+  .candidate-story > p {
+    max-width: none;
+  }
+  .candidate-rings {
+    display: none;
+  }
+  .candidate-progress {
+    display: flex;
+    gap: 18px;
+    margin: 24px 0;
+  }
+  .candidate-progress li {
+    font-size: 11px;
+    flex: 1;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .candidate-story .candidate-preview {
+    margin-bottom: 0;
+  }
+  .candidate-panel {
+    padding: 30px 24px 45px;
+  }
+  .candidate-shell > footer {
+    padding: 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .candidate-top > span {
+    display: none;
+  }
+  .candidate-logo {
+    font-size: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -33,9 +33,13 @@ import {
   organizationCreateSchema,
   organizationUpdateSchema,
   organizationQuerySchema,
+  candidateCreateSchema,
+  candidateActionSchema,
+  candidateReviewSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
+import { OnboardingStore } from "./onboarding.store";
 import {
   SessionGuard,
   OidcService,
@@ -81,9 +85,11 @@ class ProblemFilter implements ExceptionFilter {
 class PlatformController {
   private readonly oidc;
   private readonly organization;
+  private readonly onboarding;
   constructor(@Inject(PlatformStore) private readonly store: PlatformStore) {
     this.oidc = new OidcService(store);
     this.organization = new OrganizationStore(store);
+    this.onboarding = new OnboardingStore(store);
   }
   @Get("healthz") health() {
     return { status: "ok" };
@@ -209,6 +215,86 @@ class PlatformController {
     return this.organization.list(
       req.actor,
       parse(organizationQuerySchema, query),
+    );
+  }
+  @Get("api/v1/candidates/options") candidateOptions(@Req() req: AppRequest) {
+    return this.onboarding.options(req.actor);
+  }
+  @Get("api/v1/candidates") candidates(
+    @Req() req: AppRequest,
+    @Query() query: unknown,
+  ) {
+    const q = parse(
+      z.object({ q: z.string().trim().max(80).default("") }).strict(),
+      query,
+    );
+    return this.onboarding.list(req.actor, q.q);
+  }
+  @Post("api/v1/candidates") createCandidate(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.create(
+      req.actor,
+      parse(candidateCreateSchema, body),
+      req.requestId,
+    );
+  }
+  @Get("api/v1/candidates/:id") candidateDetail(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+  ) {
+    return this.onboarding.detail(req.actor, parse(z.uuid(), id));
+  }
+  @Get("api/v1/candidates/:id/delivery-preview") candidateDelivery(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+  ) {
+    return this.onboarding.delivery(
+      req.actor,
+      parse(z.uuid(), id),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/invitation") candidateInvite(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.action(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(candidateActionSchema, body),
+      req.requestId,
+      "invite",
+    );
+  }
+  @Post("api/v1/candidates/:id/revoke") candidateRevoke(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.action(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(candidateActionSchema, body),
+      req.requestId,
+      "revoke",
+    );
+  }
+  @Post("api/v1/candidates/:id/review") candidateReview(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    const input = parse(candidateReviewSchema, body);
+    return this.onboarding.action(
+      req.actor,
+      parse(z.uuid(), id),
+      input,
+      req.requestId,
+      "review",
+      input.decision,
     );
   }
   @Post("api/v1/organization") createOrganizationUnit(

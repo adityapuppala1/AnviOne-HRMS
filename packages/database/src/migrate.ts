@@ -6,6 +6,7 @@ const credentials = [
   ["anvione_app", process.env.RUNTIME_DB_PASSWORD],
   ["anvione_worker", process.env.WORKER_DB_PASSWORD],
   ["anvione_identity_operator", process.env.IDENTITY_OPERATOR_DB_PASSWORD],
+  ["anvione_candidate", process.env.CANDIDATE_DB_PASSWORD],
 ] as const;
 if (credentials.some(([, password]) => !password || password.length < 32)) {
   throw new Error(

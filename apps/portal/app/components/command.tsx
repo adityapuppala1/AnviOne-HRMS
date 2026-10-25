@@ -80,6 +80,12 @@ export function Command({
             Activity log
           </Button>
         )}
+        {me.permissions.includes("onboarding.manage") && (
+          <Button variant="ghost" onPress={() => go("/candidates")}>
+            <Users size={18} />
+            Candidate intake
+          </Button>
+        )}
         {me.permissions.includes("organization.read") && (
           <Button variant="ghost" onPress={() => go("/organization")}>
             <Buildings size={18} />

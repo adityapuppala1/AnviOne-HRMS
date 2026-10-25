@@ -139,6 +139,12 @@ function Shell({ me }: { me: Me }) {
       visible: me.permissions.includes("organization.read"),
     },
     {
+      to: "/candidates",
+      label: "Candidate intake",
+      icon: Users,
+      visible: me.permissions.includes("onboarding.manage"),
+    },
+    {
       to: "/settings",
       label: "Workspace settings",
       icon: GearSix,

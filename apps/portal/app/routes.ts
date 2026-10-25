@@ -12,6 +12,7 @@ export default [
     route("people/:id", "routes/profile.tsx"),
     route("teams", "routes/teams.tsx"),
     route("organization", "routes/organization.tsx"),
+    route("candidates", "routes/candidates.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

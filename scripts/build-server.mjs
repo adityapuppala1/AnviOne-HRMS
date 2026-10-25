@@ -14,7 +14,11 @@ const workspace = {
   },
 };
 await build({
-  entryPoints: ["apps/api/src/main.ts", "apps/worker/src/main.ts"],
+  entryPoints: [
+    "apps/api/src/main.ts",
+    "apps/api/src/candidate-main.ts",
+    "apps/worker/src/main.ts",
+  ],
   outdir: "dist",
   outbase: "apps",
   platform: "node",

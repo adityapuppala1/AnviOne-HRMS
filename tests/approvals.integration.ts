@@ -50,6 +50,8 @@ await test("Shared approval routing and inbox", async (t) => {
   let session = await store.session(token);
   const leaveIds: string[] = [];
   const correctionIds: string[] = [];
+  const candidateIds: string[] = [];
+  const reviewIds: string[] = [];
   const request = (path: string, init: RequestInit = {}) =>
     fetch(`http://127.0.0.1:4479/api/v1${path}`, {
       ...init,
@@ -192,7 +194,67 @@ await test("Shared approval routing and inbox", async (t) => {
         const firstOther = view.items.findIndex((i) => !i.canDecide);
         if (firstOther >= 0)
           assert.ok(view.items.slice(firstOther).every((i) => !i.canDecide));
-        assert.ok(view.items.every((i) => i.employeeId !== maya));
+        assert.ok(
+          view.items.every(
+            (i) => i.kind === "readiness_review" || i.employeeId !== maya,
+          ),
+        );
+      },
+    );
+
+    await t.test(
+      "readiness reviews reach HR, but never their own maker",
+      async () => {
+        await changeRole("hr_admin");
+        const options = await (await request("/candidates/options")).json();
+        const cases: string[] = [];
+        for (const name of ["Inbox Maker Case", "Inbox Checker Case"]) {
+          const created = await post("/candidates", {
+            name,
+            email: `inbox-${randomUUID()}@anvi.example`,
+            title: "Synthetic analyst",
+            joinedOn: shift(today, 60),
+            departmentId: options.departments[0].id,
+            locationId: options.locations[0].id,
+            managerId: options.managers[0].id,
+          });
+          assert.equal(created.status, 201);
+          cases.push(((await created.json()) as { id: string }).id);
+        }
+        candidateIds.push(...cases);
+        // One proposal by Maya (the maker), one by another HR identity.
+        for (const [caseId, maker] of [
+          [cases[0]!, actor.actorId],
+          [cases[1]!, randomUUID()],
+        ] as const) {
+          const reviewId = randomUUID();
+          await transaction(admin, async (client) => {
+            await client.query(
+              "SELECT set_config('app.actor_id',$1,true), set_config('app.actor_label','Synthetic HR',true)",
+              [maker],
+            );
+            await client.query(
+              `INSERT INTO candidate_local_review(id,candidate_id,proposed_by,proposer_label,proposal_note)
+               VALUES ($1,$2,$3,'Synthetic HR','Synthetic readiness proposal for inbox')`,
+              [reviewId, caseId, maker],
+            );
+          });
+          reviewIds.push(reviewId);
+        }
+        const view = await inbox();
+        const own = view.items.find((i) => i.id === reviewIds[0])!;
+        const other = view.items.find((i) => i.id === reviewIds[1])!;
+        assert.equal(own.kind, "readiness_review");
+        assert.equal(own.canDecide, false);
+        assert.equal(other.canDecide, true);
+        if (other.kind === "readiness_review") {
+          assert.equal(other.evidenceReady, false);
+          assert.equal(other.candidateName, "Inbox Checker Case");
+        }
+        await changeRole("manager");
+        assert.ok(
+          !(await inbox()).items.some((i) => i.kind === "readiness_review"),
+        );
       },
     );
 
@@ -236,6 +298,18 @@ await test("Shared approval routing and inbox", async (t) => {
     // Synthetic cleanup only: workflow history is append-only at runtime.
     await transaction(admin, async (client) => {
       await client.query("SET LOCAL session_replication_role = replica");
+      await client.query(
+        "DELETE FROM candidate_local_review WHERE id=ANY($1::uuid[])",
+        [reviewIds],
+      );
+      await client.query(
+        "DELETE FROM outbox_event WHERE aggregate_id=ANY($1::uuid[])",
+        [candidateIds],
+      );
+      await client.query(
+        "DELETE FROM candidate_case WHERE id=ANY($1::uuid[])",
+        [candidateIds],
+      );
       await client.query(
         "DELETE FROM attendance_record WHERE correction_id=ANY($1::uuid[])",
         [correctionIds],

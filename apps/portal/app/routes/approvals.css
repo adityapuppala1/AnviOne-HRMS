@@ -49,3 +49,9 @@
     border-radius: var(--radius-panel);
   }
 }
+.leave-card.approval-readiness_review {
+  border-top-color: var(--success);
+}
+.approval-readiness_review .approval-kind {
+  color: var(--success);
+}

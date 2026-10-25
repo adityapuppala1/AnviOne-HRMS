@@ -18,7 +18,7 @@ Leave requests and attendance corrections use one routing rule and one decision 
 ## Decisions
 
 - No generic workflow tables yet. Each module keeps its own record and state machine, and only the routing and authorization rules are shared. A configurable multi-step engine remains open under WF-01.
-- Onboarding readiness reviews keep their maker-checker model and join the inbox in a later slice.
+- Onboarding readiness reviews keep their maker-checker model and appear in the inbox for HR. The maker never sees their own proposal as decidable, and approval is disabled until local evidence is complete.
 
 ## Verification
 

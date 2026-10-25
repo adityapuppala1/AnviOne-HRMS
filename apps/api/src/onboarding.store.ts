@@ -596,6 +596,52 @@ export class OnboardingStore {
       return { changed: true };
     });
   }
+  // Pending readiness reviews for the approvals inbox. The maker never checks
+  // their own proposal; approval also needs complete local evidence.
+  async pendingReviews(actor: Principal) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      const { rows } = await client.query<{
+        id: string;
+        version: number;
+        caseId: string;
+        caseVersion: number;
+        candidateName: string;
+        candidateTitle: string;
+        department: string;
+        proposerLabel: string;
+        reason: string;
+        submittedAt: string;
+        proposedBy: string;
+        evidenceReady: boolean;
+      }>(
+        `SELECT r.id, r.version, c.id AS "caseId", c.version AS "caseVersion",
+           c.name AS "candidateName", c.title AS "candidateTitle", d.name AS department,
+           r.proposer_label AS "proposerLabel", r.proposal_note AS reason,
+           to_char(r.proposed_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "submittedAt",
+           r.proposed_by AS "proposedBy",
+           (c.state='approved'
+             AND EXISTS(SELECT 1 FROM candidate_task t WHERE t.candidate_id=c.id AND t.required)
+             AND NOT EXISTS(SELECT 1 FROM candidate_task t WHERE t.candidate_id=c.id
+               AND t.required AND t.state<>'completed')) AS "evidenceReady"
+         FROM candidate_local_review r
+         JOIN candidate_case c ON c.id=r.candidate_id
+         JOIN org_unit d ON d.id=c.department_id
+         WHERE r.state='pending' AND c.state<>'cancelled'
+         ORDER BY r.proposed_at LIMIT 100`,
+      );
+      return rows.map(({ proposedBy, ...row }) => ({
+        ...row,
+        initials: row.candidateName
+          .split(/\s+/)
+          .map((part) => part[0] ?? "")
+          .join("")
+          .slice(0, 2)
+          .toUpperCase(),
+        canDecide: proposedBy !== actor.actorId,
+      }));
+    });
+  }
   async decideLocalReview(
     actor: Principal,
     id: string,

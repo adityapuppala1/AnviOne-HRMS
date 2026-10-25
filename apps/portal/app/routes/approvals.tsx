@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { SealCheck } from "@phosphor-icons/react/dist/csr/SealCheck";
 import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
@@ -21,6 +22,7 @@ import { useWorkspace } from "./workspace";
 import "./leave.css";
 import "./approvals.css";
 
+type Decision = "approve" | "reject";
 const at = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const day = (iso: string) =>
   at(iso).toLocaleDateString("en-IN", {
@@ -30,21 +32,54 @@ const day = (iso: string) =>
     timeZone: "UTC",
   });
 const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
-const decisionPath = (item: ApprovalItem) =>
-  item.kind === "leave"
-    ? `/leave/requests/${item.id}/decision`
-    : `/attendance/corrections/${item.id}/decision`;
+const person = (item: ApprovalItem) =>
+  item.kind === "readiness_review" ? item.candidateName : item.employeeName;
 const subject = (item: ApprovalItem) =>
-  item.kind === "leave" ? "leave" : "attendance correction";
+  ({
+    leave: "leave",
+    attendance_correction: "attendance correction",
+    readiness_review: "readiness review",
+  })[item.kind];
+
+// Each module keeps its own versioned decision endpoint and body.
+function decisionRequest(
+  item: ApprovalItem,
+  decision: Decision,
+  note: string | null,
+) {
+  if (item.kind === "readiness_review")
+    return {
+      path: `/candidates/${item.caseId}/local-reviews/${item.id}`,
+      body: {
+        caseVersion: item.caseVersion,
+        reviewVersion: item.version,
+        decision: decision === "approve" ? "approved" : "rejected",
+        reason: note ?? "",
+      },
+    };
+  return {
+    path:
+      item.kind === "leave"
+        ? `/leave/requests/${item.id}/decision`
+        : `/attendance/corrections/${item.id}/decision`,
+    body: { version: item.version, decision, note },
+  };
+}
 
 export default function Approvals() {
   const { me } = useWorkspace();
-  const allowed =
-    me.permissions.includes("leave.approve") ||
-    me.permissions.includes("attendance.review");
+  const allowed = [
+    "leave.approve",
+    "attendance.review",
+    "onboarding.manage",
+  ].some((p) => me.permissions.includes(p as (typeof me.permissions)[number]));
   const query = useApprovals(allowed);
   const client = useQueryClient();
-  const [declining, setDeclining] = useState<ApprovalItem | null>(null);
+  // A note dialog: always for declines, and for readiness approvals (which need a reason).
+  const [noting, setNoting] = useState<{
+    item: ApprovalItem;
+    decision: Decision;
+  } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   if (!allowed)
@@ -63,24 +98,25 @@ export default function Approvals() {
   const others = query.data.items.filter((i) => !i.canDecide);
   async function decide(
     item: ApprovalItem,
-    decision: "approve" | "reject",
+    decision: Decision,
     note: string | null,
   ) {
+    const { path, body } = decisionRequest(item, decision, note);
     setBusy(item.id);
     setError("");
     try {
-      await api(decisionPath(item), z.unknown(), {
+      await api(path, z.unknown(), {
         method: "POST",
         headers: { "X-CSRF-Token": me.csrfToken },
-        body: JSON.stringify({ version: item.version, decision, note }),
+        body: JSON.stringify(body),
       });
-      setDeclining(null);
+      setNoting(null);
       // Module screens and the nav count read the same records.
-      await Promise.all([
-        client.invalidateQueries({ queryKey: ["approvals"] }),
-        client.invalidateQueries({ queryKey: ["leave"] }),
-        client.invalidateQueries({ queryKey: ["attendance"] }),
-      ]);
+      await Promise.all(
+        ["approvals", "leave", "attendance", "candidates"].map((key) =>
+          client.invalidateQueries({ queryKey: [key] }),
+        ),
+      );
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Could not save the decision.",
@@ -89,6 +125,13 @@ export default function Approvals() {
       setBusy(null);
     }
   }
+  function start(item: ApprovalItem, decision: Decision) {
+    setError("");
+    if (decision === "approve" && item.kind !== "readiness_review")
+      void decide(item, decision, null);
+    else setNoting({ item, decision });
+  }
+  const minimum = noting?.item.kind === "readiness_review" ? 10 : 3;
   return (
     <div className="page-enter approvals-page">
       <header className="approvals-hero">
@@ -101,12 +144,13 @@ export default function Approvals() {
           </p>
           <h1>Decisions, in one place.</h1>
           <p>
-            Leave requests and attendance corrections routed to you, oldest
-            first. Each decision is recorded with your name.
+            Leave, attendance corrections and onboarding readiness reviews
+            routed to you, oldest first. Each decision is recorded with your
+            name.
           </p>
         </div>
       </header>
-      {error && !declining && (
+      {error && !noting && (
         <p role="alert" className="inline-error">
           {error}
         </p>
@@ -128,11 +172,7 @@ export default function Approvals() {
                 key={`${item.kind}-${item.id}`}
                 item={item}
                 busy={busy === item.id}
-                onApprove={() => void decide(item, "approve", null)}
-                onDecline={() => {
-                  setError("");
-                  setDeclining(item);
-                }}
+                onDecide={(decision) => start(item, decision)}
               />
             ))}
           </ul>
@@ -151,13 +191,17 @@ export default function Approvals() {
         </section>
       )}
       <DialogPanel
-        open={Boolean(declining)}
+        open={Boolean(noting)}
         onOpenChange={(open) => {
-          if (!open && !busy) setDeclining(null);
+          if (!open && !busy) setNoting(null);
         }}
-        title="Decline this request?"
+        title={
+          noting?.decision === "approve"
+            ? "Approve this readiness review?"
+            : "Decline this request?"
+        }
       >
-        {declining && (
+        {noting && (
           <form
             className="leave-form"
             onSubmit={(event) => {
@@ -165,19 +209,22 @@ export default function Approvals() {
               const note = String(
                 new FormData(event.currentTarget).get("note") ?? "",
               );
-              void decide(declining, "reject", note);
+              void decide(noting.item, noting.decision, note);
             }}
           >
             <p>
-              {declining.employeeName} will see your note on their{" "}
-              {subject(declining)}.
+              {noting.decision === "approve"
+                ? `Record why ${person(noting.item)}'s local readiness evidence is sufficient. This is a local review, not employee activation.`
+                : `${person(noting.item)}'s ${subject(noting.item)} will show your note.`}
             </p>
             <label>
-              Why are you declining?
+              {noting.decision === "approve"
+                ? "Reason for approving"
+                : "Why are you declining?"}
               <textarea
                 name="note"
                 required
-                minLength={3}
+                minLength={minimum}
                 maxLength={300}
                 autoFocus
               />
@@ -191,12 +238,16 @@ export default function Approvals() {
               <Button
                 variant="secondary"
                 isDisabled={Boolean(busy)}
-                onPress={() => setDeclining(null)}
+                onPress={() => setNoting(null)}
               >
                 Go back
               </Button>
               <Button type="submit" isDisabled={Boolean(busy)}>
-                {busy ? "Saving…" : "Decline"}
+                {busy
+                  ? "Saving…"
+                  : noting.decision === "approve"
+                    ? "Approve"
+                    : "Decline"}
               </Button>
             </div>
           </form>
@@ -206,57 +257,99 @@ export default function Approvals() {
   );
 }
 
+function KindLabel({ item }: { item: ApprovalItem }) {
+  if (item.kind === "leave")
+    return (
+      <>
+        <AirplaneTilt size={16} />
+        {item.leaveType}
+      </>
+    );
+  if (item.kind === "attendance_correction")
+    return (
+      <>
+        <CalendarDots size={16} />
+        Attendance correction
+      </>
+    );
+  return (
+    <>
+      <SealCheck size={16} />
+      Onboarding readiness review
+    </>
+  );
+}
+
+function When({ item }: { item: ApprovalItem }) {
+  if (item.kind === "leave")
+    return (
+      <>
+        <strong>
+          {item.startDate === item.endDate
+            ? day(item.startDate)
+            : `${day(item.startDate)} – ${day(item.endDate)}`}
+        </strong>
+        <span>{plural(item.days)} away</span>
+      </>
+    );
+  if (item.kind === "attendance_correction")
+    return (
+      <>
+        <strong>
+          {item.checkIn} to {item.checkOut}
+        </strong>
+        <span>Proposed times for {day(item.workDate)}</span>
+      </>
+    );
+  return (
+    <>
+      <strong>Proposed by {item.proposerLabel}</strong>
+      <span>
+        {item.evidenceReady
+          ? "Form approved and required tasks complete"
+          : "Evidence incomplete: approve the form and finish required tasks first"}
+      </span>
+    </>
+  );
+}
+
 function ApprovalCard({
   item,
   busy = false,
-  onApprove,
-  onDecline,
+  onDecide,
 }: {
   item: ApprovalItem;
   busy?: boolean;
-  onApprove?: () => void;
-  onDecline?: () => void;
+  onDecide?: (decision: Decision) => void;
 }) {
-  const leave = item.kind === "leave";
+  const name = person(item);
+  const blocked = item.kind === "readiness_review" && !item.evidenceReady;
   return (
     <li className={`panel leave-card approval-${item.kind}`}>
       <div className="approval-kind">
-        {leave ? <AirplaneTilt size={16} /> : <CalendarDots size={16} />}
-        {leave ? item.leaveType : "Attendance correction"}
+        <KindLabel item={item} />
       </div>
       <div className="leave-card-person">
         <Avatar initials={item.initials} />
         <div>
-          <strong>{item.employeeName}</strong>
-          <span>{item.department}</span>
+          <strong>{name}</strong>
+          <span>
+            {item.kind === "readiness_review"
+              ? `${item.candidateTitle}, ${item.department}`
+              : item.department}
+          </span>
         </div>
       </div>
       <div className="leave-card-when">
-        {leave ? (
-          <>
-            <strong>
-              {item.startDate === item.endDate
-                ? day(item.startDate)
-                : `${day(item.startDate)} – ${day(item.endDate)}`}
-            </strong>
-            <span>{plural(item.days)} away</span>
-          </>
-        ) : (
-          <>
-            <strong>
-              {item.checkIn} to {item.checkOut}
-            </strong>
-            <span>Proposed times for {day(item.workDate)}</span>
-          </>
-        )}
+        <When item={item} />
       </div>
       <p className="leave-reason">{item.reason}</p>
-      {item.canDecide && onApprove && onDecline ? (
+      {item.canDecide && onDecide ? (
         <div className="leave-actions">
           <Button
-            isDisabled={busy}
-            onPress={onApprove}
-            aria-label={`Approve ${subject(item)} for ${item.employeeName}`}
+            isDisabled={busy || blocked}
+            onPress={() => onDecide("approve")}
+            aria-label={`Approve ${subject(item)} for ${name}`}
           >
             <Check size={17} weight="bold" />
             {busy ? "Saving…" : "Approve"}
@@ -264,8 +357,8 @@ function ApprovalCard({
           <Button
             variant="secondary"
             isDisabled={busy}
-            onPress={onDecline}
-            aria-label={`Decline ${subject(item)} for ${item.employeeName}`}
+            onPress={() => onDecide("reject")}
+            aria-label={`Decline ${subject(item)} for ${name}`}
           >
             <X size={17} />
             Decline
@@ -273,9 +366,11 @@ function ApprovalCard({
         </div>
       ) : (
         <Badge>
-          {item.approver === "manager"
-            ? "Their manager decides"
-            : "Another HR colleague decides"}
+          {item.kind === "readiness_review"
+            ? "You proposed this; another HR colleague checks it"
+            : item.approver === "manager"
+              ? "Their manager decides"
+              : "Another HR colleague decides"}
         </Badge>
       )}
     </li>

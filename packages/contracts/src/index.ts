@@ -676,6 +676,24 @@ export const approvalItemSchema = z.discriminatedUnion("kind", [
     checkIn: clockSchema,
     checkOut: clockSchema,
   }),
+  // A maker-checker readiness review: the maker proposed it; another HR person decides.
+  z.strictObject({
+    kind: z.literal("readiness_review"),
+    id: z.uuid(),
+    version: z.number().int().positive(),
+    caseId: z.uuid(),
+    caseVersion: z.number().int().positive(),
+    candidateName: z.string(),
+    candidateTitle: z.string(),
+    initials: z.string(),
+    department: z.string(),
+    proposerLabel: z.string(),
+    reason: z.string(),
+    submittedAt: z.string(),
+    approver: z.literal("hr"),
+    canDecide: z.boolean(),
+    evidenceReady: z.boolean(),
+  }),
 ]);
 export type ApprovalItem = z.infer<typeof approvalItemSchema>;
 export const approvalInboxSchema = z.strictObject({

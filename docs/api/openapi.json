@@ -8402,6 +8402,84 @@
                               "checkOut"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "readiness_review"
+                              },
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "version": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "caseId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "caseVersion": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "candidateName": {
+                                "type": "string"
+                              },
+                              "candidateTitle": {
+                                "type": "string"
+                              },
+                              "initials": {
+                                "type": "string"
+                              },
+                              "department": {
+                                "type": "string"
+                              },
+                              "proposerLabel": {
+                                "type": "string"
+                              },
+                              "reason": {
+                                "type": "string"
+                              },
+                              "submittedAt": {
+                                "type": "string"
+                              },
+                              "approver": {
+                                "type": "string",
+                                "const": "hr"
+                              },
+                              "canDecide": {
+                                "type": "boolean"
+                              },
+                              "evidenceReady": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "id",
+                              "version",
+                              "caseId",
+                              "caseVersion",
+                              "candidateName",
+                              "candidateTitle",
+                              "initials",
+                              "department",
+                              "proposerLabel",
+                              "reason",
+                              "submittedAt",
+                              "approver",
+                              "canDecide",
+                              "evidenceReady"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       }

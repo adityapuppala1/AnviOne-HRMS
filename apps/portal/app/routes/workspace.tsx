@@ -124,7 +124,8 @@ function Shell({ me }: { me: Me }) {
   const brand = brandingQuery.data;
   const approver =
     me.permissions.includes("leave.approve") ||
-    me.permissions.includes("attendance.review");
+    me.permissions.includes("attendance.review") ||
+    me.permissions.includes("onboarding.manage");
   const waiting = useApprovals(approver).data?.waiting ?? 0;
   const links = [
     { to: "/", label: "Overview", icon: SquaresFour, visible: true },

@@ -786,6 +786,15 @@ await test("Isolated candidate onboarding", async (t) => {
           actorId: randomUUID(),
           name: "Independent synthetic HR reviewer",
         };
+        await assert.rejects(
+          scoped(store.pool, maker, (c) =>
+            c.query(
+              `INSERT INTO candidate_local_review(id,candidate_id,proposed_by,proposer_label,proposal_note)
+               VALUES($1,$2,$3,$4,$5)`,
+              [randomUUID(), id, randomUUID(), maker.name, reason],
+            ),
+          ),
+        );
         await scoped(store.pool, maker, (c) =>
           c.query(
             `INSERT INTO candidate_local_review(id,candidate_id,proposed_by,proposer_label,proposal_note)
@@ -796,22 +805,22 @@ await test("Isolated candidate onboarding", async (t) => {
         await assert.rejects(
           scoped(store.pool, maker, (c) =>
             c.query(
-              "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
-              [reviewId, maker.actorId, reason],
+              "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decider_label=$3,decision_note=$4,decided_at=now() WHERE id=$1",
+              [reviewId, maker.actorId, maker.name, reason],
             ),
           ),
         );
         await scoped(store.pool, checker, (c) =>
           c.query(
-            "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
-            [reviewId, checker.actorId, reason],
+            "UPDATE candidate_local_review SET state='approved',version=2,decided_by=$2,decider_label=$3,decision_note=$4,decided_at=now() WHERE id=$1",
+            [reviewId, checker.actorId, checker.name, reason],
           ),
         );
         await assert.rejects(
           scoped(store.pool, maker, (c) =>
             c.query(
-              "UPDATE candidate_local_review SET state='rejected',version=3,decided_by=$2,decision_note=$3,decided_at=now() WHERE id=$1",
-              [reviewId, maker.actorId, reason],
+              "UPDATE candidate_local_review SET state='rejected',version=3,decided_by=$2,decider_label=$3,decision_note=$4,decided_at=now() WHERE id=$1",
+              [reviewId, maker.actorId, maker.name, reason],
             ),
           ),
         );
@@ -877,15 +886,80 @@ await test("Isolated candidate onboarding", async (t) => {
         d = await detail();
         assert.equal(d.candidate.version, eligibleVersion);
         assert.equal(d.localReviews.length, reviewsBefore);
-        const response = await hr(`/candidates/${id}/local-reviews`, {
-          caseVersion: d.candidate.version,
-          reason: "Request independent review of complete synthetic evidence.",
-        });
-        assert.equal(response.status, 201);
+        const proposals = await Promise.allSettled(
+          ["one", "two"].map(() =>
+            new OnboardingStore(store).proposeLocalReview(
+              { ...actor, role: "hr_admin" },
+              id,
+              {
+                caseVersion: d.candidate.version,
+                reason:
+                  "Request independent review of complete synthetic evidence.",
+              },
+              randomUUID(),
+            ),
+          ),
+        );
+        assert.deepEqual(proposals.map((result) => result.status).sort(), [
+          "fulfilled",
+          "rejected",
+        ]);
         d = await detail();
         version = d.candidate.version;
         const review = d.localReviews[0];
         assert.equal(review.state, "pending");
+        const outsider = {
+          ...actor,
+          actorId: randomUUID(),
+          entityId: randomUUID(),
+          role: "hr_admin" as const,
+          name: "Out-of-scope synthetic HR reviewer",
+        };
+        await assert.rejects(new OnboardingStore(store).detail(outsider, id));
+        await assert.rejects(
+          new OnboardingStore(store).proposeLocalReview(
+            outsider,
+            id,
+            {
+              caseVersion: version,
+              reason: "Cross-entity proposal must not discover this intake.",
+            },
+            randomUUID(),
+          ),
+        );
+        await assert.rejects(
+          new OnboardingStore(store).decideLocalReview(
+            outsider,
+            id,
+            review.id,
+            {
+              caseVersion: version,
+              reviewVersion: review.version,
+              decision: "rejected",
+              reason: "Cross-entity decision must not discover this review.",
+            },
+            randomUUID(),
+          ),
+        );
+        await assert.rejects(
+          new OnboardingStore(store).decideLocalReview(
+            {
+              ...actor,
+              actorId: randomUUID(),
+              role: "hr_admin",
+              name: "Non-maker synthetic HR reviewer",
+            },
+            id,
+            review.id,
+            {
+              caseVersion: version,
+              reviewVersion: review.version,
+              decision: "withdrawn",
+              reason: "Only the maker may withdraw this review request.",
+            },
+            randomUUID(),
+          ),
+        );
         const added = d.tasks.find(
           (task: CandidateTask) =>
             task.label === "Confirm a fictional induction preference",
@@ -979,6 +1053,11 @@ await test("Isolated candidate onboarding", async (t) => {
         d = await detail();
         version = d.candidate.version;
         assert.equal(d.localReviews[0].state, "approved");
+        assert.ok(
+          reviewers.some(
+            (reviewer) => reviewer.name === d.localReviews[0].deciderLabel,
+          ),
+        );
         assert.equal(d.readiness.activationReady, false);
         assert.equal(
           (

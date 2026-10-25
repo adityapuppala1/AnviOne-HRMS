@@ -65,6 +65,15 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   const readiness = page.getByRole("region", { name: "Activation readiness" });
   await expect(readiness).toContainText("Activation remains blocked");
   await expect(readiness.locator('[data-source="external"]')).toHaveCount(4);
+  const decisionLane = page.getByRole("region", {
+    name: "Independent readiness review",
+  });
+  await expect(decisionLane).toContainText(
+    "Approve the form and complete every required checklist task first.",
+  );
+  await expect(
+    decisionLane.getByRole("button", { name: "Request independent review" }),
+  ).toHaveCount(0);
   const checklist = page.getByRole("region", { name: "Onboarding checklist" });
   await checklist
     .getByRole("button", { name: "Use starter checklist" })
@@ -116,7 +125,14 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await dialog
     .getByLabel("Completion / change note")
     .fill("Waiting for the fictional candidate coordination step.");
-  await dialog.getByRole("button", { name: "Save task status" }).click();
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === "GET" &&
+        /\/api\/v1\/candidates\/[0-9a-f-]+$/.test(response.url()),
+    ),
+    dialog.getByRole("button", { name: "Save task status" }).click(),
+  ]);
   await expect(dialog).toHaveCount(0);
   await page
     .getByLabel("Action / review reason")
@@ -315,6 +331,51 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     page.locator(".intake-detail").getByText("Form approved", { exact: true }),
   ).toBeVisible();
+  await expect(decisionLane).toContainText("Ready to hand over");
+  await decisionLane
+    .getByRole("button", { name: "Request independent review" })
+    .click();
+  await dialog
+    .getByLabel("Handoff note")
+    .fill(
+      "Required preview evidence is complete and ready for independent review.",
+    );
+  await dialog
+    .getByRole("button", { name: "Request independent review", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(decisionLane).toContainText("Waiting for another HR reviewer");
+  await expect(decisionLane).toContainText("Maya");
+  await expect(
+    decisionLane.getByRole("button", { name: "Approve readiness" }),
+  ).toHaveCount(0);
+  await expect(
+    decisionLane.getByRole("button", { name: "Reject readiness" }),
+  ).toHaveCount(0);
+  await decisionLane.getByRole("button", { name: "Withdraw request" }).click();
+  await dialog
+    .getByLabel("Withdrawal note")
+    .fill(
+      "Withdrawing this fictional request to verify the immutable handoff record.",
+    );
+  await dialog
+    .getByRole("button", { name: "Withdraw request", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(decisionLane).toContainText("Withdrawn");
+  await expect(decisionLane).toContainText(
+    "Withdrawing this fictional request to verify the immutable handoff record.",
+  );
+  await decisionLane
+    .getByRole("button", { name: "Request independent review" })
+    .click();
+  await dialog
+    .getByLabel("Handoff note")
+    .fill("Fresh evidence handoff awaiting a different fictional HR identity.");
+  await dialog
+    .getByRole("button", { name: "Request independent review", exact: true })
+    .click();
+  await expect(decisionLane).toContainText("Waiting for another HR reviewer");
   await accessible(page);
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -329,6 +390,9 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     .getByRole("button", { name: "Use dark theme", exact: true })
     .click();
   await accessible(page);
+  await decisionLane.screenshot({
+    path: info.outputPath("local-readiness-dark.png"),
+  });
   await checklist.screenshot({ path: info.outputPath("checklist-dark.png") });
   await page
     .getByRole("button", { name: "Use light theme", exact: true })
@@ -337,6 +401,14 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     path: info.outputPath("checklist-desktop.png"),
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await decisionLane.screenshot({
+    path: info.outputPath("local-readiness-decision-lane.png"),
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await decisionLane.evaluate((node) => getComputedStyle(node).animationName),
+  ).toBe("none");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page
     .getByRole("heading", { name: "Make room for someone new." })
     .click();

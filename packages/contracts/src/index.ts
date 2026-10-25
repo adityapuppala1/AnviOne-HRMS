@@ -282,6 +282,7 @@ export const localReviewSchema = z.strictObject({
   proposalNote: z.string(),
   proposedAt: z.string(),
   decidedBy: z.uuid().nullable(),
+  deciderLabel: z.string().nullable(),
   decisionNote: z.string().nullable(),
   decidedAt: z.string().nullable(),
 });

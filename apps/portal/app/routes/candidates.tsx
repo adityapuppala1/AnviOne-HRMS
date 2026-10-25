@@ -23,6 +23,7 @@ import {
   OnboardingChecklist,
   SubmissionComparison,
 } from "../components/onboarding-checklist";
+import { LocalReadinessReview } from "../components/local-readiness-review";
 const labels: Record<Candidate["state"], string> = {
   draft: "Draft",
   invited: "Invited",
@@ -444,6 +445,12 @@ function CaseReview({
       </div>
       <SubmissionComparison value={value} />
       <ActivationReadiness value={value} />
+      <LocalReadinessReview
+        value={value}
+        actorId={me.actorId}
+        csrf={me.csrfToken}
+        onSaved={onSaved}
+      />
       <OnboardingChecklist
         value={value}
         csrf={me.csrfToken}

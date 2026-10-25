@@ -34,7 +34,7 @@ export async function setContext(client: PoolClient, actor: Principal) {
     `SELECT set_config('app.tenant_id',$1,true), set_config('app.entity_id',$2,true),
     set_config('app.employee_id',$3,true), set_config('app.directory_scope',$4,true),
     set_config('app.hr_scope',$5,true), set_config('app.onboarding_scope',$6,true),
-    set_config('app.actor_id',$7,true)`,
+    set_config('app.actor_id',$7,true), set_config('app.actor_label',$8,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -47,6 +47,7 @@ export async function setContext(client: PoolClient, actor: Principal) {
           : "none",
       scopeFor(actor, "onboarding.manage") ? "write" : "none",
       actor.actorId,
+      actor.name,
     ],
   );
 }

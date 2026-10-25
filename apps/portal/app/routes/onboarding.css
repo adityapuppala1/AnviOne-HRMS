@@ -501,6 +501,171 @@
     transform: translateY(0);
   }
 }
+.local-review {
+  margin-top: 18px;
+  padding: 28px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.local-review-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.local-review-heading h3 {
+  margin: 0;
+}
+.local-review-baton {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr);
+  align-items: stretch;
+  margin-top: 22px;
+}
+.baton-stage {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface-subtle);
+}
+.baton-stage:first-child {
+  border-radius: 14px 4px 4px 14px;
+}
+.baton-stage:last-child {
+  border-radius: 4px 14px 14px 4px;
+}
+.baton-stage-active {
+  border-color: color-mix(in srgb, var(--brand) 48%, var(--line));
+}
+.baton-stage-waiting {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--warning) 8%, transparent),
+      transparent 58%
+    ),
+    var(--surface-subtle);
+}
+.baton-marker {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--brand-ink);
+  background: var(--surface);
+}
+.baton-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.baton-stage h4 {
+  margin: 0;
+  font:
+    550 15px/1.35 "Outfit Variable",
+    sans-serif;
+}
+.baton-stage p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.baton-link {
+  display: grid;
+  place-items: center;
+  color: var(--brand-ink);
+  background: linear-gradient(var(--line), var(--line)) center/100% 1px
+    no-repeat;
+}
+.baton-link svg {
+  padding: 5px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.local-review-note {
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  border-left: 2px solid var(--brand);
+  color: var(--muted);
+  background: var(--surface-subtle);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.local-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.local-review-actions small {
+  flex: 1 1 280px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.local-review-history {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.local-review-history summary {
+  cursor: pointer;
+  color: var(--brand-ink);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.local-review-history article {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 0 0;
+  border-top: 1px dashed var(--line);
+}
+.local-review-history article > svg {
+  color: var(--brand-ink);
+}
+.local-review-history strong,
+.local-review-history span {
+  display: block;
+}
+.local-review-history span,
+.local-review-history p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.local-review-history p {
+  margin: 4px 0 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .local-review {
+    animation: readiness-arrive 240ms ease-out both;
+  }
+  .baton-stage-waiting .baton-marker {
+    animation: checker-breathe 2.4s ease-in-out infinite;
+  }
+}
+@keyframes checker-breathe {
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--warning) 12%, transparent);
+  }
+}
 .submission-diff h4 {
   font-size: 12px;
   margin: 0;
@@ -535,8 +700,24 @@
 @media (max-width: 500px) {
   .onboarding-checklist,
   .submission-comparison,
-  .activation-readiness {
+  .activation-readiness,
+  .local-review {
     padding: 22px 18px;
+  }
+  .local-review-baton {
+    grid-template-columns: 1fr;
+  }
+  .baton-stage:first-child,
+  .baton-stage:last-child {
+    border-radius: 12px;
+  }
+  .baton-link {
+    min-height: 30px;
+    background: linear-gradient(var(--line), var(--line)) center/1px 100%
+      no-repeat;
+  }
+  .baton-link svg {
+    transform: rotate(90deg);
   }
   .checklist-filters,
   .submission-diff-columns {

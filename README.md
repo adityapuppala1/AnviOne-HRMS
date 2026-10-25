@@ -8,6 +8,8 @@ The foundation includes the **Anvi Atlas** visual system: a responsive people da
 
 The onboarding preview now includes an explicit starter checklist, custom tasks with coordinating owners, joining-relative due dates, prerequisites, status notes and required-task progress. Candidates see only their own tasks; HR coordinates internal owners. HR also sees field-by-field differences between resubmissions. Checklist completion and form approval do not activate employment. See [checklist evidence](docs/acceptance-evidence/onboarding-checklist.md).
 
+Once the form and every required task are complete, HR can hand the synthetic case to a different HR identity through the independent-readiness decision lane. The proposer cannot approve their own request; decisions are versioned, audited and retained in immutable history. This local sign-off still creates no employee or access. See [maker-checker evidence](docs/acceptance-evidence/local-readiness-maker-checker.md).
+
 ## Run locally
 
 Prerequisites: Git, Docker Engine/Desktop, and pnpm 11.21.0. Bootstrap Node 24.18+ is supported; `pnpm install` provisions the project-pinned **Node 24.22.1** runtime without changing the machine-wide installation.

@@ -104,7 +104,7 @@ export class OnboardingStore {
       const reviews = await client.query(
         `SELECT id,state,version,proposed_by AS "proposedBy",proposer_label AS "proposerLabel",
          proposal_note AS "proposalNote",proposed_at AS "proposedAt",decided_by AS "decidedBy",
-         decision_note AS "decisionNote",decided_at AS "decidedAt"
+         decider_label AS "deciderLabel",decision_note AS "decisionNote",decided_at AS "decidedAt"
          FROM candidate_local_review WHERE candidate_id=$1 ORDER BY proposed_at DESC,id`,
         [id],
       );
@@ -457,12 +457,14 @@ export class OnboardingStore {
       try {
         const result = await client.query(
           `UPDATE candidate_local_review SET state=$3,version=version+1,decided_by=$4,
-           decision_note=$5,decided_at=now() WHERE id=$1 AND candidate_id=$2 AND version=$6 RETURNING id`,
+           decider_label=$5,decision_note=$6,decided_at=now()
+           WHERE id=$1 AND candidate_id=$2 AND version=$7 RETURNING id`,
           [
             reviewId,
             id,
             input.decision,
             actor.actorId,
+            actor.name,
             input.reason,
             input.reviewVersion,
           ],

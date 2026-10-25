@@ -6230,6 +6230,9 @@
                               }
                             ]
                           },
+                          "deciderLabel": {
+                            "type": ["string", "null"]
+                          },
                           "decisionNote": {
                             "type": ["string", "null"]
                           },
@@ -6246,6 +6249,7 @@
                           "proposalNote",
                           "proposedAt",
                           "decidedBy",
+                          "deciderLabel",
                           "decisionNote",
                           "decidedAt"
                         ],

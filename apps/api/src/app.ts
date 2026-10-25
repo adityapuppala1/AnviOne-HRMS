@@ -36,6 +36,8 @@ import {
   candidateCreateSchema,
   candidateActionSchema,
   candidateReviewSchema,
+  candidateTaskCreateSchema,
+  candidateTaskUpdateSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
@@ -245,6 +247,44 @@ class PlatformController {
     @Param("id") id: string,
   ) {
     return this.onboarding.detail(req.actor, parse(z.uuid(), id));
+  }
+  @Post("api/v1/candidates/:id/checklist") startChecklist(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.startChecklist(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(candidateActionSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/tasks") createTask(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.createTask(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(candidateTaskCreateSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/tasks/:taskId") updateTask(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Param("taskId") taskId: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.updateTask(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(z.uuid(), taskId),
+      parse(candidateTaskUpdateSchema, body),
+      req.requestId,
+    );
   }
   @Get("api/v1/candidates/:id/delivery-preview") candidateDelivery(
     @Req() req: AppRequest,

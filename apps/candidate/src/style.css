@@ -3,6 +3,102 @@ body {
   background: var(--canvas);
   color: var(--ink);
 }
+.candidate-checklist {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.candidate-checklist progress {
+  width: 100%;
+  height: 7px;
+  border: 0;
+  accent-color: var(--brand);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.candidate-checklist progress::-webkit-progress-bar {
+  background: var(--line);
+}
+.candidate-checklist progress::-webkit-progress-value {
+  background: var(--brand);
+}
+.candidate-checklist progress::-moz-progress-bar {
+  background: var(--brand);
+}
+.candidate-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+.candidate-task {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.candidate-task-heading {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.candidate-task-heading span {
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+@keyframes task-settle {
+  from {
+    transform: scale(0.85);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .candidate-task-completed .candidate-task-heading span {
+    animation: task-settle 180ms ease-out;
+  }
+}
+.candidate-task h3 {
+  font:
+    500 19px/1.4 "Outfit Variable",
+    sans-serif;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.candidate-task-waiting {
+  font-size: 12px;
+  color: var(--warning);
+  line-height: 1.8;
+}
+.candidate-task details {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 16px 0;
+}
+.candidate-task summary {
+  cursor: pointer;
+  color: var(--brand-ink);
+}
+.candidate-task details p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.candidate-task select {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.candidate-task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .candidate-shell {
   max-width: 1600px;
   margin: auto;

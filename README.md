@@ -6,6 +6,8 @@ The foundation includes the **Anvi Atlas** visual system: a responsive people da
 
 ![AnviOne Atlas workspace](docs/acceptance-evidence/atlas-desktop.png)
 
+The onboarding preview now includes an explicit starter checklist, custom tasks with coordinating owners, joining-relative due dates, prerequisites, status notes and required-task progress. Candidates see only their own tasks; HR coordinates internal owners. HR also sees field-by-field differences between resubmissions. Checklist completion and form approval do not activate employment. See [checklist evidence](docs/acceptance-evidence/onboarding-checklist.md).
+
 ## Run locally
 
 Prerequisites: Git, Docker Engine/Desktop, and pnpm 11.21.0. Bootstrap Node 24.18+ is supported; `pnpm install` provisions the project-pinned **Node 24.22.1** runtime without changing the machine-wide installation.

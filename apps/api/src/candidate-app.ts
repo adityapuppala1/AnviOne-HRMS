@@ -7,6 +7,7 @@ import {
   Req,
   Res,
   Body,
+  Param,
   Inject,
   Module,
   Catch,
@@ -29,6 +30,7 @@ import {
   candidateExchangeSchema,
   candidateSaveSchema,
   candidateSubmitSchema,
+  candidateTaskUpdateSchema,
 } from "@anvi/contracts";
 import { CandidateStore, type CandidateActor } from "./candidate.store";
 import { csrfMatches } from "./auth";
@@ -128,6 +130,18 @@ class CandidateController {
     await this.store.logout(req.cookies[cookie]);
     res.clearCookie(cookie, { path: "/" });
     return { signedOut: true };
+  }
+  @Post("api/candidate/tasks/:taskId") updateTask(
+    @Req() req: CandidateRequest,
+    @Param("taskId") taskId: string,
+    @Body() body: unknown,
+  ) {
+    return this.store.updateTask(
+      req.candidate,
+      parse(z.uuid(), taskId),
+      parse(candidateTaskUpdateSchema, body),
+      req.requestId,
+    );
   }
 }
 export async function createCandidateApp(config: Config, port = 4001) {

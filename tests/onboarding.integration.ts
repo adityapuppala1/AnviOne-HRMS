@@ -4,7 +4,9 @@ import { randomUUID } from "node:crypto";
 import { createApp } from "../apps/api/src/app";
 import { createCandidateApp } from "../apps/api/src/candidate-app";
 import { readConfig } from "../apps/api/src/config";
-import { makePool } from "../packages/database/src/index";
+import { makePool, scoped, transaction } from "../packages/database/src/index";
+import { OnboardingStore } from "../apps/api/src/onboarding.store";
+import type { CandidateTask } from "../packages/contracts/src/index";
 import { hash } from "../apps/api/src/platform.store";
 if (process.env.NODE_ENV !== "development" || process.env.AUTH_MODE !== "demo")
   throw new Error("Synthetic development database required");
@@ -74,6 +76,8 @@ await test("Isolated candidate onboarding", async (t) => {
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
   const reason = "Synthetic onboarding acceptance verification";
+  const extraCases: string[] = [];
+  let ownTask: CandidateTask, hrTask: CandidateTask, adminTask: CandidateTask;
   const detail = async () => {
     const r = await hr(`/candidates/${id}`);
     assert.equal(r.status, 200);
@@ -320,6 +324,11 @@ await test("Isolated candidate onboarding", async (t) => {
             version,
             "invalid-request-uuid",
           ),
+          (error: unknown) => {
+            assert.ok(error && typeof error === "object" && "code" in error);
+            assert.equal(error.code, "22P02");
+            return true;
+          },
         );
         assert.equal((await detail()).submissions.length, 0);
         assert.equal(
@@ -403,6 +412,359 @@ await test("Isolated candidate onboarding", async (t) => {
       },
     );
     await t.test(
+      "starter checklist is explicit, versioned, dated and HR scoped",
+      async () => {
+        const starts = await Promise.all([
+          hr(`/candidates/${id}/checklist`, { version, reason }),
+          hr(`/candidates/${id}/checklist`, { version, reason }),
+        ]);
+        assert.deepEqual(starts.map((r) => r.status).sort(), [201, 409]);
+        const d = await detail();
+        version = d.candidate.version;
+        assert.equal(d.tasks.length, 5);
+        ownTask = d.tasks.find((t: CandidateTask) => t.owner === "candidate");
+        hrTask = d.tasks.find((t: CandidateTask) => t.owner === "hr");
+        adminTask = d.tasks.find(
+          (t: CandidateTask) => t.owner === "administration",
+        );
+        assert.equal(ownTask.dueOn, "2026-12-30");
+        assert.equal(hrTask.dueOn, "2026-12-31");
+        assert.equal(hrTask.waitingOn, true);
+        assert.equal(
+          (await hr(`/candidates/${id}/checklist`, { version, reason })).status,
+          409,
+        );
+        await switchRole("employee");
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks`, {
+              caseVersion: version,
+              label: "Forbidden test task",
+              owner: "hr",
+              required: true,
+              dueOffsetDays: 0,
+              dependsOn: null,
+            })
+          ).status,
+          403,
+        );
+        await switchRole("hr_admin");
+        assert.equal(
+          (
+            await scoped(
+              store.pool,
+              { ...actor, role: "hr_admin", entityId: randomUUID() },
+              (c) => c.query("SELECT id FROM candidate_task"),
+            )
+          ).rowCount,
+          0,
+        );
+      },
+    );
+    await t.test(
+      "candidate sees only owned tasks and cannot forge metadata or case changes",
+      async () => {
+        const me = await (await api("session")).json();
+        assert.equal(me.tasks.length, 1);
+        assert.equal(me.tasks[0].id, ownTask.id);
+        assert.ok(!("owner" in me.tasks[0]));
+        assert.ok(!("dependsOn" in me.tasks[0]));
+        assert.equal(
+          (
+            await api(`tasks/${hrTask.id}`, {
+              caseVersion: version,
+              version: hrTask.version,
+              state: "completed",
+              reason,
+            })
+          ).status,
+          404,
+        );
+        assert.equal(
+          (
+            await api(`tasks/${ownTask.id}`, {
+              caseVersion: version,
+              version: ownTask.version,
+              state: "completed",
+              reason,
+              owner: "hr",
+            })
+          ).status,
+          400,
+        );
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}`, {
+              caseVersion: version,
+              version: hrTask.version,
+              state: "completed",
+              reason,
+            })
+          ).status,
+          409,
+        );
+        await assert.rejects(
+          scoped(store.pool, { ...actor, role: "hr_admin" }, (c) =>
+            c.query(
+              "UPDATE candidate_task SET label='Forged metadata',version=version+1,note=$2 WHERE id=$1",
+              [ownTask.id, reason],
+            ),
+          ),
+        );
+        await assert.rejects(
+          transaction(candidate.store.pool, async (c) => {
+            await c.query(
+              "SELECT set_config('candidate.id',$1,true),set_config('candidate.operation','task',true)",
+              [id],
+            );
+            await c.query(
+              "UPDATE candidate_case SET draft='{}',version=version+1 WHERE id=$1",
+              [id],
+            );
+          }),
+        );
+        assert.equal(
+          (await candidate.store.pool.query("SELECT id FROM candidate_task"))
+            .rowCount,
+          0,
+        );
+      },
+    );
+    await t.test(
+      "task audit failure rolls back and concurrent candidate completion commits once after form approval",
+      async () => {
+        const candidateActor = await candidate.store.session(
+          cookie.split("=")[1],
+        );
+        const input = {
+          caseVersion: version,
+          version: ownTask.version,
+          state: "completed" as const,
+          reason,
+        };
+        await assert.rejects(
+          candidate.store.updateTask(
+            candidateActor,
+            ownTask.id,
+            input,
+            "invalid-request-uuid",
+          ),
+          (error: unknown) => {
+            assert.ok(error && typeof error === "object" && "code" in error);
+            assert.equal(error.code, "22P02");
+            return true;
+          },
+        );
+        let d = await detail();
+        assert.equal(d.candidate.version, version);
+        assert.equal(
+          d.tasks.find((t: CandidateTask) => t.id === ownTask.id).state,
+          "pending",
+        );
+        const results = await Promise.all([
+          api(`tasks/${ownTask.id}`, input),
+          api(`tasks/${ownTask.id}`, input),
+        ]);
+        assert.deepEqual(results.map((r) => r.status).sort(), [201, 409]);
+        d = await detail();
+        version = d.candidate.version;
+        ownTask = d.tasks.find((t: CandidateTask) => t.id === ownTask.id);
+        hrTask = d.tasks.find((t: CandidateTask) => t.id === hrTask.id);
+        assert.equal(hrTask.waitingOn, false);
+        assert.equal(d.candidate.state, "approved");
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM audit_event WHERE target=$1 AND action='candidate.task_updated'",
+              [id],
+            )
+          ).rowCount,
+          1,
+        );
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM outbox_event WHERE aggregate_id=$1 AND event_type='candidate.task_updated.v1'",
+              [id],
+            )
+          ).rowCount,
+          1,
+        );
+      },
+    );
+    await t.test(
+      "completed dependencies cannot be invalidated until dependents are reopened",
+      async () => {
+        for (const taskId of [hrTask.id, adminTask.id]) {
+          const d = await detail();
+          const task = d.tasks.find((t: CandidateTask) => t.id === taskId);
+          assert.equal(
+            (
+              await hr(`/candidates/${id}/tasks/${taskId}`, {
+                caseVersion: d.candidate.version,
+                version: task.version,
+                state: "completed",
+                reason,
+              })
+            ).status,
+            201,
+          );
+        }
+        let d = await detail();
+        version = d.candidate.version;
+        hrTask = d.tasks.find((t: CandidateTask) => t.id === hrTask.id);
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}`, {
+              caseVersion: version,
+              version: hrTask.version,
+              state: "pending",
+              reason,
+            })
+          ).status,
+          409,
+        );
+        assert.equal(
+          (
+            await api(`tasks/${ownTask.id}`, {
+              caseVersion: version,
+              version: ownTask.version,
+              state: "pending",
+              reason,
+            })
+          ).status,
+          409,
+        );
+        for (const taskId of [adminTask.id, hrTask.id]) {
+          d = await detail();
+          const task = d.tasks.find((t: CandidateTask) => t.id === taskId);
+          assert.equal(
+            (
+              await hr(`/candidates/${id}/tasks/${taskId}`, {
+                caseVersion: d.candidate.version,
+                version: task.version,
+                state: "pending",
+                reason,
+              })
+            ).status,
+            201,
+          );
+        }
+        d = await detail();
+        version = d.candidate.version;
+      },
+    );
+    await t.test(
+      "custom prerequisites remain case scoped and candidate dependency lookup reveals only a flag",
+      async () => {
+        const options = await (await hr("/candidates/options")).json();
+        const foreign = await hr("/candidates", {
+          name: "Other synthetic candidate",
+          email: `other-${randomUUID()}@anvi.example`,
+          title: "Synthetic colleague",
+          joinedOn: "2027-01-01",
+          departmentId: options.departments[0].id,
+          locationId: options.locations[0].id,
+          managerId: options.managers[0].id,
+        });
+        assert.equal(foreign.status, 201);
+        const other = await foreign.json();
+        extraCases.push(other.id);
+        const otherInput = {
+          caseVersion: other.version,
+          label: "Other intake prerequisite",
+          owner: "hr",
+          required: true,
+          dueOffsetDays: 0,
+          dependsOn: null,
+        };
+        assert.equal(
+          (await hr(`/candidates/${other.id}/tasks`, otherInput)).status,
+          201,
+        );
+        const otherDetail = await (await hr(`/candidates/${other.id}`)).json();
+        const input = {
+          caseVersion: version,
+          label: "Confirm a fictional induction preference",
+          owner: "candidate" as const,
+          required: true,
+          dueOffsetDays: 1,
+          dependsOn: hrTask.id,
+        };
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks`, {
+              ...input,
+              dependsOn: otherDetail.tasks[0].id,
+            })
+          ).status,
+          400,
+        );
+        await assert.rejects(
+          new OnboardingStore(store).createTask(
+            { ...actor, role: "hr_admin" },
+            id,
+            input,
+            "invalid-request-uuid",
+          ),
+        );
+        assert.equal((await detail()).tasks.length, 5);
+        assert.equal((await hr(`/candidates/${id}/tasks`, input)).status, 201);
+        const d = await detail();
+        version = d.candidate.version;
+        const me = await (await api("session")).json();
+        assert.equal(me.tasks.length, 2);
+        const waiting = me.tasks.find(
+          (t: CandidateTask) => t.label === input.label,
+        );
+        assert.equal(waiting.waitingOn, true);
+        assert.ok(!("dependsOn" in waiting));
+        assert.equal(
+          (
+            await api(`tasks/${waiting.id}`, {
+              caseVersion: version,
+              version: waiting.version,
+              state: "completed",
+              reason,
+            })
+          ).status,
+          409,
+        );
+        assert.equal(
+          (await admin.query("SELECT id FROM employee WHERE id=$1", [id]))
+            .rowCount,
+          0,
+        );
+      },
+    );
+    await t.test(
+      "checklists enforce the 30-task limit without mutating the case",
+      async () => {
+        await admin.query(
+          "INSERT INTO candidate_task(id,candidate_id,label,owner,required,due_on) SELECT gen_random_uuid(),$1,'Synthetic limit fixture '||n,'hr',false,CURRENT_DATE FROM generate_series(1,24) n",
+          [id],
+        );
+        const before = await detail();
+        assert.equal(before.tasks.length, 30);
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks`, {
+              caseVersion: version,
+              label: "Task beyond the accepted limit",
+              owner: "hr",
+              required: false,
+              dueOffsetDays: 0,
+              dependsOn: null,
+            })
+          ).status,
+          409,
+        );
+        const after = await detail();
+        assert.equal(after.tasks.length, 30);
+        assert.equal(after.candidate.version, before.candidate.version);
+      },
+    );
+    await t.test(
       "rotation revokes sessions and old invitations, cancellation closes access",
       async () => {
         const oldToken = token;
@@ -417,18 +779,33 @@ await test("Isolated candidate onboarding", async (t) => {
         const r = await hr(`/candidates/${id}/revoke`, { version, reason });
         assert.equal(r.status, 201);
         assert.equal((await api("session")).status, 401);
+        const d = await detail();
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${ownTask.id}`, {
+              caseVersion: d.candidate.version,
+              version: ownTask.version,
+              state: "pending",
+              reason,
+            })
+          ).status,
+          409,
+        );
       },
     );
   } finally {
-    if (id) {
+    for (const cleanupId of [id, ...extraCases].filter(Boolean)) {
       for (const table of [
+        "candidate_task",
         "candidate_delivery_preview",
         "candidate_challenge",
         "candidate_session",
         "candidate_submission",
       ])
-        await admin.query(`DELETE FROM ${table} WHERE candidate_id=$1`, [id]);
-      await admin.query("DELETE FROM candidate_case WHERE id=$1", [id]);
+        await admin.query(`DELETE FROM ${table} WHERE candidate_id=$1`, [
+          cleanupId,
+        ]);
+      await admin.query("DELETE FROM candidate_case WHERE id=$1", [cleanupId]);
     }
     await candidate.store.pool.end();
     await candidate.app.close();

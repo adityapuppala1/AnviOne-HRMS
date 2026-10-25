@@ -18,6 +18,10 @@ import {
 import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
 import "./onboarding.css";
+import {
+  OnboardingChecklist,
+  SubmissionComparison,
+} from "../components/onboarding-checklist";
 const labels: Record<Candidate["state"], string> = {
   draft: "Draft",
   invited: "Invited",
@@ -437,6 +441,12 @@ function CaseReview({
           <p className="intake-feedback">Latest review: {c.reviewNote}</p>
         )}
       </div>
+      <SubmissionComparison value={value} />
+      <OnboardingChecklist
+        value={value}
+        csrf={me.csrfToken}
+        onSaved={onSaved}
+      />
       {value.submissions.length > 0 && (
         <details className="intake-history">
           <summary>

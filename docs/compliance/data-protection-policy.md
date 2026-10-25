@@ -58,6 +58,10 @@ The local preview accepts only fictional `@anvi.example` intake records. HR reco
 
 Invitation hashes expire after 72 hours; OTP challenges expire after 10 minutes with five attempts. Candidate sessions have a one-hour absolute and 15-minute idle limit. A development-only AES-GCM encrypted delivery tray temporarily contains the invitation/code, is HR-scoped and audited on read, and is deleted after successful verification or credential rotation/revocation. Expiry denies access; scheduled physical cleanup is still pending. Form drafts/submissions currently have no automated disposal and must remain synthetic. A real deployment requires approved retention, notices/legal basis, delivery providers and key management before collecting personal data.
 
+## Checklist notes
+
+Synthetic onboarding tasks add coordinating owner labels, due dates, status and short completion/reopening notes. Candidate sessions see only their own task notes; HR sees the scoped checklist and immutable submission comparisons. Notes must remain fictional and contain no credentials, private data or document links. These notes are not verified identity/check evidence. Task history follows the unresolved synthetic-record retention boundary above; real task processing requires approved purposes, notices, access rules and disposal before enablement.
+
 ## Legal validation
 
 India is an initial planning assumption. Assess entity-specific obligations rather than inferring jurisdiction from developer location. Review the [official MeitY DPDP Rules and enforcement resources](https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa?pageTitle=Digital-Personal-Data-Protection-Rules-2025%3B) and [government announcement](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&lang=1&reg=3), including phased commencement, with qualified owners. Additional-country rules require their own review. This draft supplies control intent and current implementation boundaries, not a determination of legal obligations.

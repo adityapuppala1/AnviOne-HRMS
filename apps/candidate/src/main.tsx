@@ -44,6 +44,7 @@ function Welcome() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [portal, setPortal] = useState<Portal | null>(null);
+  const [formPending, setFormPending] = useState(false);
   useEffect(() => {
     if (invitation) return;
     let active = true;
@@ -180,7 +181,18 @@ function Welcome() {
             {phase === "loading" ? (
               <p role="status">Opening your onboarding…</p>
             ) : phase === "form" && portal ? (
-              <Introduction portal={portal} onSaved={setPortal} />
+              <>
+                <Introduction
+                  portal={portal}
+                  onSaved={setPortal}
+                  onPendingChange={setFormPending}
+                />
+                <CandidateChecklist
+                  portal={portal}
+                  onSaved={setPortal}
+                  formPending={formPending}
+                />
+              </>
             ) : phase === "code" ? (
               <>
                 <p className="candidate-eyebrow">Step 01 · Verify</p>
@@ -256,12 +268,220 @@ function Welcome() {
     </div>
   );
 }
+function CandidateChecklist({
+  portal,
+  onSaved,
+  formPending,
+}: {
+  portal: Portal;
+  onSaved: (p: Portal) => void;
+  formPending: boolean;
+}) {
+  const [editing, setEditing] = useState<string | null>(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const mounted = useRef(true),
+    lastEdited = useRef<string | null>(null),
+    taskButtons = useRef(new Map<string, HTMLButtonElement>());
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!editing && lastEdited.current)
+      taskButtons.current.get(lastEdited.current)?.focus();
+  }, [editing]);
+  if (!portal.tasks.length) return null;
+  const required = portal.tasks.filter((t) => t.required),
+    complete = required.filter((t) => t.state === "completed").length;
+  async function update(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const task = portal.tasks.find((t) => t.id === editing);
+    if (!task || formPending) return;
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+    setBusy(true);
+    setError("");
+    try {
+      const result = candidatePortalSchema.parse(
+        await request(
+          `tasks/${task.id}`,
+          {
+            caseVersion: portal.candidate.version,
+            version: task.version,
+            state: data.state,
+            reason: data.reason,
+          },
+          portal.csrfToken,
+        ),
+      );
+      if (mounted.current) {
+        onSaved(result);
+        setEditing(null);
+      }
+    } catch (err) {
+      if (mounted.current)
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to save task. Reload to review the current status.",
+        );
+    } finally {
+      if (mounted.current) setBusy(false);
+    }
+  }
+  return (
+    <section className="candidate-checklist" aria-label="Your checklist">
+      <p className="candidate-eyebrow">A welcome, shared</p>
+      <h2>Your part of the welcome.</h2>
+      <p>
+        {complete} of {required.length} required tasks complete. These tasks are
+        separate from your introduction form.
+      </p>
+      <progress
+        aria-label="Your required checklist completion"
+        value={complete}
+        max={Math.max(required.length, 1)}
+      />
+      <p className="candidate-small">
+        Use fictional notes only. Task completion does not activate employment
+        or verify identity.
+      </p>
+      {formPending && (
+        <p className="candidate-small" role="status">
+          Finish saving your introduction before updating a task.
+        </p>
+      )}
+      {error && (
+        <p className="candidate-error" role="alert">
+          {error} Reload to review the latest status.
+        </p>
+      )}
+      <ul>
+        {portal.tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`candidate-task candidate-task-${task.state}`}
+          >
+            <div className="candidate-task-heading">
+              <span aria-hidden="true">
+                {task.state === "completed" ? "✓" : "○"}
+              </span>
+              <h3>{task.label}</h3>
+            </div>
+            <p className="candidate-small">
+              {task.required ? "Required" : "Optional"} · Due {task.dueOn} ·{" "}
+              {task.state === "completed"
+                ? "Completed"
+                : task.state === "blocked"
+                  ? "Blocked"
+                  : "To do"}
+              {task.overdue ? " · Overdue" : ""}
+            </p>
+            {task.waitingOn && (
+              <p className="candidate-task-waiting">
+                Waiting for a prerequisite. Your HR team can help.
+              </p>
+            )}
+            {task.note && (
+              <details>
+                <summary>Latest task note</summary>
+                <p>{task.note}</p>
+              </details>
+            )}
+            {editing === task.id ? (
+              <form onSubmit={(e) => void update(e)}>
+                <label htmlFor={`task-state-${task.id}`}>New task status</label>
+                <select
+                  id={`task-state-${task.id}`}
+                  name="state"
+                  autoFocus
+                  defaultValue={
+                    task.state === "completed"
+                      ? "pending"
+                      : task.waitingOn
+                        ? "blocked"
+                        : "completed"
+                  }
+                >
+                  {[
+                    ["pending", "To do"],
+                    ["blocked", "Blocked"],
+                    ["completed", "Completed"],
+                  ].map(([value, label]) => (
+                    <option
+                      key={value}
+                      value={value}
+                      disabled={
+                        value === task.state ||
+                        (value === "completed" && task.waitingOn)
+                      }
+                    >
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <label htmlFor={`task-note-${task.id}`}>
+                  Completion / change note
+                </label>
+                <textarea
+                  id={`task-note-${task.id}`}
+                  name="reason"
+                  required
+                  minLength={10}
+                  maxLength={300}
+                  rows={3}
+                />
+                <div className="candidate-task-actions">
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => setEditing(null)}
+                  >
+                    Cancel task update
+                  </button>
+                  <button
+                    className="button button-primary"
+                    disabled={busy || formPending}
+                  >
+                    {busy ? "Saving task…" : "Save task status"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                className="button button-secondary"
+                disabled={busy || formPending}
+                onClick={() => {
+                  setError("");
+                  lastEdited.current = task.id;
+                  setEditing(task.id);
+                }}
+                aria-label={`Update ${task.label}`}
+                ref={(node) => {
+                  if (node) taskButtons.current.set(task.id, node);
+                  else taskButtons.current.delete(task.id);
+                }}
+              >
+                Update task
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 function Introduction({
   portal,
   onSaved,
+  onPendingChange,
 }: {
   portal: Portal;
   onSaved: (value: Portal) => void;
+  onPendingChange: (pending: boolean) => void;
 }) {
   const c = portal.candidate;
   const [draft, setDraft] = useState<CandidateDraft>(c.draft),
@@ -282,6 +502,9 @@ function Introduction({
   const editable = ["invited", "in_progress", "changes_requested"].includes(
     c.state,
   );
+  useEffect(() => {
+    onPendingChange(dirty || saving || submitting || Boolean(error));
+  }, [dirty, saving, submitting, error, onPendingChange]);
   useEffect(() => {
     current.current = portal;
   }, [portal]);

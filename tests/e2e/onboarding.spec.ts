@@ -62,6 +62,59 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     page.getByRole("heading", { name: `Avery ${suffix}`, exact: true }),
   ).toBeVisible();
+  const checklist = page.getByRole("region", { name: "Onboarding checklist" });
+  await checklist
+    .getByRole("button", { name: "Use starter checklist" })
+    .click();
+  await dialog
+    .getByLabel("Checklist reason")
+    .fill("Prepare fictional onboarding coordination tasks for review.");
+  await dialog
+    .getByRole("button", { name: "Start checklist", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(checklist.locator(".checklist-item")).toHaveCount(5);
+  await checklist
+    .getByRole("button", { name: "Add task", exact: true })
+    .click();
+  await dialog
+    .getByLabel("Task title")
+    .fill("Choose a fictional induction topic");
+  await dialog.getByLabel("Coordinating owner").selectOption("candidate");
+  await dialog.getByLabel("Days from joining").fill("1");
+  await dialog
+    .getByLabel("Prerequisite")
+    .selectOption({ label: "Record a fictional readiness check" });
+  await dialog.getByRole("checkbox", { name: "Required task" }).uncheck();
+  await accessible(page);
+  await dialog
+    .getByRole("button", { name: "Create task", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(checklist.locator(".checklist-item")).toHaveCount(6);
+  await checklist.getByLabel("Task owner").selectOption("candidate");
+  await expect(checklist.locator(".checklist-item")).toHaveCount(2);
+  await checklist.getByLabel("Task owner").selectOption("all");
+  await checklist.getByLabel("Task status").selectOption("completed");
+  await expect(checklist.getByRole("status")).toHaveText(
+    "No tasks match these filters.",
+  );
+  await checklist.getByLabel("Task status").selectOption("all");
+  await checklist
+    .getByRole("button", {
+      name: "Update Record a fictional readiness check",
+      exact: true,
+    })
+    .click();
+  await expect(
+    dialog.getByLabel("New task status").locator('option[value="completed"]'),
+  ).toHaveJSProperty("disabled", true);
+  await dialog.getByLabel("New task status").selectOption("blocked");
+  await dialog
+    .getByLabel("Completion / change note")
+    .fill("Waiting for the fictional candidate coordination step.");
+  await dialog.getByRole("button", { name: "Save task status" }).click();
+  await expect(dialog).toHaveCount(0);
   await page
     .getByLabel("Action / review reason")
     .fill("Prepare fictional candidate welcome for acceptance review.");
@@ -144,10 +197,68 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     candidate.getByRole("heading", { name: "Thank you. Over to HR." }),
   ).toBeVisible();
+  const candidateTasks = candidate.getByRole("region", {
+    name: "Your checklist",
+  });
+  await expect(candidateTasks.locator(".candidate-task")).toHaveCount(2);
+  await expect(
+    candidate.getByRole("heading", {
+      name: "Record a fictional readiness check",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await candidateTasks
+    .getByRole("button", {
+      name: "Update Share a fictional collaboration preference",
+      exact: true,
+    })
+    .click();
+  await expect(candidateTasks.getByLabel("New task status")).toBeFocused();
+  await candidateTasks
+    .getByLabel("Completion / change note")
+    .fill("I prefer fictional collaborative design reviews with my team.");
+  await candidateTasks
+    .getByRole("button", { name: "Save task status" })
+    .click();
+  await expect(
+    candidateTasks.getByText("1 of 1 required tasks complete.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    candidateTasks.getByRole("button", {
+      name: "Update Share a fictional collaboration preference",
+      exact: true,
+    }),
+  ).toBeFocused();
   await page.getByRole("button", { name: "Close dialog", exact: true }).click();
   await page.reload();
   await expect(
     page.getByRole("button", { name: "Request changes", exact: true }),
+  ).toBeVisible();
+  for (const task of [
+    "Record a fictional readiness check",
+    "Plan the fictional induction",
+  ]) {
+    await checklist
+      .getByRole("button", { name: `Update ${task}`, exact: true })
+      .click();
+    await dialog.getByLabel("New task status").selectOption("completed");
+    await dialog
+      .getByLabel("Completion / change note")
+      .fill(
+        "Completed this fictional coordination task for acceptance review.",
+      );
+    await dialog.getByRole("button", { name: "Save task status" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(
+      checklist.locator(".checklist-item").filter({
+        has: page.getByRole("heading", { name: task, exact: true }),
+      }),
+    ).toContainText("Completed");
+  }
+  await expect(
+    checklist.getByText("3/3 required", { exact: true }),
   ).toBeVisible();
   await page
     .getByLabel("Action / review reason")
@@ -178,6 +289,22 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     page.getByRole("button", { name: "Approve form", exact: true }),
   ).toBeVisible();
+  const comparison = page.getByRole("region", { name: "Submission changes" });
+  await expect(
+    comparison.getByText(
+      "I am a fictional product designer who enjoys thoughtful workplace experiences.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    comparison.getByText(
+      "I am a fictional product designer interested in accessible team collaboration.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await comparison.screenshot({
+    path: info.outputPath("submission-comparison.png"),
+  });
   await page
     .getByLabel("Action / review reason")
     .fill("Fictional introduction reviewed and approved for this form only.");
@@ -186,6 +313,26 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     page.locator(".intake-detail").getByText("Form approved", { exact: true }),
   ).toBeVisible();
   await accessible(page);
+  for (const width of [320, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await accessible(page);
+  }
+  await page
+    .getByRole("button", { name: "Use dark theme", exact: true })
+    .click();
+  await accessible(page);
+  await checklist.screenshot({ path: info.outputPath("checklist-dark.png") });
+  await page
+    .getByRole("button", { name: "Use light theme", exact: true })
+    .click();
+  await checklist.screenshot({
+    path: info.outputPath("checklist-desktop.png"),
+  });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("heading", { name: "Make room for someone new." })
@@ -199,5 +346,41 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     candidate.getByRole("heading", { name: "Your form is approved." }),
   ).toBeVisible();
+  await candidateTasks
+    .getByRole("button", {
+      name: "Update Choose a fictional induction topic",
+      exact: true,
+    })
+    .click();
+  await expect(
+    candidateTasks
+      .getByLabel("New task status")
+      .locator('option[value="completed"]'),
+  ).toHaveJSProperty("disabled", false);
+  await candidateTasks
+    .getByLabel("Completion / change note")
+    .fill("I would like a fictional introduction to accessible collaboration.");
+  await candidateTasks
+    .getByRole("button", { name: "Save task status" })
+    .click();
+  await expect(
+    candidateTasks.locator(".candidate-task").filter({
+      has: candidate.getByRole("heading", {
+        name: "Choose a fictional induction topic",
+        exact: true,
+      }),
+    }),
+  ).toContainText("Completed");
+  await candidate.setViewportSize({ width: 390, height: 844 });
+  await candidateTasks.screenshot({
+    path: info.outputPath("candidate-checklist-mobile.png"),
+  });
+  await candidate.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await candidateTasks
+      .locator(".candidate-task-completed .candidate-task-heading span")
+      .first()
+      .evaluate((node) => getComputedStyle(node).animationName),
+  ).toBe("none");
   await accessible(candidate);
 });

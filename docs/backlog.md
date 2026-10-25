@@ -1,6 +1,6 @@
 # Delivery backlog
 
-Current increment: F0.4, synthetic candidate onboarding preview. Date: 25 October 2026. Owners below are required roles, not assigned people.
+Current increment: F0.5, synthetic onboarding checklist and submission comparison. Date: 25 October 2026. Owners below are required roles, not assigned people.
 
 F0.2 adds the Atlas design system to all available screens, a scoped department/location explorer, profile sections, audit filters/details, display preferences, responsive branding previews and reduced-motion handling. These advance UX-01/UX-02 and EMP-01 without changing their access policy. Activation and the remaining HR domains below are not implemented by this visual increment.
 
@@ -39,3 +39,5 @@ F0.3 separates person identity from employment, backfills permanent employee-cod
 F0.4 implements the synthetic separate-origin invitation, OTP, autosave and form-review preview. See [acceptance evidence](acceptance-evidence/candidate-preview.md) and [complete workstream coverage](requirements-traceability.md). The next milestone is **real delivery and complete onboarding prerequisites**: candidate identity and session isolation, hashed single-use invitations, verified nominated-address OTP, versioned forms/submissions, required task/check evidence and HR review. Then implement transactional, idempotent activation against the person/employment/code foundations, revoke candidate credentials, initialize approved policy/leave records and enqueue the welcome intent. Provider delivery must be independently verified. Corporate credentials should be supplied through a secret manager or local environment, never chat or Git.
 
 No calendar estimate is promised until integration owners, staffing and acceptance owners are confirmed. Preserve the working foundation while delivering each slice.
+
+F0.5 adds explicit starter/custom checklist tasks, coordinating owners, relative due dates, required progress, dependency enforcement, status/evidence notes, candidate-only task actions and immutable submission comparison. See [plan](plans/onboarding-checklist.md) and [evidence](acceptance-evidence/onboarding-checklist.md). Internal owner labels do not grant task access; HR coordinates them until assignee workspaces are implemented. Template administration, real evidence/document validation, assigned-owner permissions, escalation and full onboarding/activation remain pending.

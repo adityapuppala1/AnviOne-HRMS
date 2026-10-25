@@ -323,7 +323,23 @@ await test("PostgreSQL and HTTP security boundaries", async (t) => {
     await t.test(
       "concurrent outbox workers receipt once and replay is harmless",
       async () => {
-        await Promise.all([drainOutbox(worker), drainOutbox(worker)]);
+        const pending = (
+          await admin.query(
+            "SELECT count(*)::int AS count FROM outbox_event WHERE processed_at IS NULL",
+          )
+        ).rows[0].count;
+        let processed = 0;
+        // Each worker claims at most 50; repeated local suites can leave more than 100.
+        for (let round = 0; round < Math.ceil(pending / 100) + 1; round++) {
+          const batch = await Promise.all([
+            drainOutbox(worker),
+            drainOutbox(worker),
+          ]);
+          const count = batch.reduce((sum, value) => sum + value, 0);
+          processed += count;
+          if (!count) break;
+        }
+        assert.equal(processed, pending);
         assert.equal(await drainOutbox(worker), 0);
         const result = await admin.query(
           "SELECT count(*)::int AS missing FROM outbox_event o LEFT JOIN event_receipt r ON r.event_id=o.id WHERE r.event_id IS NULL OR o.processed_at IS NULL",

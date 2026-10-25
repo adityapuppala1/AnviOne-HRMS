@@ -21,6 +21,9 @@ const actionNames: Record<string, string> = {
   "candidate.reviewed": "Reviewed candidate form",
   "candidate.submitted": "Submitted candidate form",
   "candidate.delivery_previewed": "Inspected local delivery preview",
+  "candidate.checklist_started": "Started onboarding checklist",
+  "candidate.task_created": "Added onboarding task",
+  "candidate.task_updated": "Updated onboarding task",
 };
 const formatDate = (date: string) =>
   new Intl.DateTimeFormat("en-IN", {

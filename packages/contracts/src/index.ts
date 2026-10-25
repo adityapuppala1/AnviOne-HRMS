@@ -222,11 +222,58 @@ export const candidateSubmissionSchema = z.object({
   payload: candidateDraftSchema,
   submittedAt: z.string(),
 });
+export const candidateTaskOwnerSchema = z.enum([
+  "candidate",
+  "hr",
+  "manager",
+  "it",
+  "administration",
+]);
+export const candidateTaskStateSchema = z.enum([
+  "pending",
+  "blocked",
+  "completed",
+]);
+export const candidateTaskSchema = z.object({
+  id: z.uuid(),
+  label: z.string(),
+  owner: candidateTaskOwnerSchema,
+  required: z.boolean(),
+  dueOn: z.iso.date(),
+  state: candidateTaskStateSchema,
+  version: z.number().int().positive(),
+  dependsOn: z.uuid().nullable(),
+  note: z.string().nullable(),
+  updatedAt: z.string(),
+  waitingOn: z.boolean(),
+  overdue: z.boolean(),
+});
+export type CandidateTask = z.infer<typeof candidateTaskSchema>;
+export const candidateOwnTaskSchema = candidateTaskSchema.omit({
+  owner: true,
+  dependsOn: true,
+});
+export const candidateTaskCreateSchema = z.strictObject({
+  caseVersion: z.number().int().positive(),
+  label: z.string().trim().min(5).max(140),
+  owner: candidateTaskOwnerSchema,
+  required: z.boolean(),
+  dueOffsetDays: z.number().int().min(-30).max(90),
+  dependsOn: z.uuid().nullable(),
+});
+export const candidateTaskUpdateSchema = z.strictObject({
+  caseVersion: z.number().int().positive(),
+  version: z.number().int().positive(),
+  state: candidateTaskStateSchema,
+  reason: z.string().trim().min(10).max(300),
+});
 export const candidateDetailSchema = z.object({
   candidate: candidateSchema,
   submissions: z.array(candidateSubmissionSchema),
+  tasks: z.array(candidateTaskSchema),
 });
 export const candidatePortalSchema = z.object({
+  tasks: z.array(candidateOwnTaskSchema),
   candidate: candidateSchema.pick({
     id: true,
     name: true,
@@ -257,3 +304,4 @@ export const candidateDeliverySchema = z.object({
   expiresAt: z.string().nullable(),
   previewOnly: z.literal(true),
 });
+export { onboardingStarter, submissionChanges } from "./onboarding";

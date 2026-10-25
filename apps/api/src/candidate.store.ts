@@ -9,7 +9,11 @@ import {
   candidatePortalSchema,
   candidateDraftSchema,
   type CandidateDraft,
+  candidateOwnTaskSchema,
+  type candidateTaskUpdateSchema,
 } from "@anvi/contracts";
+import type { z } from "zod";
+import { readTasks, changeTask } from "./checklist";
 import { hash, opaque } from "./platform.store";
 import { otpHash, seal, previewKey } from "./onboarding.crypto";
 import type { Config } from "./config";
@@ -110,6 +114,9 @@ export class CandidateStore {
     if (!rows[0])
       throw new UnauthorizedException("Your candidate record is unavailable.");
     return candidatePortalSchema.parse({
+      tasks: (await readTasks(client, actor.id, true)).map((t) =>
+        candidateOwnTaskSchema.parse(t),
+      ),
       candidate: rows[0],
       csrfToken: actor.csrfToken,
     });
@@ -188,5 +195,46 @@ export class CandidateStore {
   }
   async logout(token: string) {
     await this.pool.query("SELECT end_candidate_session($1)", [hash(token)]);
+  }
+  async updateTask(
+    actor: CandidateActor,
+    taskId: string,
+    input: z.infer<typeof candidateTaskUpdateSchema>,
+    requestId: string,
+  ) {
+    return this.scoped(actor, async (client) => {
+      const before = await this.record(client, actor);
+      if (before.candidate.version !== input.caseVersion)
+        throw new ConflictException(
+          "Your onboarding changed. Reload before updating the checklist.",
+        );
+      await changeTask(client, actor.id, taskId, input, true);
+      await client.query(
+        "SELECT set_config('candidate.operation','task',true)",
+      );
+      const { rows } = await client.query(
+        "UPDATE candidate_case SET version=version+1 WHERE id=$1 RETURNING tenant_id,entity_id,version",
+        [actor.id],
+      );
+      const c = rows[0];
+      await client.query(
+        "INSERT INTO audit_event(id,tenant_id,entity_id,actor_id,actor_label,role,action,target,request_id,reason,details) VALUES($1,$2,$3,$4,'Candidate','candidate','candidate.task_updated',$5,$6,$7,$8)",
+        [
+          randomUUID(),
+          c.tenant_id,
+          c.entity_id,
+          actor.id,
+          actor.id,
+          requestId,
+          input.reason,
+          JSON.stringify({ taskId, state: input.state }),
+        ],
+      );
+      await client.query(
+        "INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version) VALUES($1,$2,$3,'candidate.task_updated.v1',$4,$5)",
+        [randomUUID(), c.tenant_id, c.entity_id, actor.id, c.version],
+      );
+      return this.record(client, actor);
+    });
   }
 }

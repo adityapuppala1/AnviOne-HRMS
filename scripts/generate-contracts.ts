@@ -27,6 +27,8 @@ import {
   candidateSaveSchema,
   candidateSubmitSchema,
   candidatePortalSchema,
+  candidateTaskCreateSchema,
+  candidateTaskUpdateSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -74,7 +76,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "AnviOne foundation API",
-    version: "0.3.0",
+    version: "0.5.0",
     description:
       "Synthetic foundation preview. Session origin checks apply to all mutations. Production requires separately verified corporate OIDC. Local HTTP uses anvi_dev_session instead of the production cookie.",
   },
@@ -256,6 +258,35 @@ const idParameter = [
   },
 ];
 Object.assign(spec.paths, {
+  "/candidates/{id}/checklist": {
+    parameters: idParameter,
+    post: write(
+      "Apply synthetic starter v1 to empty checklist",
+      candidateActionSchema,
+    ),
+  },
+  "/candidates/{id}/tasks": {
+    parameters: idParameter,
+    post: write(
+      "Add immutable task metadata with a same-case prerequisite",
+      candidateTaskCreateSchema,
+    ),
+  },
+  "/candidates/{id}/tasks/{taskId}": {
+    parameters: [
+      ...idParameter,
+      {
+        name: "taskId",
+        in: "path",
+        required: true,
+        schema: { type: "string", format: "uuid" },
+      },
+    ],
+    post: write(
+      "Versioned HR-coordinated task status and evidence",
+      candidateTaskUpdateSchema,
+    ),
+  },
   "/candidates": {
     get: {
       ...read(
@@ -315,7 +346,7 @@ const candidateSpec = {
   openapi: "3.1.0",
   info: {
     title: "MyAnvi synthetic candidate preview",
-    version: "0.4.0",
+    version: "0.5.0",
     description:
       "Development/demo only. Separate hostname and database role. Exact Origin required on mutations. No real email or employment activation.",
   },
@@ -328,6 +359,21 @@ const candidateSpec = {
     },
   },
   paths: {
+    "/tasks/{taskId}": {
+      parameters: [
+        {
+          name: "taskId",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Update only the current candidate's own task; versioned and audited",
+        candidateTaskUpdateSchema,
+        candidatePortalSchema,
+      ),
+    },
     "/challenge": {
       post: {
         ...write(

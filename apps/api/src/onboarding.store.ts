@@ -17,6 +17,12 @@ import type { z } from "zod";
 import type { Principal } from "@anvi/authz";
 import { hash, opaque, type PlatformStore } from "./platform.store";
 import { previewKey, seal, unseal } from "./onboarding.crypto";
+import { readTasks, changeTask } from "./checklist";
+import {
+  onboardingStarter,
+  type candidateTaskCreateSchema,
+  type candidateTaskUpdateSchema,
+} from "@anvi/contracts";
 const columns = `c.id,c.name,c.email,c.title,c.joined_on::text AS "joinedOn",c.state,c.version,c.invitation_expires_at AS "invitationExpiresAt",c.review_note AS "reviewNote",c.draft,d.name AS department,l.name AS location,p.name AS manager`;
 const joins = `candidate_case c JOIN org_unit d ON d.id=c.department_id JOIN org_unit l ON l.id=c.location_id JOIN employee e ON e.id=c.manager_id JOIN person p ON p.id=e.person_id`;
 export class OnboardingStore {
@@ -92,6 +98,7 @@ export class OnboardingStore {
       );
       return {
         candidate,
+        tasks: await readTasks(client, id),
         submissions: rows.map((r) =>
           candidateSubmissionSchema.parse({
             ...r,
@@ -256,6 +263,145 @@ export class OnboardingStore {
       "candidate_delivery_preview",
     ])
       await client.query(`DELETE FROM ${table} WHERE candidate_id=$1`, [id]);
+  }
+  async startChecklist(
+    actor: Principal,
+    id: string,
+    input: z.infer<typeof candidateActionSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.checklistCase(client, id, input.version);
+      if ((await readTasks(client, id)).length)
+        throw new ConflictException(
+          "The starter checklist can only be applied to an empty checklist.",
+        );
+      const ids = onboardingStarter.map(() => randomUUID());
+      for (const [i, task] of onboardingStarter.entries()) {
+        await client.query(
+          "INSERT INTO candidate_task(id,candidate_id,label,owner,required,due_on,depends_on,template_code) SELECT $1,id,$3,$4,$5,joined_on+$6::integer,$7,'starter_v1' FROM candidate_case WHERE id=$2",
+          [
+            ids[i],
+            id,
+            task.label,
+            task.owner,
+            task.required,
+            task.dueOffsetDays,
+            task.prerequisite === null ? null : ids[task.prerequisite],
+          ],
+        );
+      }
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        "candidate.checklist_started",
+        requestId,
+        input.reason,
+      );
+      return { changed: true };
+    });
+  }
+  async createTask(
+    actor: Principal,
+    id: string,
+    input: z.infer<typeof candidateTaskCreateSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.checklistCase(client, id, input.caseVersion);
+      const tasks = await readTasks(client, id);
+      if (tasks.length >= 30)
+        throw new ConflictException(
+          "This checklist has reached its 30-task limit.",
+        );
+      if (input.dependsOn && !tasks.some((t) => t.id === input.dependsOn))
+        throw new BadRequestException(
+          "Choose a prerequisite from this intake.",
+        );
+      await client.query(
+        "INSERT INTO candidate_task(id,candidate_id,label,owner,required,due_on,depends_on) SELECT $1,id,$3,$4,$5,joined_on+$6::integer,$7 FROM candidate_case WHERE id=$2",
+        [
+          randomUUID(),
+          id,
+          input.label,
+          input.owner,
+          input.required,
+          input.dueOffsetDays,
+          input.dependsOn,
+        ],
+      );
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        "candidate.task_created",
+        requestId,
+        "Added synthetic checklist task",
+      );
+      return { changed: true };
+    });
+  }
+  async updateTask(
+    actor: Principal,
+    id: string,
+    taskId: string,
+    input: z.infer<typeof candidateTaskUpdateSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.checklistCase(client, id, input.caseVersion);
+      await changeTask(client, id, taskId, input);
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        "candidate.task_updated",
+        requestId,
+        input.reason,
+        { taskId, state: input.state },
+      );
+      return { changed: true };
+    });
+  }
+  private async checklistCase(client: PoolClient, id: string, version: number) {
+    const c = await this.record(client, id, true);
+    if (c.state === "cancelled")
+      throw new ConflictException("This intake is cancelled.");
+    if (c.version !== version)
+      throw new ConflictException(
+        "This intake changed. Reload before updating the checklist.",
+      );
+    return c;
+  }
+  private async checklistEvent(
+    client: PoolClient,
+    actor: Principal,
+    id: string,
+    action: string,
+    requestId: string,
+    reason: string,
+    details: Record<string, unknown> = {},
+  ) {
+    const result = await client.query(
+      "UPDATE candidate_case SET version=version+1 WHERE id=$1 RETURNING version",
+      [id],
+    );
+    await audit(client, actor, action, id, requestId, { reason, details });
+    await client.query(
+      "INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version) VALUES($1,$2,$3,$4,$5,$6)",
+      [
+        randomUUID(),
+        actor.tenantId,
+        actor.entityId,
+        `${action}.v1`,
+        id,
+        result.rows[0].version,
+      ],
+    );
   }
   private async event(
     client: PoolClient,

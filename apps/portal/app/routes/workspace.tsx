@@ -15,6 +15,7 @@ import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCount
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
+import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
@@ -40,7 +41,7 @@ import {
   DialogPanel,
 } from "@anvi/ui";
 import { roleLabels, type Me, type Branding } from "@anvi/contracts";
-import { ApiError, useMe, useBranding, mutate } from "../lib/api";
+import { ApiError, useMe, useBranding, useApprovals, mutate } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
 import { Command } from "../components/command";
@@ -121,6 +122,10 @@ function Shell({ me }: { me: Me }) {
     }
   }
   const brand = brandingQuery.data;
+  const approver =
+    me.permissions.includes("leave.approve") ||
+    me.permissions.includes("attendance.review");
+  const waiting = useApprovals(approver).data?.waiting ?? 0;
   const links = [
     { to: "/", label: "Overview", icon: SquaresFour, visible: true },
     {
@@ -168,6 +173,13 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("attendance.self") ||
         me.permissions.includes("attendance.review"),
+    },
+    {
+      to: "/approvals",
+      label: "Approvals",
+      icon: Tray,
+      visible: approver,
+      count: waiting,
     },
     { to: "/calendar", label: "Holidays", icon: CalendarStar, visible: true },
     {
@@ -226,7 +238,7 @@ function Shell({ me }: { me: Me }) {
       <nav aria-label="Main navigation">
         {links
           .filter((link) => link.visible)
-          .map(({ to, label, icon: Icon }) => (
+          .map(({ to, label, icon: Icon, count }) => (
             <NavLink
               key={to}
               to={to}
@@ -241,7 +253,13 @@ function Shell({ me }: { me: Me }) {
                 weight={location.pathname === to ? "duotone" : "regular"}
               />
               <span>{label}</span>
-              <span className="nav-active-dot" />
+              {count ? (
+                <span className="nav-count" aria-label={`${count} waiting`}>
+                  {count}
+                </span>
+              ) : (
+                <span className="nav-active-dot" />
+              )}
             </NavLink>
           ))}
       </nav>

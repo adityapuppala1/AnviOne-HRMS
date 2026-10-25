@@ -17,6 +17,7 @@ export default [
     route("leave", "routes/leave.tsx"),
     route("attendance", "routes/attendance.tsx"),
     route("calendar", "routes/calendar.tsx"),
+    route("approvals", "routes/approvals.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

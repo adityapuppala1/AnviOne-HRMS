@@ -647,6 +647,42 @@ export const workWeekUpdateSchema = z.strictObject({
   version: z.number().int().positive(),
   reason: changeReasonSchema,
 });
+// Approvals inbox (F0.13): every decision waiting across modules.
+const approvalBase = {
+  id: z.uuid(),
+  version: z.number().int().positive(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  initials: z.string(),
+  department: z.string(),
+  reason: z.string(),
+  submittedAt: z.string(),
+  approver: z.enum(["manager", "hr"]),
+  canDecide: z.boolean(),
+};
+export const approvalItemSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("leave"),
+    ...approvalBase,
+    leaveType: z.string(),
+    startDate: z.iso.date(),
+    endDate: z.iso.date(),
+    days: z.number().positive(),
+  }),
+  z.strictObject({
+    kind: z.literal("attendance_correction"),
+    ...approvalBase,
+    workDate: z.iso.date(),
+    checkIn: clockSchema,
+    checkOut: clockSchema,
+  }),
+]);
+export type ApprovalItem = z.infer<typeof approvalItemSchema>;
+export const approvalInboxSchema = z.strictObject({
+  waiting: z.number().int().nonnegative(),
+  items: z.array(approvalItemSchema),
+});
+export type ApprovalInbox = z.infer<typeof approvalInboxSchema>;
 export {
   activationReadiness,
   onboardingStarter,

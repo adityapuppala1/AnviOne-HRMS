@@ -55,6 +55,7 @@ import {
   holidayUpdateSchema,
   workWeekSchema,
   workWeekUpdateSchema,
+  approvalInboxSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -372,6 +373,12 @@ const spec = {
         workWeekUpdateSchema,
         workWeekSchema,
         "200",
+      ),
+    },
+    "/approvals": {
+      get: read(
+        "Pending leave and attendance-correction decisions visible to the approver",
+        approvalInboxSchema,
       ),
     },
     "/organization": {

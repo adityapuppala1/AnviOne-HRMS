@@ -27,7 +27,8 @@ const correctionColumns = `c.id, c.employee_id AS "employeeId", d.name AS "emplo
   c.reason, c.state, c.approver, c.manager_id AS "managerId", c.version,
   to_char(c.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "createdAt",
   to_char(c.decided_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "decidedAt",
-  c.decided_by_label AS "decidedBy", c.decision_note AS "decisionNote"`;
+  c.decided_by_label AS "decidedBy", c.decision_note AS "decisionNote",
+  EXISTS(SELECT 1 FROM employee m WHERE m.id=c.employee_id AND m.manager_id=c.manager_id) AS "stillManaged"`;
 const correctionFrom = `FROM attendance_correction c
   JOIN employee_directory d ON d.id=c.employee_id`;
 const recordColumns = `r.id, to_char(r.work_date,'YYYY-MM-DD') AS "workDate",
@@ -35,6 +36,7 @@ const recordColumns = `r.id, to_char(r.work_date,'YYYY-MM-DD') AS "workDate",
 
 type CorrectionRow = Omit<AttendanceCorrection, "canDecide" | "canCancel"> & {
   managerId: string | null;
+  stillManaged: boolean;
 };
 type CorrectionState = "approved" | "rejected" | "cancelled";
 function shift(iso: string, days: number) {
@@ -117,6 +119,26 @@ export class AttendanceStore {
     });
   }
 
+  // Pending corrections visible to a reviewer, excluding their own.
+  async pendingCorrections(actor: Principal): Promise<AttendanceCorrection[]> {
+    this.platform.require(actor, "attendance.review");
+    return scoped(this.platform.pool, actor, async (client) =>
+      (await this.pendingRows(client, actor)).map((row) =>
+        this.present(actor, row),
+      ),
+    );
+  }
+
+  private async pendingRows(client: PoolClient, actor: Principal) {
+    const { rows } = await client.query<CorrectionRow>(
+      `SELECT ${correctionColumns} ${correctionFrom}
+       WHERE c.state='pending' AND c.employee_id<>$1
+       ORDER BY c.work_date, c.created_at LIMIT 100`,
+      [actor.employeeId],
+    );
+    return rows;
+  }
+
   async team(actor: Principal): Promise<AttendanceTeam> {
     this.platform.require(actor, "attendance.review");
     return scoped(this.platform.pool, actor, async (client) => {
@@ -148,12 +170,7 @@ export class AttendanceStore {
          ORDER BY d.name, d.id`,
         [actor.employeeId, today],
       );
-      const pending = await client.query<CorrectionRow>(
-        `SELECT ${correctionColumns} ${correctionFrom}
-         WHERE c.state='pending' AND c.employee_id<>$1
-         ORDER BY c.work_date, c.created_at LIMIT 100`,
-        [actor.employeeId],
-      );
+      const pending = await this.pendingRows(client, actor);
       const decided = await client.query<CorrectionRow>(
         `SELECT ${correctionColumns} ${correctionFrom}
          WHERE c.state<>'pending' AND c.employee_id<>$1
@@ -166,7 +183,7 @@ export class AttendanceStore {
           ...person,
           status: this.presence(person, onLeave, onHoliday, weekend),
         })),
-        pending: pending.rows.map((row) => this.present(actor, row)),
+        pending: pending.map((row) => this.present(actor, row)),
         decided: decided.rows.map((row) => this.present(actor, row)),
       };
     });
@@ -453,7 +470,7 @@ export class AttendanceStore {
   }
 
   private present(actor: Principal, row: CorrectionRow): AttendanceCorrection {
-    const { managerId, ...rest } = row;
+    const { managerId, stillManaged, ...rest } = row;
     const mine = row.employeeId === actor.employeeId;
     const review = scopeFor(actor, "attendance.review");
     return attendanceCorrectionSchema.parse({
@@ -468,7 +485,9 @@ export class AttendanceStore {
         ((row.approver === "manager" &&
           review === "team" &&
           managerId === actor.employeeId) ||
-          (row.approver === "hr" && review === "entity")),
+          (row.approver === "hr" && review === "entity") ||
+          // HR decides manager-routed work whose manager has moved on.
+          (row.approver === "manager" && review === "entity" && !stillManaged)),
     });
   }
 

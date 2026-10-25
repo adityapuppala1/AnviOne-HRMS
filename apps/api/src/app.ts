@@ -22,6 +22,7 @@ import { OnboardingController } from "./onboarding.controller";
 import { LeaveController } from "./leave.controller";
 import { AttendanceController } from "./attendance.controller";
 import { CalendarController } from "./calendar.controller";
+import { ApprovalsController } from "./approvals.controller";
 import type { Config } from "./config";
 
 @Catch()
@@ -61,6 +62,7 @@ export async function createApp(config: Config) {
       LeaveController,
       AttendanceController,
       CalendarController,
+      ApprovalsController,
     ],
     providers: [{ provide: PlatformStore, useValue: store }],
   })

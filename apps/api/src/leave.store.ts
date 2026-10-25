@@ -26,7 +26,8 @@ const requestColumns = `r.id, r.employee_id AS "employeeId", d.name AS "employee
   r.days::float8 AS days, r.reason, r.state, r.approver, r.manager_id AS "managerId", r.version,
   to_char(r.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "createdAt",
   to_char(r.decided_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "decidedAt",
-  r.decided_by_label AS "decidedBy", r.decision_note AS "decisionNote"`;
+  r.decided_by_label AS "decidedBy", r.decision_note AS "decisionNote",
+  EXISTS(SELECT 1 FROM employee m WHERE m.id=r.employee_id AND m.manager_id=r.manager_id) AS "stillManaged"`;
 const requestFrom = `FROM leave_request r
   JOIN employee_directory d ON d.id=r.employee_id
   JOIN leave_type t ON t.tenant_id=r.tenant_id AND t.entity_id=r.entity_id AND t.id=r.leave_type_id`;
@@ -34,7 +35,12 @@ const requestFrom = `FROM leave_request r
 type RequestRow = Omit<
   LeaveRequest,
   "leaveType" | "canDecide" | "canCancel"
-> & { typeCode: string; typeName: string; managerId: string | null };
+> & {
+  typeCode: string;
+  typeName: string;
+  managerId: string | null;
+  stillManaged: boolean;
+};
 
 // Database guards own the leave rules (self-only requests, routing, overlap,
 // balance, transitions, ledger). This store maps their outcomes to HTTP and
@@ -268,7 +274,7 @@ export class LeaveStore {
     row: RequestRow,
     today: string,
   ): LeaveRequest {
-    const { typeCode, typeName, managerId, ...rest } = row;
+    const { typeCode, typeName, managerId, stillManaged, ...rest } = row;
     const mine = row.employeeId === actor.employeeId;
     const approve = scopeFor(actor, "leave.approve");
     return leaveRequestSchema.parse({
@@ -285,7 +291,11 @@ export class LeaveStore {
         ((row.approver === "manager" &&
           approve === "team" &&
           managerId === actor.employeeId) ||
-          (row.approver === "hr" && approve === "entity")),
+          (row.approver === "hr" && approve === "entity") ||
+          // HR decides manager-routed work whose manager has moved on.
+          (row.approver === "manager" &&
+            approve === "entity" &&
+            !stillManaged)),
     });
   }
 

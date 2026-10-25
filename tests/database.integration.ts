@@ -138,12 +138,25 @@ await test("PostgreSQL and HTTP security boundaries", async (t) => {
           0,
         );
         assert.equal(
-          await scoped(
-            store.pool,
-            actor,
-            async (c) => (await c.query("SELECT * FROM employee")).rowCount,
-          ),
+          await scoped(store.pool, actor, async (c) => {
+            assert.equal(
+              (
+                await c.query(
+                  "SELECT current_setting('app.actor_id',true) AS actor_id",
+                )
+              ).rows[0].actor_id,
+              actor.actorId,
+            );
+            return (await c.query("SELECT * FROM employee")).rowCount;
+          }),
           12,
+        );
+        assert.ok(
+          !(
+            await store.pool.query(
+              "SELECT current_setting('app.actor_id',true) AS actor_id",
+            )
+          ).rows[0].actor_id,
         );
         assert.equal(
           (await store.pool.query("SELECT * FROM employee")).rowCount,

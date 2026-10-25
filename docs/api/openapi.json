@@ -5633,9 +5633,67 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "readiness": {
+                      "type": "object",
+                      "properties": {
+                        "activationReady": {
+                          "type": "boolean"
+                        },
+                        "controls": {
+                          "minItems": 6,
+                          "maxItems": 6,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "enum": [
+                                  "form",
+                                  "checklist",
+                                  "email_ownership",
+                                  "identity",
+                                  "documents",
+                                  "privacy"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": ["passed", "blocked"]
+                              },
+                              "source": {
+                                "type": "string",
+                                "enum": ["preview", "external"]
+                              },
+                              "detail": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "status",
+                              "source",
+                              "detail"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": ["activationReady", "controls"],
+                      "additionalProperties": false
                     }
                   },
-                  "required": ["candidate", "submissions", "tasks"],
+                  "required": [
+                    "candidate",
+                    "submissions",
+                    "tasks",
+                    "readiness"
+                  ],
                   "additionalProperties": false
                 }
               }

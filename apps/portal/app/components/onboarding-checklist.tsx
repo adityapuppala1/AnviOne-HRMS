@@ -24,6 +24,60 @@ const statusNames = {
   blocked: "Blocked",
   completed: "Completed",
 };
+export function ActivationReadiness({ value }: { value: Detail }) {
+  const passed = value.readiness.controls.filter(
+    (control) => control.status === "passed",
+  ).length;
+  return (
+    <section
+      className="activation-readiness"
+      aria-labelledby="activation-readiness-title"
+    >
+      <div className="readiness-heading">
+        <div>
+          <p className="eyebrow">Evidence before access</p>
+          <h3 id="activation-readiness-title">Activation readiness</h3>
+        </div>
+        <Badge>{passed}/6 controls</Badge>
+      </div>
+      <div className="readiness-summary" role="status">
+        <strong>Activation remains blocked</strong>
+        <span>
+          This dossier is derived by the server. Preview completion never
+          creates employment, a code or account access.
+        </span>
+      </div>
+      <ol className="readiness-rail">
+        {value.readiness.controls.map((control) => (
+          <li
+            key={control.id}
+            className={`readiness-control readiness-${control.status}`}
+            data-source={control.source}
+          >
+            <span className="readiness-marker" aria-hidden="true">
+              {control.status === "passed" ? (
+                <CheckCircle weight="fill" size={20} />
+              ) : (
+                <Clock weight="bold" size={18} />
+              )}
+            </span>
+            <div>
+              <div className="readiness-control-title">
+                <h4>{control.label}</h4>
+                <span>
+                  {control.source === "external"
+                    ? "External gate"
+                    : "Preview evidence"}
+                </span>
+              </div>
+              <p>{control.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
 export function OnboardingChecklist({
   value,
   csrf,

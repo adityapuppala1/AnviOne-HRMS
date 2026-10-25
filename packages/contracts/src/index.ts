@@ -267,10 +267,29 @@ export const candidateTaskUpdateSchema = z.strictObject({
   state: candidateTaskStateSchema,
   reason: z.string().trim().min(10).max(300),
 });
+export const activationControlSchema = z.strictObject({
+  id: z.enum([
+    "form",
+    "checklist",
+    "email_ownership",
+    "identity",
+    "documents",
+    "privacy",
+  ]),
+  label: z.string(),
+  status: z.enum(["passed", "blocked"]),
+  source: z.enum(["preview", "external"]),
+  detail: z.string(),
+});
+export const activationReadinessSchema = z.strictObject({
+  activationReady: z.boolean(),
+  controls: z.array(activationControlSchema).length(6),
+});
 export const candidateDetailSchema = z.object({
   candidate: candidateSchema,
   submissions: z.array(candidateSubmissionSchema),
   tasks: z.array(candidateTaskSchema),
+  readiness: activationReadinessSchema,
 });
 export const candidatePortalSchema = z.object({
   tasks: z.array(candidateOwnTaskSchema),
@@ -304,4 +323,8 @@ export const candidateDeliverySchema = z.object({
   expiresAt: z.string().nullable(),
   previewOnly: z.literal(true),
 });
-export { onboardingStarter, submissionChanges } from "./onboarding";
+export {
+  activationReadiness,
+  onboardingStarter,
+  submissionChanges,
+} from "./onboarding";

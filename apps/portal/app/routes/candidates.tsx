@@ -19,6 +19,7 @@ import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
 import "./onboarding.css";
 import {
+  ActivationReadiness,
   OnboardingChecklist,
   SubmissionComparison,
 } from "../components/onboarding-checklist";
@@ -442,6 +443,7 @@ function CaseReview({
         )}
       </div>
       <SubmissionComparison value={value} />
+      <ActivationReadiness value={value} />
       <OnboardingChecklist
         value={value}
         csrf={me.csrfToken}

@@ -403,6 +403,104 @@
   border-radius: 12px;
   overflow: hidden;
 }
+.activation-readiness {
+  margin-top: 18px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.readiness-heading,
+.readiness-control-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.readiness-heading h3,
+.readiness-control h4 {
+  margin: 0;
+}
+.readiness-summary {
+  display: grid;
+  gap: 5px;
+  margin: 20px 0 4px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--warning);
+  background: var(--surface-subtle);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.readiness-summary span,
+.readiness-control p {
+  color: var(--muted);
+}
+.readiness-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.readiness-control {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 13px;
+  padding: 18px 0 18px 2px;
+}
+.readiness-control:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 43px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--line);
+}
+.readiness-marker {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--warning);
+  background: var(--surface);
+}
+.readiness-passed .readiness-marker {
+  color: var(--brand-ink);
+}
+.readiness-control-title h4 {
+  font:
+    500 15px/1.4 "Outfit Variable",
+    sans-serif;
+}
+.readiness-control-title span {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.readiness-control p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .activation-readiness {
+    animation: readiness-arrive 240ms ease-out both;
+  }
+}
+@keyframes readiness-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .submission-diff h4 {
   font-size: 12px;
   margin: 0;
@@ -436,7 +534,8 @@
 }
 @media (max-width: 500px) {
   .onboarding-checklist,
-  .submission-comparison {
+  .submission-comparison,
+  .activation-readiness {
     padding: 22px 18px;
   }
   .checklist-filters,

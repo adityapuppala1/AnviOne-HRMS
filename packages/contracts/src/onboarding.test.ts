@@ -2,10 +2,46 @@ import { describe, it, expect } from "vitest";
 import {
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  activationReadiness,
   onboardingStarter,
   submissionChanges,
 } from "./index";
 describe("onboarding checklist contracts", () => {
+  it("denies activation until every local and external control passes", () => {
+    const ready = activationReadiness("approved", [
+      { required: true, state: "completed" },
+      { required: false, state: "pending" },
+    ]);
+    expect(ready.activationReady).toBe(false);
+    expect(
+      ready.controls.map((control) => [control.id, control.status]),
+    ).toEqual([
+      ["form", "passed"],
+      ["checklist", "passed"],
+      ["email_ownership", "blocked"],
+      ["identity", "blocked"],
+      ["documents", "blocked"],
+      ["privacy", "blocked"],
+    ]);
+    expect(ready.controls[1]?.detail).toContain("1 of 1");
+  });
+  it("reports required checklist blockers and ignores optional work", () => {
+    const ready = activationReadiness("submitted", [
+      { required: true, state: "pending" },
+      { required: true, state: "blocked" },
+      { required: false, state: "pending" },
+    ]);
+    expect(ready.controls[0]?.status).toBe("blocked");
+    expect(ready.controls[1]).toMatchObject({ status: "blocked" });
+    expect(ready.controls[1]?.detail).toContain("2 required tasks remain");
+  });
+  it("names an unconfigured required checklist without implying completion", () => {
+    const ready = activationReadiness("approved", []);
+    expect(ready.controls[1]).toMatchObject({ status: "blocked" });
+    expect(ready.controls[1]?.detail).toBe(
+      "No required checklist is configured. Start one before local readiness can complete.",
+    );
+  });
   it("bounds task creation and rejects privilege-bearing extra fields", () => {
     const task = {
       caseVersion: 1,

@@ -376,6 +376,10 @@ await test("Isolated candidate onboarding", async (t) => {
         });
         assert.equal(r.status, 201);
         version = (await r.json()).version;
+        d = await detail();
+        assert.equal(d.readiness.activationReady, false);
+        assert.equal(d.readiness.controls[0].status, "passed");
+        assert.equal(d.readiness.controls[1].status, "blocked");
         assert.equal(
           (await api("draft", { version, draft }, "PUT")).status,
           409,
@@ -611,6 +615,14 @@ await test("Isolated candidate onboarding", async (t) => {
           );
         }
         let d = await detail();
+        assert.equal(d.readiness.activationReady, false);
+        assert.equal(d.readiness.controls[1].status, "passed");
+        assert.equal(
+          d.readiness.controls.filter(
+            (control: { source: string }) => control.source === "external",
+          ).length,
+          4,
+        );
         version = d.candidate.version;
         hrTask = d.tasks.find((t: CandidateTask) => t.id === hrTask.id);
         assert.equal(

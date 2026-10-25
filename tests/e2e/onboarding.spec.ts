@@ -62,6 +62,9 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await expect(
     page.getByRole("heading", { name: `Avery ${suffix}`, exact: true }),
   ).toBeVisible();
+  const readiness = page.getByRole("region", { name: "Activation readiness" });
+  await expect(readiness).toContainText("Activation remains blocked");
+  await expect(readiness.locator('[data-source="external"]')).toHaveCount(4);
   const checklist = page.getByRole("region", { name: "Onboarding checklist" });
   await checklist
     .getByRole("button", { name: "Use starter checklist" })

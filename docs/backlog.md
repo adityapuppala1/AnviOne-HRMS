@@ -1,6 +1,6 @@
 # Delivery backlog
 
-Current increment: F0.5, synthetic onboarding checklist and submission comparison. Date: 25 October 2026. Owners below are required roles, not assigned people.
+Current increment: F0.6, synthetic activation readiness dossier. Date: 25 October 2026. Owners below are required roles, not assigned people.
 
 F0.2 adds the Atlas design system to all available screens, a scoped department/location explorer, profile sections, audit filters/details, display preferences, responsive branding previews and reduced-motion handling. These advance UX-01/UX-02 and EMP-01 without changing their access policy. Activation and the remaining HR domains below are not implemented by this visual increment.
 
@@ -41,3 +41,5 @@ F0.4 implements the synthetic separate-origin invitation, OTP, autosave and form
 No calendar estimate is promised until integration owners, staffing and acceptance owners are confirmed. Preserve the working foundation while delivering each slice.
 
 F0.5 adds explicit starter/custom checklist tasks, coordinating owners, relative due dates, required progress, dependency enforcement, status/evidence notes, candidate-only task actions and immutable submission comparison. See [plan](plans/onboarding-checklist.md) and [evidence](acceptance-evidence/onboarding-checklist.md). Internal owner labels do not grant task access; HR coordinates them until assignee workspaces are implemented. Template administration, real evidence/document validation, assigned-owner permissions, escalation and full onboarding/activation remain pending.
+
+F0.6 adds a server-derived [activation readiness dossier](plans/activation-readiness-dossier.md) and [acceptance evidence](acceptance-evidence/activation-readiness-dossier.md). It truthfully separates locally evidenced form/checklist controls from four external release gates. The preview never reports activation ready and introduces no activation endpoint, employment/code creation or access grant. Next implementable work remains assigned-owner workspaces/shared maker-checker foundations; real delivery, identity, documents, privacy approval and activation require their named external owners and infrastructure.

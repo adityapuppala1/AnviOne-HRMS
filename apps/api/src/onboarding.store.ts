@@ -9,6 +9,7 @@ import {
   candidateSchema,
   candidateSubmissionSchema,
   candidateDeliverySchema,
+  activationReadiness,
   type candidateCreateSchema,
   type candidateActionSchema,
   type candidateReviewSchema,
@@ -96,9 +97,11 @@ export class OnboardingStore {
         `SELECT version,payload,submitted_at AS "submittedAt" FROM candidate_submission WHERE candidate_id=$1 ORDER BY version DESC`,
         [id],
       );
+      const tasks = await readTasks(client, id);
       return {
         candidate,
-        tasks: await readTasks(client, id),
+        tasks,
+        readiness: activationReadiness(candidate.state, tasks),
         submissions: rows.map((r) =>
           candidateSubmissionSchema.parse({
             ...r,

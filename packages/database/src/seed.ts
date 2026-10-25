@@ -257,6 +257,67 @@ try {
       );
     }
   }
+  // Three weeks of past attendance for Maya and her reports. Historical punches
+  // cannot pass the today-only guard, so these synthetic rows bypass triggers;
+  // one deliberate gap per person shows as provisional LOP.
+  for (const n of [1, 2, 3, 4]) {
+    const person = employeeId(n);
+    if (
+      (
+        await client.query(
+          "SELECT 1 FROM attendance_record WHERE tenant_id=$1 AND employee_id=$2",
+          [tenant, person],
+        )
+      ).rowCount
+    )
+      continue;
+    await client.query("SET LOCAL session_replication_role = replica");
+    await client.query(
+      `INSERT INTO attendance_record(id,tenant_id,entity_id,employee_id,work_date,check_in,check_out,source,version)
+       SELECT gen_random_uuid(),$1,$2,$3,d::date,
+         time '09:00'+make_interval(mins=>((extract(doy FROM d)::int*7+$4)%50)),
+         time '17:45'+make_interval(mins=>((extract(doy FROM d)::int*11+$4)%70)),
+         'web',1
+       FROM generate_series((now() AT TIME ZONE 'Asia/Kolkata')::date-21,
+         (now() AT TIME ZONE 'Asia/Kolkata')::date-1,interval '1 day') d
+       WHERE extract(isodow FROM d)<6 AND (extract(doy FROM d)::int+$4)%9<>0
+         AND NOT EXISTS(SELECT 1 FROM leave_request l WHERE l.employee_id=$3
+           AND l.state='approved' AND d::date BETWEEN l.start_date AND l.end_date)`,
+      [tenant, entity, person, n],
+    );
+    await client.query("SET LOCAL session_replication_role = origin");
+  }
+  if (
+    !(
+      await client.query(
+        "SELECT 1 FROM attendance_correction WHERE tenant_id=$1 AND employee_id=$2",
+        [tenant, employeeId(2)],
+      )
+    ).rowCount
+  ) {
+    const gap = await client.query<{ day: string }>(
+      `SELECT to_char(d,'YYYY-MM-DD') AS day
+       FROM generate_series((now() AT TIME ZONE 'Asia/Kolkata')::date-20,
+         (now() AT TIME ZONE 'Asia/Kolkata')::date-1,interval '1 day') d
+       WHERE extract(isodow FROM d)<6 AND NOT EXISTS(SELECT 1 FROM attendance_record r
+         WHERE r.employee_id=$1 AND r.work_date=d::date)
+       ORDER BY d DESC LIMIT 1`,
+      [employeeId(2)],
+    );
+    if (gap.rows[0]) {
+      await client.query(
+        `SELECT set_config('app.tenant_id',$1,true), set_config('app.entity_id',$2,true),
+          set_config('app.employee_id',$3,true), set_config('app.attendance_scope','self',true),
+          set_config('app.actor_id',$4,true)`,
+        [tenant, entity, employeeId(2), randomUUID()],
+      );
+      await client.query(
+        `INSERT INTO attendance_correction(id,tenant_id,entity_id,employee_id,work_date,check_in,check_out,reason,state,approver,version,requested_by_actor)
+         VALUES ($1,$2,$3,$4,$5,'09:40','18:10','Badge reader at the Hyderabad office was down','pending','hr',1,gen_random_uuid())`,
+        [randomUUID(), tenant, entity, employeeId(2), gap.rows[0].day],
+      );
+    }
+  }
   await client.query("COMMIT");
   console.log(
     "Synthetic people, employment and organization fixtures are initialized; existing records are preserved.",

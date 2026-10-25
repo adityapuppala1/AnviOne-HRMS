@@ -10,6 +10,7 @@ import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizon
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
+import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import type { Me } from "@anvi/contracts";
@@ -99,6 +100,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/leave")}>
             <AirplaneTilt size={18} />
             Leave
+          </Button>
+        )}
+        {(me.permissions.includes("attendance.self") ||
+          me.permissions.includes("attendance.review")) && (
+          <Button variant="ghost" onPress={() => go("/attendance")}>
+            <CalendarDots size={18} />
+            Attendance
           </Button>
         )}
         {me.permissions.includes("organization.read") && (

@@ -12,6 +12,8 @@ import {
   assignedTaskListSchema,
   leaveOverviewSchema,
   leaveApprovalsSchema,
+  attendanceOverviewSchema,
+  attendanceTeamSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -109,6 +111,22 @@ export const useLeaveApprovals = (enabled: boolean) =>
     enabled,
     queryFn: ({ signal }) =>
       api("/leave/approvals", leaveApprovalsSchema, { signal }),
+  });
+export const useAttendance = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["attendance", "mine"],
+    enabled,
+    refetchInterval: 60000,
+    queryFn: ({ signal }) =>
+      api("/attendance", attendanceOverviewSchema, { signal }),
+  });
+export const useAttendanceTeam = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["attendance", "team"],
+    enabled,
+    refetchInterval: 60000,
+    queryFn: ({ signal }) =>
+      api("/attendance/team", attendanceTeamSchema, { signal }),
   });
 export const mutate = (
   path: string,

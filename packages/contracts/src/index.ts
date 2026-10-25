@@ -25,6 +25,8 @@ export const permissionSchema = z.enum([
   "onboarding.task.update",
   "leave.request",
   "leave.approve",
+  "attendance.self",
+  "attendance.review",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -490,6 +492,100 @@ export const leaveDecisionSchema = z
     message: "Explain why the request is declined",
     path: ["note"],
   });
+
+// Attendance (F0.11). Times are local "HH:MM" in the legal entity's time zone.
+const clockSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+export const attendanceDayStatusSchema = z.enum([
+  "present",
+  "in_progress",
+  "incomplete",
+  "leave",
+  "weekend",
+  "unaccounted",
+  "not_started",
+]);
+export type AttendanceDayStatus = z.infer<typeof attendanceDayStatusSchema>;
+export const attendanceDaySchema = z.strictObject({
+  date: z.iso.date(),
+  status: attendanceDayStatusSchema,
+  checkIn: clockSchema.nullable(),
+  checkOut: clockSchema.nullable(),
+  minutes: z.number().int().nonnegative().nullable(),
+  source: z.enum(["web", "correction"]).nullable(),
+  leaveType: z.string().nullable(),
+  correctionPending: z.boolean(),
+});
+export type AttendanceDay = z.infer<typeof attendanceDaySchema>;
+export const attendanceCorrectionSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  initials: z.string(),
+  department: z.string(),
+  workDate: z.iso.date(),
+  checkIn: clockSchema,
+  checkOut: clockSchema,
+  reason: z.string(),
+  state: leaveStateSchema,
+  approver: z.enum(["manager", "hr"]),
+  version: z.number().int().positive(),
+  createdAt: z.string(),
+  decidedAt: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  decisionNote: z.string().nullable(),
+  canDecide: z.boolean(),
+  canCancel: z.boolean(),
+});
+export type AttendanceCorrection = z.infer<typeof attendanceCorrectionSchema>;
+export const attendanceRecordSchema = z.strictObject({
+  id: z.uuid(),
+  workDate: z.iso.date(),
+  checkIn: clockSchema,
+  checkOut: clockSchema.nullable(),
+  version: z.number().int().positive(),
+});
+export type AttendanceRecord = z.infer<typeof attendanceRecordSchema>;
+export const attendanceOverviewSchema = z.strictObject({
+  today: z.iso.date(),
+  now: clockSchema,
+  record: attendanceRecordSchema.nullable(),
+  days: z.array(attendanceDaySchema),
+  corrections: z.array(attendanceCorrectionSchema),
+});
+export type AttendanceOverview = z.infer<typeof attendanceOverviewSchema>;
+export const attendanceTeamMemberSchema = z.strictObject({
+  employeeId: z.uuid(),
+  name: z.string(),
+  initials: z.string(),
+  department: z.string(),
+  status: z.enum(["in", "done", "leave", "not_in", "weekend"]),
+  checkIn: clockSchema.nullable(),
+  checkOut: clockSchema.nullable(),
+});
+export const attendanceTeamSchema = z.strictObject({
+  date: z.iso.date(),
+  people: z.array(attendanceTeamMemberSchema),
+  pending: z.array(attendanceCorrectionSchema),
+  decided: z.array(attendanceCorrectionSchema),
+});
+export type AttendanceTeam = z.infer<typeof attendanceTeamSchema>;
+export const attendanceCheckInSchema = z.strictObject({});
+export const attendanceCheckOutSchema = z.strictObject({
+  version: z.number().int().positive(),
+});
+export const attendanceCorrectionCreateSchema = z
+  .strictObject({
+    workDate: z.iso.date(),
+    checkIn: clockSchema,
+    checkOut: clockSchema,
+    reason: z.string().trim().min(3).max(300),
+  })
+  .refine((v) => v.checkOut > v.checkIn, {
+    message: "Check-out must be after check-in",
+    path: ["checkOut"],
+  });
+export const attendanceCancelSchema = leaveCancelSchema;
+export const attendanceDecisionSchema = leaveDecisionSchema;
 export {
   activationReadiness,
   onboardingStarter,

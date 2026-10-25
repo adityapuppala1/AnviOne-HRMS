@@ -366,6 +366,18 @@ await test("Leave ledger and approval workflow", async (t) => {
             ),
             /routed to another approver/,
           );
+          // With the reporting line changed, the request falls to HR.
+          await asEmployee(rohan, "entity", (client) =>
+            client.query(
+              "UPDATE leave_request SET state='approved', version=version+1 WHERE id=$1",
+              [id],
+            ),
+          );
+          const row = await admin.query(
+            "SELECT state FROM leave_request WHERE id=$1",
+            [id],
+          );
+          assert.equal(row.rows[0].state, "approved");
           // The runtime role cannot rewrite protected columns directly either.
           await assert.rejects(
             transaction(store.pool, async (client) => {

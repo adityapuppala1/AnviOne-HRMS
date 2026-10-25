@@ -161,6 +161,14 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("leave.approve"),
     },
     {
+      to: "/attendance",
+      label: "Attendance",
+      icon: CalendarDots,
+      visible:
+        me.permissions.includes("attendance.self") ||
+        me.permissions.includes("attendance.review"),
+    },
+    {
       to: "/settings",
       label: "Workspace settings",
       icon: GearSix,
@@ -238,7 +246,6 @@ function Shell({ me }: { me: Me }) {
       <p className="sidebar-label roadmap-label">On the roadmap</p>
       <div className="planned-nav">
         {[
-          { icon: CalendarDots, label: "Attendance" },
           { icon: Wallet, label: "Payroll & expenses" },
           { icon: Stack, label: "Assets & policies" },
         ].map(({ icon: Icon, label }) => (

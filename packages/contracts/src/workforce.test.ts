@@ -3,6 +3,9 @@ import {
   leaveRequestCreateSchema,
   leaveDecisionSchema,
   leaveCancelSchema,
+  attendanceCheckInSchema,
+  attendanceCheckOutSchema,
+  attendanceCorrectionCreateSchema,
 } from "./index";
 
 const request = {
@@ -58,5 +61,38 @@ describe("leave contracts", () => {
       }).success,
     ).toBe(true);
     expect(leaveCancelSchema.safeParse({ version: 0 }).success).toBe(false);
+  });
+});
+
+describe("attendance contracts", () => {
+  it("never accepts client-chosen punch times", () => {
+    expect(attendanceCheckInSchema.safeParse({}).success).toBe(true);
+    expect(
+      attendanceCheckInSchema.safeParse({ checkIn: "07:00" }).success,
+    ).toBe(false);
+    expect(
+      attendanceCheckOutSchema.safeParse({ version: 1, checkOut: "23:00" })
+        .success,
+    ).toBe(false);
+  });
+  it("requires ordered, well-formed correction times", () => {
+    const base = {
+      workDate: "2026-10-20",
+      checkIn: "09:00",
+      checkOut: "17:30",
+      reason: "Forgot to punch",
+    };
+    expect(attendanceCorrectionCreateSchema.safeParse(base).success).toBe(true);
+    for (const change of [
+      { checkOut: "08:00" },
+      { checkIn: "9:00" },
+      { checkOut: "24:00" },
+      { workDate: "2026-02-30" },
+      { employeeId: "00000000-0000-4000-8000-000000000002" },
+    ])
+      expect(
+        attendanceCorrectionCreateSchema.safeParse({ ...base, ...change })
+          .success,
+      ).toBe(false);
   });
 });

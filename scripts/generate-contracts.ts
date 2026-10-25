@@ -40,6 +40,15 @@ import {
   leaveRequestCreateSchema,
   leaveCancelSchema,
   leaveDecisionSchema,
+  attendanceOverviewSchema,
+  attendanceTeamSchema,
+  attendanceRecordSchema,
+  attendanceCorrectionSchema,
+  attendanceCheckInSchema,
+  attendanceCheckOutSchema,
+  attendanceCorrectionCreateSchema,
+  attendanceCancelSchema,
+  attendanceDecisionSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -252,6 +261,69 @@ const spec = {
         "Approve or decline a routed leave request",
         leaveDecisionSchema,
         leaveRequestSchema,
+      ),
+    },
+    "/attendance": {
+      get: read(
+        "Current actor's attendance today, last 30 days and corrections",
+        attendanceOverviewSchema,
+      ),
+    },
+    "/attendance/team": {
+      get: read(
+        "Today's presence and corrections visible to the reviewer",
+        attendanceTeamSchema,
+      ),
+    },
+    "/attendance/check-in": {
+      post: write(
+        "Check in now (server time)",
+        attendanceCheckInSchema,
+        attendanceRecordSchema,
+      ),
+    },
+    "/attendance/check-out": {
+      post: write(
+        "Check out now (server time)",
+        attendanceCheckOutSchema,
+        attendanceRecordSchema,
+      ),
+    },
+    "/attendance/corrections": {
+      post: write(
+        "Request a correction for one of the previous 30 days",
+        attendanceCorrectionCreateSchema,
+        attendanceCorrectionSchema,
+      ),
+    },
+    "/attendance/corrections/{id}/cancel": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Cancel your pending correction",
+        attendanceCancelSchema,
+        attendanceCorrectionSchema,
+      ),
+    },
+    "/attendance/corrections/{id}/decision": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Approve or decline a routed correction",
+        attendanceDecisionSchema,
+        attendanceCorrectionSchema,
       ),
     },
     "/organization": {

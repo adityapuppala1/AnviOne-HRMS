@@ -30,6 +30,16 @@ jobs:
       - run: pnpm test:integration
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      - name: Preserve synthetic browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-failure-context-${{ github.run_id }}
+          path: |
+            test-results/**/error-context.md
+            test-results/**/test-failed-*.png
+          if-no-files-found: ignore
+          retention-days: 3
       - run: docker build -f infra/docker/Dockerfile.api -t anvione-api:ci .
       - run: pnpm exec node scripts/smoke-image.mjs anvione-api:ci
       - if: always()

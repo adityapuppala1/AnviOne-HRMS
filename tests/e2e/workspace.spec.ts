@@ -20,8 +20,18 @@ test("directory search, profiles, command menu, reduced access and sign-out", as
     .getByRole("link")
     .filter({ has: page.getByRole("heading", { name: "Zara Khan" }) })
     .click();
-  await expect(page.getByRole("heading", { name: "Zara Khan" })).toBeVisible();
-  await expect(page.getByText("demo3@anvi.example")).toBeVisible();
+  await expect(page).toHaveURL(
+    /\/people\/30000000-0000-4000-8000-000000000003$/,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Zara Khan", level: 1 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("tab", { name: "Overview", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    page.getByRole("tabpanel", { name: "Overview", exact: true }),
+  ).toContainText("demo3@anvi.example");
   await page.keyboard.press("Control+k");
   await expect(page.getByRole("dialog")).toBeVisible();
   await page

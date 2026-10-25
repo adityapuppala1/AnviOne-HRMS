@@ -244,11 +244,19 @@ test("all palettes and light/dark modes keep core screens accessible", async ({
   page,
 }) => {
   test.setTimeout(180000);
+  const throttled: string[] = [];
+  page.on("response", (response) => {
+    if (response.status() === 429 && response.url().includes("/api/v1/")) {
+      throttled.push(new URL(response.url()).pathname);
+    }
+  });
   await login(page);
   // Rendering-only palette coverage: persisted branding is tested separately via the UI.
   for (const palette of ["ocean", "iris", "forest"]) {
     for (const mode of ["light", "dark"]) {
-      await page.goto("/preferences");
+      await page
+        .getByRole("link", { name: "Display preferences", exact: true })
+        .click();
       await page
         .getByRole("radio", {
           name: mode === "light" ? "Light" : "Dark",
@@ -262,7 +270,30 @@ test("all palettes and light/dark modes keep core screens accessible", async ({
         "/people/30000000-0000-4000-8000-000000000001",
         "/preferences",
       ]) {
-        await page.goto(route);
+        // Exercise normal client navigation. Reloading the whole app for every
+        // palette/route discards its query cache and creates an artificial burst
+        // against the real authentication/API limits on faster CI runners.
+        if (route.startsWith("/people/")) {
+          await page
+            .getByRole("link", { name: "Overview", exact: true })
+            .click();
+          await page
+            .getByRole("link", { name: /Your place in the picture/ })
+            .click();
+        } else {
+          const label =
+            route === "/"
+              ? "Overview"
+              : route === "/people"
+                ? "People directory"
+                : route === "/teams"
+                  ? "Team explorer"
+                  : "Display preferences";
+          await page.getByRole("link", { name: label, exact: true }).click();
+        }
+        await expect(page).toHaveURL(
+          new URL(route, "http://127.0.0.1:5173").href,
+        );
         await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
         await page.evaluate((theme) => {
           document.documentElement.dataset.theme = theme;
@@ -279,4 +310,5 @@ test("all palettes and light/dark modes keep core screens accessible", async ({
   await expect(page.locator("html")).toHaveAttribute("data-motion", "reduce");
   await page.goto("/login");
   await accessible(page);
+  expect(throttled).toEqual([]);
 });

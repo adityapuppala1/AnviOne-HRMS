@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Badge, Button, DialogPanel } from "@anvi/ui";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
@@ -6,6 +7,7 @@ import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import {
   candidateTaskCreateSchema,
+  candidateOptionsSchema,
   submissionChanges,
   type CandidateTask,
   type candidateDetailSchema,
@@ -92,8 +94,15 @@ export function OnboardingChecklist({
     [dialog, setDialog] = useState<"starter" | "create" | CandidateTask | null>(
       null,
     ),
+    [assignment, setAssignment] = useState<CandidateTask | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const options = useQuery({
+    queryKey: ["candidate-options"],
+    queryFn: ({ signal }) =>
+      api("/candidates/options", candidateOptionsSchema, { signal }),
+    enabled: Boolean(assignment),
+  });
   const { tasks, candidate: c } = value,
     required = tasks.filter((t) => t.required),
     complete = required.filter((t) => t.state === "completed").length;
@@ -153,6 +162,35 @@ export function OnboardingChecklist({
       setError(
         err instanceof Error ? err.message : "Could not update checklist.",
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function saveAssignment(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!assignment) return;
+    const fields = Object.fromEntries(new FormData(e.currentTarget));
+    setBusy(true);
+    setError("");
+    try {
+      await api(
+        `/candidates/${c.id}/tasks/${assignment.id}/assignment`,
+        z.object({ changed: z.boolean() }),
+        {
+          method: "POST",
+          headers: { "X-CSRF-Token": csrf },
+          body: JSON.stringify({
+            caseVersion: c.version,
+            assignmentVersion: assignment.assignee?.version ?? null,
+            employeeId: fields.employeeId,
+            reason: fields.reason,
+          }),
+        },
+      );
+      setAssignment(null);
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not assign task.");
     } finally {
       setBusy(false);
     }
@@ -265,6 +303,13 @@ export function OnboardingChecklist({
                         "prerequisite"}
                     </p>
                   )}
+                  {t.owner !== "candidate" && (
+                    <p className="checklist-assignee">
+                      {t.assignee
+                        ? `Assigned to ${t.assignee.name}`
+                        : "Not assigned to an employee"}
+                    </p>
+                  )}
                   {t.note && (
                     <details className="checklist-note">
                       <summary>Latest note</summary>
@@ -275,13 +320,27 @@ export function OnboardingChecklist({
                     </details>
                   )}
                   {editable && (
-                    <Button
-                      variant="ghost"
-                      onPress={() => open(t)}
-                      aria-label={`Update ${t.label}`}
-                    >
-                      Update task
-                    </Button>
+                    <div className="checklist-item-actions">
+                      {t.owner !== "candidate" && (
+                        <Button
+                          variant="ghost"
+                          onPress={() => {
+                            setError("");
+                            setAssignment(t);
+                          }}
+                          aria-label={`${t.assignee ? "Reassign" : "Assign"} ${t.label}`}
+                        >
+                          {t.assignee ? "Reassign" : "Assign"}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        onPress={() => open(t)}
+                        aria-label={`Update ${t.label}`}
+                      >
+                        Update task
+                      </Button>
+                    </div>
                   )}
                 </div>
               </li>
@@ -457,6 +516,72 @@ export function OnboardingChecklist({
                     : dialog === "create"
                       ? "Create task"
                       : "Save task status"}
+              </Button>
+            </div>
+          </form>
+        </DialogPanel>
+      )}
+      {assignment && (
+        <DialogPanel
+          open
+          onOpenChange={(next) => {
+            if (!next && !busy) setAssignment(null);
+          }}
+          title={
+            assignment.assignee
+              ? "Reassign onboarding task"
+              : "Assign onboarding task"
+          }
+        >
+          <form
+            className="intake-form"
+            onSubmit={(e) => void saveAssignment(e)}
+          >
+            <p>
+              <strong>{assignment.label}</strong>
+            </p>
+            <p>
+              Assignment grants access only to this task's minimal work record.
+            </p>
+            <label>
+              Assigned employee
+              <select
+                name="employeeId"
+                required
+                defaultValue={assignment.assignee?.employeeId ?? ""}
+              >
+                <option value="" disabled>
+                  Select an active employee
+                </option>
+                {options.data?.assignees.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.name} · {person.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Assignment note
+              <textarea name="reason" required minLength={10} maxLength={300} />
+            </label>
+            {options.isPending && (
+              <p role="status">Loading eligible employees…</p>
+            )}
+            {(error || options.error) && (
+              <p role="alert" className="inline-error">
+                {error || options.error?.message}
+              </p>
+            )}
+            <div className="intake-actions">
+              <Button
+                variant="secondary"
+                isDisabled={busy}
+                onPress={() => setAssignment(null)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" isDisabled={busy || !options.data}>
+                {busy ? "Assigning…" : "Assign task"}
               </Button>
             </div>
           </form>

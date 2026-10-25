@@ -10,6 +10,8 @@ The onboarding preview now includes an explicit starter checklist, custom tasks 
 
 Once the form and every required task are complete, HR can hand the synthetic case to a different HR identity through the independent-readiness decision lane. The proposer cannot approve their own request; decisions are versioned, audited and retained in immutable history. This local sign-off still creates no employee or access. See [maker-checker evidence](docs/acceptance-evidence/local-readiness-maker-checker.md).
 
+HR can assign non-candidate checklist work to an active employee in the same legal entity. Employee and manager workspaces expose only their own minimal task docket—never the candidate form or contact details—and allow a versioned status update with a required note. See [assigned-task evidence](docs/acceptance-evidence/assigned-onboarding-task-workspace.md).
+
 ## Run locally
 
 Prerequisites: Git, Docker Engine/Desktop, and pnpm 11.21.0. Bootstrap Node 24.18+ is supported; `pnpm install` provisions the project-pinned **Node 24.22.1** runtime without changing the machine-wide installation.

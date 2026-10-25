@@ -1,6 +1,6 @@
 # Delivery backlog
 
-Current increment: F0.8, assigned onboarding task workspace. Date: 25 October 2026. Owners below are required roles, not assigned people.
+Current increment: F0.8, assigned onboarding task workspace, implemented and under branch acceptance. Date: 25 October 2026. Owners below are required roles, not assigned people.
 
 F0.2 adds the Atlas design system to all available screens, a scoped department/location explorer, profile sections, audit filters/details, display preferences, responsive branding previews and reduced-motion handling. These advance UX-01/UX-02 and EMP-01 without changing their access policy. Activation and the remaining HR domains below are not implemented by this visual increment.
 
@@ -46,4 +46,4 @@ F0.6 adds a server-derived [activation readiness dossier](plans/activation-readi
 
 F0.7 delivers the bounded [local-readiness maker-checker plan](plans/local-readiness-maker-checker.md) with [acceptance evidence](acceptance-evidence/local-readiness-maker-checker.md). Scoped transactions bind the immutable identity actor; FORCE-RLS records reject forged makers, self-approval and terminal rewrites. Eligibility-checked propose/decide/withdraw endpoints lock the case, version every transition and commit workflow, audit and outbox together. A concurrent decision commits once. The responsive Atlas decision lane exposes only actions valid for the current actor and keeps terminal decisions visible. This is not activation or a reusable workflow engine, so WF-01 remains partially complete.
 
-F0.8 is executing from the [assigned onboarding task workspace plan](plans/assigned-onboarding-task-workspace.md). The first checkpoint adds strict identity-free assignment/update contracts, a self-scoped employee/manager permission and a FORCE-RLS assignment record separated from immutable task definitions. Database tests prove HR-only assignment, candidate-task denial and self-only visibility. HR assignment APIs, the assignee status endpoint, Atlas work docket, browser evidence and final review remain in progress.
+F0.8 delivers the [assigned onboarding task workspace plan](plans/assigned-onboarding-task-workspace.md) with [acceptance evidence](acceptance-evidence/assigned-onboarding-task-workspace.md). Strict contracts, same-entity validation, a self-scoped employee/manager permission and FORCE-RLS assignment records keep employee access to a minimal projection. HR can assign/reassign internal tasks; assignees can update them from the responsive Atlas work docket with dependency and concurrency enforcement. Notifications, delegation, escalation, real evidence and activation remain pending.

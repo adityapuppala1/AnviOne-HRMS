@@ -1,0 +1,227 @@
+.task-workspace {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.task-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 0 2rem;
+}
+.task-hero h1 {
+  max-width: 720px;
+  margin: 0.2rem 0 0.65rem;
+  font-size: clamp(2.65rem, 7vw, 5.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.065em;
+}
+.task-hero > div > p:last-child {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.task-seal {
+  width: 96px;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  transform: rotate(7deg);
+  box-shadow: inset 0 0 0 6px var(--surface);
+  background: var(--surface-subtle);
+}
+.task-seal span {
+  color: var(--ink);
+  font:
+    700 0.62rem/1 "Public Sans Variable",
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.16em;
+  text-align: center;
+}
+.task-docket {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 5%, var(--surface)) 0,
+    var(--surface) 45%
+  );
+  box-shadow: var(--shadow);
+}
+.task-docket-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem clamp(1rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--line);
+}
+.task-docket-toolbar > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+.docket-kicker {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+.docket-list {
+  margin: 0;
+  padding: 0 clamp(1rem, 4vw, 2.5rem) 1rem;
+  list-style: none;
+}
+.docket-entry {
+  --rail: 82px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rail) 34px minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 190px;
+  animation: docket-in 0.55s both;
+  animation-delay: calc(var(--entry-index) * 80ms);
+}
+.docket-entry::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--rail) + 16px);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+.docket-date {
+  align-self: start;
+  margin-top: 2rem;
+  text-align: right;
+  display: grid;
+}
+.docket-date span {
+  font:
+    600 1.9rem/1 "Outfit Variable",
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.05em;
+}
+.docket-date small {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+}
+.docket-node {
+  z-index: 1;
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-top: 1.75rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--surface);
+}
+.docket-entry article {
+  margin: 1rem 0;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-subtle) 94%, transparent);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+.docket-entry article:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+}
+.docket-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-transform: capitalize;
+}
+.docket-entry h2 {
+  margin: 0.8rem 0 0.35rem;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  letter-spacing: -0.025em;
+}
+.docket-person,
+.docket-note,
+.docket-warning {
+  color: var(--muted);
+}
+.docket-warning {
+  color: var(--warning);
+  font-weight: 650;
+}
+.docket-entry .button {
+  margin-top: 0.7rem;
+}
+.docket-completed article {
+  opacity: 0.75;
+}
+.task-empty {
+  min-height: 320px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+.task-empty h2 {
+  margin: 0.8rem 0 0.2rem;
+}
+.task-empty p {
+  color: var(--muted);
+}
+@keyframes docket-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (max-width: 600px) {
+  .task-seal {
+    display: none;
+  }
+  .task-hero {
+    padding-top: 1rem;
+  }
+  .docket-entry {
+    --rail: 48px;
+    gap: 0.55rem;
+  }
+  .docket-date span {
+    font-size: 1.3rem;
+  }
+  .docket-entry article {
+    padding: 1rem;
+  }
+  .docket-entry-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .docket-entry {
+    animation: none;
+  }
+  .docket-entry article {
+    transition: none;
+  }
+}

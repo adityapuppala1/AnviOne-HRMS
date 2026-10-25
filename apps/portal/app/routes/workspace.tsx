@@ -27,6 +27,7 @@ import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { Question } from "@phosphor-icons/react/dist/csr/Question";
 import { Command as CommandIcon } from "@phosphor-icons/react/dist/csr/Command";
 import {
@@ -143,6 +144,12 @@ function Shell({ me }: { me: Me }) {
       label: "Candidate intake",
       icon: Users,
       visible: me.permissions.includes("onboarding.manage"),
+    },
+    {
+      to: "/tasks",
+      label: "My onboarding tasks",
+      icon: ClipboardText,
+      visible: me.permissions.includes("onboarding.task.update"),
     },
     {
       to: "/settings",

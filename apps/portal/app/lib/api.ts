@@ -9,6 +9,7 @@ import {
   auditSchema,
   authConfigSchema,
   organizationDirectorySchema,
+  assignedTaskListSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -87,6 +88,12 @@ export const useOrganization = (query: string) =>
     queryKey: ["organization", query],
     queryFn: ({ signal }) =>
       api(`/organization?${query}`, organizationDirectorySchema, { signal }),
+  });
+export const useAssignedTasks = () =>
+  useQuery({
+    queryKey: ["assigned-onboarding-tasks"],
+    queryFn: ({ signal }) =>
+      api("/onboarding/tasks", assignedTaskListSchema, { signal }),
   });
 export const mutate = (
   path: string,

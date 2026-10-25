@@ -40,6 +40,8 @@ import {
   candidateTaskUpdateSchema,
   localReviewProposalSchema,
   localReviewDecisionSchema,
+  candidateTaskAssignmentSchema,
+  assignedTaskUpdateSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
@@ -285,6 +287,35 @@ class PlatformController {
       parse(z.uuid(), id),
       parse(z.uuid(), taskId),
       parse(candidateTaskUpdateSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/candidates/:id/tasks/:taskId/assignment") assignTask(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Param("taskId") taskId: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.assignTask(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(z.uuid(), taskId),
+      parse(candidateTaskAssignmentSchema, body),
+      req.requestId,
+    );
+  }
+  @Get("api/v1/onboarding/tasks") assignedTasks(@Req() req: AppRequest) {
+    return this.onboarding.assignedTasks(req.actor);
+  }
+  @Post("api/v1/onboarding/tasks/:taskId") updateAssignedTask(
+    @Req() req: AppRequest,
+    @Param("taskId") taskId: string,
+    @Body() body: unknown,
+  ) {
+    return this.onboarding.updateAssignedTask(
+      req.actor,
+      parse(z.uuid(), taskId),
+      parse(assignedTaskUpdateSchema, body),
       req.requestId,
     );
   }

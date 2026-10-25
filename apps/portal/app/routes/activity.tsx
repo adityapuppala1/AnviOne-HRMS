@@ -24,6 +24,8 @@ const actionNames: Record<string, string> = {
   "candidate.checklist_started": "Started onboarding checklist",
   "candidate.task_created": "Added onboarding task",
   "candidate.task_updated": "Updated onboarding task",
+  "candidate.task_assigned": "Assigned onboarding task",
+  "candidate.assigned_task_updated": "Completed assigned onboarding work",
   "candidate.local_review_proposed": "Requested independent readiness review",
   "candidate.local_review_decided": "Decided independent readiness review",
   "candidate.local_review_withdrawn": "Withdrew independent readiness review",

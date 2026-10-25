@@ -217,6 +217,9 @@ export const candidateOptionsSchema = z.object({
   departments: z.array(organizationUnitSchema),
   locations: z.array(organizationUnitSchema),
   managers: z.array(z.object({ id: z.uuid(), name: z.string() })),
+  assignees: z.array(
+    z.object({ id: z.uuid(), name: z.string(), title: z.string() }),
+  ),
 });
 export const candidateSubmissionSchema = z.object({
   version: z.number().int(),
@@ -248,11 +251,21 @@ export const candidateTaskSchema = z.object({
   updatedAt: z.string(),
   waitingOn: z.boolean(),
   overdue: z.boolean(),
+  assignee: z
+    .object({
+      employeeId: z.uuid(),
+      name: z.string(),
+      version: z.number().int().positive(),
+      assignedAt: z.string(),
+      assignerLabel: z.string(),
+    })
+    .nullable(),
 });
 export type CandidateTask = z.infer<typeof candidateTaskSchema>;
 export const candidateOwnTaskSchema = candidateTaskSchema.omit({
   owner: true,
   dependsOn: true,
+  assignee: true,
 });
 export const candidateTaskCreateSchema = z.strictObject({
   caseVersion: z.number().int().positive(),
@@ -278,6 +291,27 @@ export const assignedTaskUpdateSchema = z.strictObject({
   taskVersion: z.number().int().positive(),
   state: candidateTaskStateSchema,
   reason: z.string().trim().min(10).max(300),
+});
+export const assignedTaskSchema = z.strictObject({
+  id: z.uuid(),
+  label: z.string(),
+  owner: candidateTaskOwnerSchema.exclude(["candidate"]),
+  required: z.boolean(),
+  dueOn: z.iso.date(),
+  state: candidateTaskStateSchema,
+  version: z.number().int().positive(),
+  note: z.string().nullable(),
+  waitingOn: z.boolean(),
+  overdue: z.boolean(),
+  candidateName: z.string(),
+  candidateTitle: z.string(),
+  joinedOn: z.iso.date(),
+  assignmentVersion: z.number().int().positive(),
+  assignedAt: z.string(),
+  assignerLabel: z.string(),
+});
+export const assignedTaskListSchema = z.strictObject({
+  items: z.array(assignedTaskSchema),
 });
 export const localReviewStateSchema = z.enum([
   "pending",

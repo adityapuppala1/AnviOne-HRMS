@@ -11,11 +11,14 @@ import {
   candidateDeliverySchema,
   activationReadiness,
   localReviewSchema,
+  assignedTaskListSchema,
   type candidateCreateSchema,
   type candidateActionSchema,
   type candidateReviewSchema,
   type localReviewProposalSchema,
   type localReviewDecisionSchema,
+  type candidateTaskAssignmentSchema,
+  type assignedTaskUpdateSchema,
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { Principal } from "@anvi/authz";
@@ -85,10 +88,14 @@ export class OnboardingStore {
       const managers = await client.query(
         "SELECT id,name FROM employee_directory WHERE status='active' ORDER BY name LIMIT 100",
       );
+      const assignees = await client.query(
+        "SELECT id,name,title FROM employee_directory WHERE status IN ('active','notice') ORDER BY name,id LIMIT 500",
+      );
       return {
         departments: rows.filter((r) => r.kind === "department"),
         locations: rows.filter((r) => r.kind === "location"),
         managers: managers.rows,
+        assignees: assignees.rows,
       };
     });
   }
@@ -386,6 +393,164 @@ export class OnboardingStore {
       );
       return { changed: true };
     });
+  }
+  async assignTask(
+    actor: Principal,
+    id: string,
+    taskId: string,
+    input: z.infer<typeof candidateTaskAssignmentSchema>,
+    requestId: string,
+  ) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.checklistCase(client, id, input.caseVersion);
+      const task = (await readTasks(client, id)).find(
+        (item) => item.id === taskId,
+      );
+      if (!task)
+        throw new NotFoundException("This checklist task is unavailable.");
+      if (task.owner === "candidate")
+        throw new BadRequestException(
+          "Candidate-owned tasks cannot be assigned internally.",
+        );
+      const current = await client.query(
+        'SELECT version,employee_id AS "employeeId" FROM candidate_task_assignment WHERE task_id=$1 FOR UPDATE',
+        [taskId],
+      );
+      const assignment = current.rows[0];
+      if ((assignment?.version ?? null) !== input.assignmentVersion)
+        throw new ConflictException(
+          "This assignment changed. Reload before assigning it.",
+        );
+      if (assignment?.employeeId === input.employeeId)
+        throw new ConflictException(
+          "This task is already assigned to that employee.",
+        );
+      try {
+        if (assignment)
+          await client.query(
+            `UPDATE candidate_task_assignment SET employee_id=$2,version=version+1,
+             assigned_by=$3,assigner_label=$4,updated_at=now() WHERE task_id=$1`,
+            [taskId, input.employeeId, actor.actorId, actor.name],
+          );
+        else
+          await client.query(
+            `INSERT INTO candidate_task_assignment(task_id,employee_id,version,assigned_by,assigner_label)
+             VALUES($1,$2,1,$3,$4)`,
+            [taskId, input.employeeId, actor.actorId, actor.name],
+          );
+      } catch (error) {
+        if ((error as { code?: string }).code === "23514")
+          throw new ConflictException(
+            "Choose an active employee in this legal entity for an internal task.",
+          );
+        throw error;
+      }
+      await this.checklistEvent(
+        client,
+        actor,
+        id,
+        "candidate.task_assigned",
+        requestId,
+        input.reason,
+        { taskId, employeeId: input.employeeId },
+      );
+      return { changed: true };
+    });
+  }
+  async assignedTasks(actor: Principal) {
+    this.platform.require(actor, "onboarding.task.update");
+    return scoped(this.platform.pool, actor, async (client) => {
+      const { rows } = await client.query(
+        `SELECT t.id,t.label,t.owner,t.required,t.due_on::text AS "dueOn",t.state,t.version,t.note,
+         (t.depends_on IS NOT NULL AND NOT EXISTS(SELECT 1 FROM candidate_task d WHERE d.id=t.depends_on AND d.state='completed')) AS "waitingOn",
+         (t.state<>'completed' AND t.due_on<(now() AT TIME ZONE 'Asia/Kolkata')::date) AS overdue,
+         c.name AS "candidateName",c.title AS "candidateTitle",c.joined_on::text AS "joinedOn",
+         a.version AS "assignmentVersion",a.assigned_at AS "assignedAt",a.assigner_label AS "assignerLabel"
+         FROM candidate_task_assignment a JOIN candidate_task t ON t.id=a.task_id
+         JOIN candidate_case c ON c.id=t.candidate_id
+         WHERE c.state<>'cancelled'
+         ORDER BY (t.state='completed'),t.due_on,t.id`,
+      );
+      return assignedTaskListSchema.parse({
+        items: rows.map((row) => ({
+          ...row,
+          assignedAt: row.assignedAt.toISOString(),
+        })),
+      });
+    });
+  }
+  async updateAssignedTask(
+    actor: Principal,
+    taskId: string,
+    input: z.infer<typeof assignedTaskUpdateSchema>,
+    requestId: string,
+  ) {
+    this.platform.require(actor, "onboarding.task.update");
+    return scoped(this.platform.pool, actor, async (client) => {
+      const assigned = await client.query(
+        `SELECT t.candidate_id AS "candidateId" FROM candidate_task t
+         JOIN candidate_task_assignment a ON a.task_id=t.id WHERE t.id=$1`,
+        [taskId],
+      );
+      const candidateId = assigned.rows[0]?.candidateId as string | undefined;
+      if (!candidateId)
+        throw new NotFoundException("This assigned task is unavailable.");
+      const candidate = await client.query(
+        "SELECT id,state FROM candidate_case WHERE id=$1 FOR UPDATE",
+        [candidateId],
+      );
+      if (!candidate.rows[0] || candidate.rows[0].state === "cancelled")
+        throw new ConflictException(
+          "This intake is no longer open for task changes.",
+        );
+      const task = (await this.assignedTaskRows(client, taskId))[0];
+      if (!task)
+        throw new NotFoundException("This assigned task is unavailable.");
+      if (task.version !== input.taskVersion)
+        throw new ConflictException(
+          "This task changed. Reload before updating it.",
+        );
+      if (task.state === input.state)
+        throw new ConflictException("This task already has that status.");
+      if (input.state === "completed" && task.waitingOn)
+        throw new ConflictException(
+          "Complete the prerequisite before this task.",
+        );
+      try {
+        await client.query(
+          `UPDATE candidate_task SET state=$2,note=$3,version=version+1,updated_at=now()
+           WHERE id=$1`,
+          [taskId, input.state, input.reason],
+        );
+      } catch (error) {
+        if ((error as { code?: string }).code === "23514")
+          throw new ConflictException(
+            "This change conflicts with a prerequisite or completed dependent. Ask HR for help.",
+          );
+        throw error;
+      }
+      await this.checklistEvent(
+        client,
+        actor,
+        candidateId,
+        "candidate.assigned_task_updated",
+        requestId,
+        input.reason,
+        { taskId, state: input.state },
+      );
+      return { changed: true };
+    });
+  }
+  private async assignedTaskRows(client: PoolClient, taskId?: string) {
+    const result = await client.query(
+      `SELECT t.id,t.state,t.version,
+       (t.depends_on IS NOT NULL AND NOT EXISTS(SELECT 1 FROM candidate_task d WHERE d.id=t.depends_on AND d.state='completed')) AS "waitingOn"
+       FROM candidate_task_assignment a JOIN candidate_task t ON t.id=a.task_id
+       WHERE ($1::uuid IS NULL OR t.id=$1)`,
+      [taskId ?? null],
+    );
+    return result.rows;
   }
   async proposeLocalReview(
     actor: Principal,

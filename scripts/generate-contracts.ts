@@ -29,6 +29,9 @@ import {
   candidatePortalSchema,
   candidateTaskCreateSchema,
   candidateTaskUpdateSchema,
+  candidateTaskAssignmentSchema,
+  assignedTaskUpdateSchema,
+  assignedTaskListSchema,
   localReviewProposalSchema,
   localReviewDecisionSchema,
 } from "../packages/contracts/src/index";
@@ -310,6 +313,38 @@ Object.assign(spec.paths, {
       "Versioned HR-coordinated task status and evidence",
       candidateTaskUpdateSchema,
     ),
+  },
+  "/candidates/{id}/tasks/{taskId}/assignment": {
+    parameters: [
+      ...idParameter,
+      {
+        name: "taskId",
+        in: "path",
+        required: true,
+        schema: { type: "string", format: "uuid" },
+      },
+    ],
+    post: write(
+      "Assign or reassign an internal onboarding task",
+      candidateTaskAssignmentSchema,
+    ),
+  },
+  "/onboarding/tasks": {
+    get: read(
+      "Current actor's assigned onboarding tasks",
+      assignedTaskListSchema,
+    ),
+  },
+  "/onboarding/tasks/{taskId}": {
+    parameters: [
+      {
+        name: "taskId",
+        in: "path",
+        required: true,
+        schema: { type: "string", format: "uuid" },
+      },
+    ],
+    post: write("Update an assigned onboarding task", assignedTaskUpdateSchema),
   },
   "/candidates": {
     get: {

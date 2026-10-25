@@ -468,13 +468,170 @@ await test("Isolated candidate onboarding", async (t) => {
     await t.test(
       "task assignments are actor-bound, entity-scoped and self-visible",
       async () => {
-        await scoped(store.pool, { ...actor, role: "hr_admin" }, (client) =>
-          client.query(
-            `INSERT INTO candidate_task_assignment(task_id,employee_id,version,assigned_by,assigner_label)
-             VALUES($1,$2,1,$3,$4)`,
-            [hrTask.id, actor.employeeId, actor.actorId, actor.name],
+        const options = await (await hr("/candidates/options")).json();
+        assert.ok(
+          options.assignees.some(
+            (employee: { id: string }) => employee.id === actor.employeeId,
           ),
         );
+        const alternateEmployee = "30000000-0000-4000-8000-000000000002";
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+              caseVersion: version,
+              assignmentVersion: null,
+              employeeId: "30000000-0000-4000-8000-000000000099",
+              reason: "A cross-entity assignment must be rejected safely.",
+            })
+          ).status,
+          409,
+        );
+        await admin.query("UPDATE employee SET status='inactive' WHERE id=$1", [
+          alternateEmployee,
+        ]);
+        try {
+          assert.equal(
+            (
+              await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+                caseVersion: version,
+                assignmentVersion: null,
+                employeeId: alternateEmployee,
+                reason: "An inactive employee must not receive this task.",
+              })
+            ).status,
+            409,
+          );
+        } finally {
+          await admin.query("UPDATE employee SET status='active' WHERE id=$1", [
+            alternateEmployee,
+          ]);
+        }
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+              caseVersion: version,
+              assignmentVersion: null,
+              employeeId: actor.employeeId,
+              reason:
+                "Assign this fictional HR task to the signed-in employee.",
+            })
+          ).status,
+          201,
+        );
+        const assignedDetail = await detail();
+        version = assignedDetail.candidate.version;
+        hrTask = assignedDetail.tasks.find(
+          (task: CandidateTask) => task.id === hrTask.id,
+        );
+        assert.ok(hrTask.assignee);
+        assert.equal(hrTask.assignee.name, actor.name);
+        assert.equal(hrTask.assignee.version, 1);
+        await assert.rejects(
+          new OnboardingStore(store).assignTask(
+            actor,
+            id,
+            hrTask.id,
+            {
+              caseVersion: version,
+              assignmentVersion: 1,
+              employeeId: alternateEmployee,
+              reason: "This assignment must roll back with its failed audit.",
+            },
+            "invalid-request-uuid",
+          ),
+          (error: unknown) => {
+            assert.ok(error && typeof error === "object" && "code" in error);
+            assert.equal(error.code, "22P02");
+            return true;
+          },
+        );
+        let afterAssignment = await detail();
+        assert.equal(afterAssignment.candidate.version, version);
+        let assignedTask = afterAssignment.tasks.find(
+          (task: CandidateTask) => task.id === hrTask.id,
+        );
+        assert.equal(assignedTask.assignee.employeeId, actor.employeeId);
+        assert.equal(assignedTask.assignee.version, 1);
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+              caseVersion: version,
+              assignmentVersion: 1,
+              employeeId: alternateEmployee,
+              reason:
+                "Reassign this fictional task to another active employee.",
+            })
+          ).status,
+          201,
+        );
+        afterAssignment = await detail();
+        version = afterAssignment.candidate.version;
+        assignedTask = afterAssignment.tasks.find(
+          (task: CandidateTask) => task.id === hrTask.id,
+        );
+        assert.equal(assignedTask.assignee.version, 2);
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+              caseVersion: version,
+              assignmentVersion: 1,
+              employeeId: actor.employeeId,
+              reason: "A stale reassignment version must be rejected.",
+            })
+          ).status,
+          409,
+        );
+        assert.equal(
+          (
+            await hr(`/candidates/${id}/tasks/${hrTask.id}/assignment`, {
+              caseVersion: version,
+              assignmentVersion: 2,
+              employeeId: actor.employeeId,
+              reason: "Return this fictional task to the signed-in employee.",
+            })
+          ).status,
+          201,
+        );
+        afterAssignment = await detail();
+        version = afterAssignment.candidate.version;
+        hrTask = afterAssignment.tasks.find(
+          (task: CandidateTask) => task.id === hrTask.id,
+        );
+        assert.ok(hrTask.assignee);
+        assert.equal(hrTask.assignee.version, 3);
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM audit_event WHERE target=$1 AND action='candidate.task_assigned'",
+              [id],
+            )
+          ).rowCount,
+          3,
+        );
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM outbox_event WHERE aggregate_id=$1 AND event_type='candidate.task_assigned.v1'",
+              [id],
+            )
+          ).rowCount,
+          3,
+        );
+        await switchRole("employee");
+        const assignedResponse = await hr("/onboarding/tasks");
+        assert.equal(assignedResponse.status, 200);
+        const assigned = await assignedResponse.json();
+        const visibleTask = assigned.items.find(
+          (task: { id: string }) => task.id === hrTask.id,
+        );
+        assert.equal(
+          assigned.items.filter((task: { id: string }) => task.id === hrTask.id)
+            .length,
+          1,
+        );
+        assert.equal(visibleTask.candidateName, "QA Candidate");
+        assert.ok(!("email" in visibleTask));
+        assert.ok(!("draft" in visibleTask));
         assert.equal(
           (
             await scoped(store.pool, { ...actor, role: "employee" }, (client) =>
@@ -521,6 +678,7 @@ await test("Isolated candidate onboarding", async (t) => {
             ),
           ),
         );
+        await switchRole("hr_admin");
       },
     );
     await t.test(
@@ -652,12 +810,82 @@ await test("Isolated candidate onboarding", async (t) => {
           ).rowCount,
           1,
         );
+        await switchRole("employee");
+        const assigned = await (await hr("/onboarding/tasks")).json();
+        const assignedHrTask = assigned.items.find(
+          (task: { id: string }) => task.id === hrTask.id,
+        );
+        await assert.rejects(
+          new OnboardingStore(store).updateAssignedTask(
+            { ...actor, role: "employee" },
+            hrTask.id,
+            {
+              taskVersion: assignedHrTask.version,
+              state: "completed",
+              reason:
+                "This status update must roll back with its failed audit.",
+            },
+            "invalid-request-uuid",
+          ),
+          (error: unknown) => {
+            assert.ok(error && typeof error === "object" && "code" in error);
+            assert.equal(error.code, "22P02");
+            return true;
+          },
+        );
+        const unchangedAssigned = await (await hr("/onboarding/tasks")).json();
+        assert.equal(
+          unchangedAssigned.items.find(
+            (task: { id: string }) => task.id === hrTask.id,
+          ).state,
+          "pending",
+        );
+        const assignedUpdates = await Promise.all([
+          hr(`/onboarding/tasks/${hrTask.id}`, {
+            taskVersion: assignedHrTask.version,
+            state: "completed",
+            reason: "Completed the assigned fictional HR coordination task.",
+          }),
+          hr(`/onboarding/tasks/${hrTask.id}`, {
+            taskVersion: assignedHrTask.version,
+            state: "completed",
+            reason:
+              "Concurrent duplicate assigned-task completion is rejected.",
+          }),
+        ]);
+        assert.deepEqual(
+          assignedUpdates.map((r) => r.status).sort(),
+          [201, 409],
+        );
+        await switchRole("hr_admin");
+        d = await detail();
+        version = d.candidate.version;
+        hrTask = d.tasks.find((task: CandidateTask) => task.id === hrTask.id);
+        assert.equal(hrTask.state, "completed");
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM audit_event WHERE target=$1 AND action='candidate.assigned_task_updated'",
+              [id],
+            )
+          ).rowCount,
+          1,
+        );
+        assert.equal(
+          (
+            await admin.query(
+              "SELECT id FROM outbox_event WHERE aggregate_id=$1 AND event_type='candidate.assigned_task_updated.v1'",
+              [id],
+            )
+          ).rowCount,
+          1,
+        );
       },
     );
     await t.test(
       "completed dependencies cannot be invalidated until dependents are reopened",
       async () => {
-        for (const taskId of [hrTask.id, adminTask.id]) {
+        for (const taskId of [adminTask.id]) {
           const d = await detail();
           const task = d.tasks.find((t: CandidateTask) => t.id === taskId);
           assert.equal(
@@ -897,6 +1125,8 @@ await test("Isolated candidate onboarding", async (t) => {
     await t.test(
       "local readiness proposal requires complete local evidence",
       async () => {
+        employeeToken = await store.createSession(actor, randomUUID());
+        employeeSession = await store.session(employeeToken);
         let d = await detail();
         assert.equal(
           (
@@ -1160,6 +1390,36 @@ await test("Isolated candidate onboarding", async (t) => {
           ).status,
           409,
         );
+        await switchRole("employee");
+        const closedAssignments = await (await hr("/onboarding/tasks")).json();
+        assert.equal(
+          closedAssignments.items.some(
+            (task: { id: string }) => task.id === hrTask.id,
+          ),
+          false,
+        );
+        assert.equal(
+          (
+            await scoped(store.pool, { ...actor, role: "employee" }, (client) =>
+              client.query("SELECT id FROM candidate_task WHERE id=$1", [
+                hrTask.id,
+              ]),
+            )
+          ).rowCount,
+          0,
+        );
+        assert.equal(
+          (
+            await scoped(store.pool, { ...actor, role: "employee" }, (client) =>
+              client.query(
+                "SELECT task_id FROM candidate_task_assignment WHERE task_id=$1",
+                [hrTask.id],
+              ),
+            )
+          ).rowCount,
+          0,
+        );
+        await switchRole("hr_admin");
       },
     );
   } finally {

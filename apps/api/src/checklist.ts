@@ -13,12 +13,29 @@ export async function readTasks(
   const waiting = candidateOnly
     ? "candidate_task_waiting(t.id)"
     : "(t.depends_on IS NOT NULL AND NOT EXISTS(SELECT 1 FROM candidate_task d WHERE d.candidate_id=t.candidate_id AND d.id=t.depends_on AND d.state='completed'))";
+  const assignment = candidateOnly
+    ? "NULL::jsonb AS assignee"
+    : `CASE WHEN a.task_id IS NULL THEN NULL ELSE jsonb_build_object(
+       'employeeId',a.employee_id,'name',ae.name,'version',a.version,
+       'assignedAt',a.assigned_at,'assignerLabel',a.assigner_label) END AS assignee`;
+  const assignmentJoin = candidateOnly
+    ? ""
+    : "LEFT JOIN candidate_task_assignment a ON a.task_id=t.id LEFT JOIN employee_directory ae ON ae.id=a.employee_id";
   const { rows } = await client.query(
-    `SELECT t.id,t.label,t.owner,t.required,t.due_on::text AS "dueOn",t.depends_on AS "dependsOn",t.state,t.version,t.note,t.updated_at AS "updatedAt",${waiting} AS "waitingOn",(t.state<>'completed' AND t.due_on<(now() AT TIME ZONE 'Asia/Kolkata')::date) AS overdue FROM candidate_task t WHERE t.candidate_id=$1 ${candidateOnly ? "AND t.owner='candidate'" : ""} ORDER BY t.due_on,t.created_at,t.id`,
+    `SELECT t.id,t.label,t.owner,t.required,t.due_on::text AS "dueOn",t.depends_on AS "dependsOn",t.state,t.version,t.note,t.updated_at AS "updatedAt",${waiting} AS "waitingOn",(t.state<>'completed' AND t.due_on<(now() AT TIME ZONE 'Asia/Kolkata')::date) AS overdue,${assignment} FROM candidate_task t ${assignmentJoin} WHERE t.candidate_id=$1 ${candidateOnly ? "AND t.owner='candidate'" : ""} ORDER BY t.due_on,t.created_at,t.id`,
     [id],
   );
   return rows.map((r) =>
-    candidateTaskSchema.parse({ ...r, updatedAt: r.updatedAt.toISOString() }),
+    candidateTaskSchema.parse({
+      ...r,
+      updatedAt: r.updatedAt.toISOString(),
+      assignee: r.assignee
+        ? {
+            ...r.assignee,
+            assignedAt: new Date(r.assignee.assignedAt).toISOString(),
+          }
+        : null,
+    }),
   );
 }
 export async function changeTask(

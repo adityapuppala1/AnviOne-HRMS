@@ -104,6 +104,32 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     .click();
   await expect(dialog).toHaveCount(0);
   await expect(checklist.locator(".checklist-item")).toHaveCount(6);
+  await checklist
+    .getByRole("button", {
+      name: "Assign Record a fictional readiness check",
+      exact: true,
+    })
+    .click();
+  await dialog
+    .getByLabel("Assigned employee")
+    .selectOption({ label: "Maya Iyer · People experience lead" });
+  await dialog
+    .getByLabel("Assignment note")
+    .fill(
+      "Maya will coordinate this fictional readiness step for the preview.",
+    );
+  await dialog
+    .getByRole("button", { name: "Assign task", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    checklist.locator(".checklist-item").filter({
+      has: page.getByRole("heading", {
+        name: "Record a fictional readiness check",
+        exact: true,
+      }),
+    }),
+  ).toContainText("Maya Iyer");
   await checklist.getByLabel("Task owner").selectOption("candidate");
   await expect(checklist.locator(".checklist-item")).toHaveCount(2);
   await checklist.getByLabel("Task owner").selectOption("all");
@@ -251,14 +277,67 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     }),
   ).toBeFocused();
   await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Your workspace role", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Employee", exact: true }).click();
+  await page
+    .getByRole("link", { name: "My onboarding tasks", exact: true })
+    .click();
+  const docket = page.getByRole("region", { name: "My onboarding tasks" });
+  await expect(docket).toContainText(`Avery ${suffix}`);
+  await expect(docket).not.toContainText(`avery-${suffix}@anvi.example`);
+  await docket
+    .getByRole("article")
+    .filter({ hasText: `Avery ${suffix}` })
+    .getByRole("button", {
+      name: "Update Record a fictional readiness check",
+      exact: true,
+    })
+    .click();
+  await expect(dialog.getByLabel("New task status")).toBeFocused();
+  await dialog.getByLabel("New task status").selectOption("completed");
+  await dialog
+    .getByLabel("Completion / change note")
+    .fill("Completed the assigned fictional readiness coordination step.");
+  await dialog.getByRole("button", { name: "Save task status" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(docket).toContainText("Completed");
+  await accessible(page);
+  for (const width of [320, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await docket.screenshot({
+    path: info.outputPath("assigned-task-docket.png"),
+  });
+  await page
+    .getByRole("button", { name: "Your workspace role", exact: true })
+    .click();
+  await page.getByRole("button", { name: "HR admin", exact: true }).click();
+  await page
+    .getByRole("link", { name: "Candidate intake", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: new RegExp(`Avery ${suffix}`) })
+    .click();
   await page.reload();
   await expect(
     page.getByRole("button", { name: "Request changes", exact: true }),
   ).toBeVisible();
-  for (const task of [
-    "Record a fictional readiness check",
-    "Plan the fictional induction",
-  ]) {
+  await expect(
+    checklist.locator(".checklist-item").filter({
+      has: page.getByRole("heading", {
+        name: "Record a fictional readiness check",
+        exact: true,
+      }),
+    }),
+  ).toContainText("Completed");
+  for (const task of ["Plan the fictional induction"]) {
     await checklist
       .getByRole("button", { name: `Update ${task}`, exact: true })
       .click();

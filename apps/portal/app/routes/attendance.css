@@ -172,6 +172,17 @@
   background: color-mix(in srgb, var(--success) 22%, var(--surface));
   color: var(--success);
 }
+.attendance-holiday,
+.attendance-swatch.attendance-holiday {
+  background: color-mix(in srgb, var(--marigold) 32%, var(--surface));
+  color: var(--marigold-ink);
+}
+[data-mode="dark"] .attendance-holiday {
+  color: var(--marigold);
+}
+.presence-holiday {
+  border-left-color: var(--marigold) !important;
+}
 .attendance-unaccounted,
 .attendance-swatch.attendance-unaccounted {
   background: repeating-linear-gradient(

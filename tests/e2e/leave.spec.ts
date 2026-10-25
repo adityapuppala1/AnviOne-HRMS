@@ -55,10 +55,23 @@ test("request, cancel and review leave across employee and manager workspaces", 
   await dialog
     .getByRole("combobox", { name: "Leave type" })
     .selectOption({ label: "Leave without pay (no limit)" });
-  await dialog.getByLabel("First day").fill(day);
-  await dialog.getByLabel("Last day").fill(day);
+  // A random weekday can land on a holiday; step forward until it counts.
+  let chosen = day;
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    await dialog.getByLabel("First day").fill(chosen);
+    await dialog.getByLabel("Last day").fill(chosen);
+    if (
+      await dialog
+        .getByText("1 day of leave, not counting days off or holidays.")
+        .isVisible()
+    )
+      break;
+    const next = new Date(`${chosen}T00:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    chosen = next.toISOString().slice(0, 10);
+  }
   await expect(
-    dialog.getByText("1 day of leave, weekends excluded."),
+    dialog.getByText("1 day of leave, not counting days off or holidays."),
   ).toBeVisible();
   await dialog.getByRole("textbox", { name: "Reason" }).fill("Moving house");
   await accessible(page);

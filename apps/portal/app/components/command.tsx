@@ -11,6 +11,7 @@ import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCount
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import type { Me } from "@anvi/contracts";
@@ -109,6 +110,10 @@ export function Command({
             Attendance
           </Button>
         )}
+        <Button variant="ghost" onPress={() => go("/calendar")}>
+          <CalendarStar size={18} />
+          Holidays
+        </Button>
         {me.permissions.includes("organization.read") && (
           <Button variant="ghost" onPress={() => go("/organization")}>
             <Buildings size={18} />

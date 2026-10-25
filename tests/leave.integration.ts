@@ -57,9 +57,9 @@ function week(offsetWeeks: number) {
 }
 
 await test("Leave ledger and approval workflow", async (t) => {
-  const config = readConfig({ ...process.env, API_PORT: "4403" });
+  const config = readConfig({ ...process.env, API_PORT: "4474" });
   const { app, store } = await createApp(config);
-  await app.listen(4403, "127.0.0.1");
+  await app.listen(4474, "127.0.0.1");
   const admin = makePool(process.env.MIGRATION_DATABASE_URL!);
   const actor = await store.resolveIdentity(
     "urn:anvione:local-demo",
@@ -69,7 +69,7 @@ await test("Leave ledger and approval workflow", async (t) => {
   let session = await store.session(token);
   const created: string[] = [];
   const request = (path: string, init: RequestInit = {}) =>
-    fetch(`http://127.0.0.1:4403/api/v1${path}`, {
+    fetch(`http://127.0.0.1:4474/api/v1${path}`, {
       ...init,
       headers: {
         Cookie: `anvi_dev_session=${token}`,

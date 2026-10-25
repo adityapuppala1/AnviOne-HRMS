@@ -18,6 +18,7 @@ import {
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { PlatformStore } from "./platform.store";
+import { personalCalendar } from "./calendar.store";
 
 const requestColumns = `r.id, r.employee_id AS "employeeId", d.name AS "employeeName",
   d.initials, d.department, t.code AS "typeCode", t.name AS "typeName",
@@ -81,9 +82,15 @@ export class LeaveStore {
          WHERE r.employee_id=$1 ORDER BY r.start_date DESC, r.created_at DESC LIMIT 50`,
         [actor.employeeId],
       );
+      const calendar = await personalCalendar(
+        client,
+        `${year}-01-01`,
+        `${year + 1}-12-31`,
+      );
       return {
         year,
         today,
+        calendar,
         balances: balances.rows.map((b) => ({
           ...b,
           available:

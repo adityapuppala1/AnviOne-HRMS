@@ -21,6 +21,7 @@ import {
   leaveRequestSchema,
   type LeaveBalance,
   type LeaveRequest,
+  type PersonalCalendar,
   type LeaveState,
 } from "@anvi/contracts";
 import { api, useLeave, useLeaveApprovals } from "../lib/api";
@@ -44,11 +45,17 @@ function range(start: string, end: string) {
     ? day.format(at(start))
     : `${day.format(at(start))} – ${day.format(at(end))}`;
 }
-function workingDays(start: string, end: string) {
+// Mirrors the server's business-day count: the work week minus holidays.
+function workingDays(start: string, end: string, calendar: PersonalCalendar) {
   if (!start || !end || end < start) return 0;
+  const holidays = new Set(calendar.holidays.map((h) => h.date));
   let count = 0;
   for (let d = at(start); d <= at(end); d.setUTCDate(d.getUTCDate() + 1))
-    if (d.getUTCDay() % 6 !== 0) count += 1;
+    if (
+      calendar.workDays.includes(d.getUTCDay() || 7) &&
+      !holidays.has(d.toISOString().slice(0, 10))
+    )
+      count += 1;
   return count;
 }
 const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
@@ -123,6 +130,7 @@ export default function Leave() {
           open={composing}
           onClose={() => setComposing(false)}
           balances={mine.data.balances}
+          calendar={mine.data.calendar}
           today={mine.data.today}
           send={send}
           refresh={refresh}
@@ -594,6 +602,7 @@ function RequestDialog({
   open,
   onClose,
   balances,
+  calendar,
   today,
   send,
   refresh,
@@ -601,6 +610,7 @@ function RequestDialog({
   open: boolean;
   onClose: () => void;
   balances: LeaveBalance[];
+  calendar: PersonalCalendar;
   today: string;
   send: Send;
   refresh: () => Promise<void>;
@@ -610,7 +620,10 @@ function RequestDialog({
   const [end, setEnd] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const days = useMemo(() => workingDays(start, end), [start, end]);
+  const days = useMemo(
+    () => workingDays(start, end, calendar),
+    [start, end, calendar],
+  );
   const left = balances.find((b) => b.id === type)?.available ?? null;
   const short = left !== null && days > left;
   function close() {
@@ -642,11 +655,11 @@ function RequestDialog({
       setBusy(false);
     }
   }
-  let count = `${plural(days)} of leave, weekends excluded.`;
+  let count = `${plural(days)} of leave, not counting days off or holidays.`;
   if (days === 0)
     count =
       start && end
-        ? "These dates fall on a weekend. Choose at least one working day."
+        ? "These dates are all days off or holidays. Choose at least one working day."
         : "Pick your dates to see how many working days this uses.";
   else if (short)
     count = `${plural(days)}, more than the ${plural(left)} you have left.`;

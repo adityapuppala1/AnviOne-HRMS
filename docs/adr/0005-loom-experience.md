@@ -1,4 +1,4 @@
-# ADR 0003: Anvi Loom visual system
+# ADR 0005: Anvi Loom visual system
 
 Date: 25 October 2026. Status: accepted. Supersedes the palette and type choices in [ADR 0002](0002-atlas-experience.md); its structure, accessibility and data-scope rules stand.
 

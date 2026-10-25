@@ -6,6 +6,9 @@ import {
   attendanceCheckInSchema,
   attendanceCheckOutSchema,
   attendanceCorrectionCreateSchema,
+  holidayCreateSchema,
+  holidayUpdateSchema,
+  workWeekUpdateSchema,
 } from "./index";
 
 const request = {
@@ -94,5 +97,50 @@ describe("attendance contracts", () => {
         attendanceCorrectionCreateSchema.safeParse({ ...base, ...change })
           .success,
       ).toBe(false);
+  });
+});
+
+describe("calendar contracts", () => {
+  const reason = "Office closed for the regional festival";
+  it("accepts unique ISO weekdays and rejects empty or repeated sets", () => {
+    expect(
+      workWeekUpdateSchema.safeParse({
+        days: [1, 2, 3, 4, 5],
+        version: 1,
+        reason,
+      }).success,
+    ).toBe(true);
+    for (const days of [[], [1, 1], [0], [8], [1, 2, 3, 4, 5, 6, 7, 1]])
+      expect(
+        workWeekUpdateSchema.safeParse({ days, version: 1, reason }).success,
+      ).toBe(false);
+  });
+  it("requires a real date, a bounded name and a reason for holidays", () => {
+    const base = {
+      date: "2026-11-09",
+      name: "Diwali",
+      locationId: null,
+      reason,
+    };
+    expect(holidayCreateSchema.safeParse(base).success).toBe(true);
+    for (const change of [
+      { date: "2026-02-30" },
+      { name: "D" },
+      { reason: "short" },
+      { locationId: "not-a-uuid" },
+      { active: true },
+    ])
+      expect(
+        holidayCreateSchema.safeParse({ ...base, ...change }).success,
+      ).toBe(false);
+    expect(
+      holidayUpdateSchema.safeParse({
+        name: "Diwali",
+        active: false,
+        version: 2,
+        reason,
+        date: "2026-11-10",
+      }).success,
+    ).toBe(false);
   });
 });

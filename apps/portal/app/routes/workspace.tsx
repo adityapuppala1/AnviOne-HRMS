@@ -14,6 +14,7 @@ import { GearSix } from "@phosphor-icons/react/dist/csr/GearSix";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
+import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
@@ -168,6 +169,7 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("attendance.self") ||
         me.permissions.includes("attendance.review"),
     },
+    { to: "/calendar", label: "Holidays", icon: CalendarStar, visible: true },
     {
       to: "/settings",
       label: "Workspace settings",

@@ -257,6 +257,38 @@ try {
       );
     }
   }
+  // Illustrative synthetic holidays, entity-wide and per office; not a statutory list.
+  // Offices are looked up by name: earlier migrations generated their codes.
+  const offices = await client.query<{ name: string; id: string }>(
+    "SELECT name, id FROM org_unit WHERE tenant_id=$1 AND entity_id=$2 AND kind='location'",
+    [tenant, entity],
+  );
+  const office = (name: string) => {
+    const id = offices.rows.find((o) => o.name === name)?.id;
+    if (!id) throw new Error(`Seed office ${name} is missing`);
+    return id;
+  };
+  for (const [date, name, location] of [
+    ["2026-01-26", "Republic Day", null],
+    ["2026-03-04", "Holi", null],
+    ["2026-06-02", "Telangana Formation Day", office("Hyderabad")],
+    ["2026-08-15", "Independence Day", null],
+    ["2026-10-02", "Gandhi Jayanti", null],
+    ["2026-11-01", "Karnataka Rajyotsava", office("Bengaluru")],
+    ["2026-11-09", "Diwali", null],
+    ["2026-12-25", "Christmas Day", null],
+    ["2027-01-26", "Republic Day", null],
+    ["2027-03-22", "Holi", null],
+    ["2027-08-16", "Independence Day (observed)", null],
+  ] as const) {
+    await client.query(
+      `INSERT INTO holiday(id,tenant_id,entity_id,location_id,holiday_date,name)
+       SELECT $1,$2,$3,$4,$5,$6 WHERE NOT EXISTS(SELECT 1 FROM holiday
+         WHERE tenant_id=$2 AND entity_id=$3 AND holiday_date=$5
+           AND location_id IS NOT DISTINCT FROM $4)`,
+      [randomUUID(), tenant, entity, location, date, name],
+    );
+  }
   // Three weeks of past attendance for Maya and her reports. Historical punches
   // cannot pass the today-only guard, so these synthetic rows bypass triggers;
   // one deliberate gap per person shows as provisional LOP.

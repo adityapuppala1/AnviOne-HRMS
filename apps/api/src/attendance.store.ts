@@ -19,6 +19,7 @@ import {
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { PlatformStore } from "./platform.store";
+import { personalCalendar } from "./calendar.store";
 
 const correctionColumns = `c.id, c.employee_id AS "employeeId", d.name AS "employeeName",
   d.initials, d.department, to_char(c.work_date,'YYYY-MM-DD') AS "workDate",
@@ -36,6 +37,11 @@ type CorrectionRow = Omit<AttendanceCorrection, "canDecide" | "canCancel"> & {
   managerId: string | null;
 };
 type CorrectionState = "approved" | "rejected" | "cancelled";
+function shift(iso: string, days: number) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 // Database guards own punch stamping, correction routing and application.
 // This store derives day status on read and commits audit and outbox records.
@@ -56,6 +62,8 @@ export class AttendanceStore {
     return scoped(this.platform.pool, actor, async (client) => {
       const { today, now } = await this.clock(client);
       const record = await this.todayRecord(client, actor, today);
+      const calendar = await personalCalendar(client, shift(today, -29), today);
+      const holidays = new Map(calendar.holidays.map((h) => [h.date, h.name]));
       const days = await client.query<{
         date: string;
         dow: number;
@@ -91,10 +99,19 @@ export class AttendanceStore {
         today,
         now,
         record,
-        days: days.rows.map(({ dow, ...day }) => ({
-          ...day,
-          status: this.status(day, dow, today),
-        })),
+        days: days.rows.map(({ dow, ...day }) => {
+          const holiday = holidays.get(day.date) ?? null;
+          return {
+            ...day,
+            holiday,
+            status: this.status(
+              day,
+              holiday,
+              !calendar.workDays.includes(dow),
+              today,
+            ),
+          };
+        }),
         corrections: corrections.rows.map((row) => this.present(actor, row)),
       };
     });
@@ -104,9 +121,11 @@ export class AttendanceStore {
     this.platform.require(actor, "attendance.review");
     return scoped(this.platform.pool, actor, async (client) => {
       const { today } = await this.clock(client);
-      const weekend = [0, 6].includes(
-        new Date(`${today}T00:00:00Z`).getUTCDay(),
+      const week = await client.query<{ days: number[] }>(
+        "SELECT days FROM work_week",
       );
+      const isoDay = new Date(`${today}T00:00:00Z`).getUTCDay() || 7;
+      const weekend = !(week.rows[0]?.days ?? [1, 2, 3, 4, 5]).includes(isoDay);
       const people = await client.query<{
         employeeId: string;
         name: string;
@@ -115,11 +134,14 @@ export class AttendanceStore {
         checkIn: string | null;
         checkOut: string | null;
         onLeave: boolean;
+        onHoliday: boolean;
       }>(
         `SELECT d.id AS "employeeId", d.name, d.initials, d.department,
            to_char(r.check_in,'HH24:MI') AS "checkIn", to_char(r.check_out,'HH24:MI') AS "checkOut",
            EXISTS(SELECT 1 FROM leave_request l WHERE l.employee_id=d.id AND l.state='approved'
-             AND $2::date BETWEEN l.start_date AND l.end_date) AS "onLeave"
+             AND $2::date BETWEEN l.start_date AND l.end_date) AS "onLeave",
+           EXISTS(SELECT 1 FROM holiday h WHERE h.active AND h.holiday_date=$2
+             AND (h.location_id IS NULL OR h.location_id=d.location_id)) AS "onHoliday"
          FROM employee_directory d
          LEFT JOIN attendance_record r ON r.employee_id=d.id AND r.work_date=$2
          WHERE d.id<>$1 AND d.status IN ('active','notice')
@@ -140,9 +162,9 @@ export class AttendanceStore {
       );
       return {
         date: today,
-        people: people.rows.map(({ onLeave, ...person }) => ({
+        people: people.rows.map(({ onLeave, onHoliday, ...person }) => ({
           ...person,
-          status: this.presence(person, onLeave, weekend),
+          status: this.presence(person, onLeave, onHoliday, weekend),
         })),
         pending: pending.rows.map((row) => this.present(actor, row)),
         decided: decided.rows.map((row) => this.present(actor, row)),
@@ -361,24 +383,28 @@ export class AttendanceStore {
       checkOut: string | null;
       leaveType: string | null;
     },
-    dow: number,
+    holiday: string | null,
+    weekend: boolean,
     today: string,
   ): AttendanceDay["status"] {
     if (day.checkOut) return "present";
     if (day.checkIn) return day.date === today ? "in_progress" : "incomplete";
     if (day.leaveType) return "leave";
-    if (dow >= 6) return "weekend";
+    if (holiday) return "holiday";
+    if (weekend) return "weekend";
     return day.date === today ? "not_started" : "unaccounted";
   }
 
   private presence(
     person: { checkIn: string | null; checkOut: string | null },
     onLeave: boolean,
+    onHoliday: boolean,
     weekend: boolean,
   ): AttendanceTeam["people"][number]["status"] {
     if (person.checkOut) return "done";
     if (person.checkIn) return "in";
     if (onLeave) return "leave";
+    if (onHoliday) return "holiday";
     return weekend ? "weekend" : "not_in";
   }
 

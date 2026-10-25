@@ -24,12 +24,12 @@ for (const name of [
     throw new Error("Local Compose database required");
 }
 await test("Isolated candidate onboarding", async (t) => {
-  const config = readConfig({ ...process.env, API_PORT: "4403" });
+  const config = readConfig({ ...process.env, API_PORT: "4478" });
   const { app, store } = await createApp(config),
-    candidate = await createCandidateApp(config, 4404),
+    candidate = await createCandidateApp(config, 4477),
     admin = makePool(process.env.MIGRATION_DATABASE_URL!);
-  await app.listen(4403, "127.0.0.1");
-  await candidate.app.listen(4404, "127.0.0.1");
+  await app.listen(4478, "127.0.0.1");
+  await candidate.app.listen(4477, "127.0.0.1");
   const actor = await store.resolveIdentity(
     "urn:anvione:local-demo",
     "maya-demo",
@@ -37,7 +37,7 @@ await test("Isolated candidate onboarding", async (t) => {
   let employeeToken = await store.createSession(actor, randomUUID()),
     employeeSession = await store.session(employeeToken);
   const hr = async (path: string, body?: unknown) =>
-    fetch(`http://127.0.0.1:4403/api/v1${path}`, {
+    fetch(`http://127.0.0.1:4478/api/v1${path}`, {
       method: body ? "POST" : "GET",
       headers: {
         Cookie: `anvi_dev_session=${employeeToken}`,
@@ -64,7 +64,7 @@ await test("Isolated candidate onboarding", async (t) => {
     method = body ? "POST" : "GET",
     headers: Record<string, string> = {},
   ) =>
-    fetch(`http://127.0.0.1:4404/api/candidate/${path}`, {
+    fetch(`http://127.0.0.1:4477/api/candidate/${path}`, {
       method,
       headers: {
         Origin: config.CANDIDATE_ORIGIN,
@@ -273,7 +273,7 @@ await test("Isolated candidate onboarding", async (t) => {
         );
         assert.equal(
           (
-            await fetch("http://127.0.0.1:4403/api/v1/me", {
+            await fetch("http://127.0.0.1:4478/api/v1/me", {
               headers: { Cookie: cookie },
             })
           ).status,

@@ -14,6 +14,7 @@ import {
   leaveApprovalsSchema,
   attendanceOverviewSchema,
   attendanceTeamSchema,
+  calendarSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -127,6 +128,14 @@ export const useAttendanceTeam = (enabled: boolean) =>
     refetchInterval: 60000,
     queryFn: ({ signal }) =>
       api("/attendance/team", attendanceTeamSchema, { signal }),
+  });
+export const useCalendar = (year: number | null) =>
+  useQuery({
+    queryKey: ["calendar", year],
+    queryFn: ({ signal }) =>
+      api(`/calendar${year ? `?year=${year}` : ""}`, calendarSchema, {
+        signal,
+      }),
   });
 export const mutate = (
   path: string,

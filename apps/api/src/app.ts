@@ -50,12 +50,17 @@ import {
   attendanceCorrectionCreateSchema,
   attendanceCancelSchema,
   attendanceDecisionSchema,
+  calendarQuerySchema,
+  holidayCreateSchema,
+  holidayUpdateSchema,
+  workWeekUpdateSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OrganizationStore } from "./organization.store";
 import { OnboardingStore } from "./onboarding.store";
 import { LeaveStore } from "./leave.store";
 import { AttendanceStore } from "./attendance.store";
+import { CalendarStore } from "./calendar.store";
 import {
   SessionGuard,
   OidcService,
@@ -104,12 +109,14 @@ class PlatformController {
   private readonly onboarding;
   private readonly leave;
   private readonly attendance;
+  private readonly calendar;
   constructor(@Inject(PlatformStore) private readonly store: PlatformStore) {
     this.oidc = new OidcService(store);
     this.organization = new OrganizationStore(store);
     this.onboarding = new OnboardingStore(store);
     this.leave = new LeaveStore(store);
     this.attendance = new AttendanceStore(store);
+    this.calendar = new CalendarStore(store);
   }
   @Get("healthz") health() {
     return { status: "ok" };
@@ -504,6 +511,47 @@ class PlatformController {
       req.actor,
       parse(z.uuid(), id),
       parse(attendanceDecisionSchema, body),
+      req.requestId,
+    );
+  }
+  @Get("api/v1/calendar") calendarView(
+    @Req() req: AppRequest,
+    @Query() query: unknown,
+  ) {
+    return this.calendar.view(
+      req.actor,
+      parse(calendarQuerySchema, query).year,
+    );
+  }
+  @Post("api/v1/calendar/holidays") createHoliday(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.calendar.createHoliday(
+      req.actor,
+      parse(holidayCreateSchema, body),
+      req.requestId,
+    );
+  }
+  @Put("api/v1/calendar/holidays/:id") updateHoliday(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.calendar.updateHoliday(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(holidayUpdateSchema, body),
+      req.requestId,
+    );
+  }
+  @Put("api/v1/calendar/work-week") updateWorkWeek(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.calendar.updateWorkWeek(
+      req.actor,
+      parse(workWeekUpdateSchema, body),
       req.requestId,
     );
   }

@@ -35,16 +35,16 @@ for (const name of [
 }
 
 await test("PostgreSQL and HTTP security boundaries", async (t) => {
-  const config = readConfig({ ...process.env, API_PORT: "4401" });
+  const config = readConfig({ ...process.env, API_PORT: "4473" });
   const { app, store } = await createApp(config);
-  await app.listen(4401, "127.0.0.1");
+  await app.listen(4473, "127.0.0.1");
   const admin = makePool(process.env.MIGRATION_DATABASE_URL!);
   const worker = makePool(process.env.WORKER_DATABASE_URL!);
   const actor = await store.resolveIdentity(
     "urn:anvione:local-demo",
     "maya-demo",
   );
-  const base = "http://127.0.0.1:4401";
+  const base = "http://127.0.0.1:4473";
   let cookie = "",
     csrf = "";
   const request = (path: string, init: RequestInit = {}) =>

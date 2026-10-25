@@ -445,9 +445,17 @@ export const leaveRequestSchema = z.strictObject({
   canCancel: z.boolean(),
 });
 export type LeaveRequest = z.infer<typeof leaveRequestSchema>;
+// Calendar (F0.12). Weekdays are ISO: 1 = Monday … 7 = Sunday.
+const isoWeekdaySchema = z.number().int().min(1).max(7);
+export const personalCalendarSchema = z.strictObject({
+  workDays: z.array(isoWeekdaySchema),
+  holidays: z.array(z.strictObject({ date: z.iso.date(), name: z.string() })),
+});
+export type PersonalCalendar = z.infer<typeof personalCalendarSchema>;
 export const leaveOverviewSchema = z.strictObject({
   year: z.number().int(),
   today: z.iso.date(),
+  calendar: personalCalendarSchema,
   balances: z.array(leaveBalanceSchema),
   requests: z.array(leaveRequestSchema),
 });
@@ -501,6 +509,7 @@ export const attendanceDayStatusSchema = z.enum([
   "incomplete",
   "leave",
   "weekend",
+  "holiday",
   "unaccounted",
   "not_started",
 ]);
@@ -513,6 +522,7 @@ export const attendanceDaySchema = z.strictObject({
   minutes: z.number().int().nonnegative().nullable(),
   source: z.enum(["web", "correction"]).nullable(),
   leaveType: z.string().nullable(),
+  holiday: z.string().nullable(),
   correctionPending: z.boolean(),
 });
 export type AttendanceDay = z.infer<typeof attendanceDaySchema>;
@@ -558,7 +568,7 @@ export const attendanceTeamMemberSchema = z.strictObject({
   name: z.string(),
   initials: z.string(),
   department: z.string(),
-  status: z.enum(["in", "done", "leave", "not_in", "weekend"]),
+  status: z.enum(["in", "done", "leave", "not_in", "weekend", "holiday"]),
   checkIn: clockSchema.nullable(),
   checkOut: clockSchema.nullable(),
 });
@@ -586,6 +596,57 @@ export const attendanceCorrectionCreateSchema = z
   });
 export const attendanceCancelSchema = leaveCancelSchema;
 export const attendanceDecisionSchema = leaveDecisionSchema;
+export const holidaySchema = z.strictObject({
+  id: z.uuid(),
+  date: z.iso.date(),
+  name: z.string(),
+  locationId: z.uuid().nullable(),
+  locationName: z.string().nullable(),
+  active: z.boolean(),
+  version: z.number().int().positive(),
+});
+export type Holiday = z.infer<typeof holidaySchema>;
+export const workWeekSchema = z.strictObject({
+  days: z.array(isoWeekdaySchema),
+  version: z.number().int().positive(),
+});
+export const calendarSchema = z.strictObject({
+  year: z.number().int(),
+  today: z.iso.date(),
+  workWeek: workWeekSchema,
+  holidays: z.array(holidaySchema),
+  locations: z.array(z.strictObject({ id: z.uuid(), name: z.string() })),
+  next: holidaySchema.nullable(),
+  canManage: z.boolean(),
+});
+export type Calendar = z.infer<typeof calendarSchema>;
+export const calendarQuerySchema = z.strictObject({
+  year: z.coerce.number().int().min(2000).max(2200).optional(),
+});
+const holidayNameSchema = z.string().trim().min(2).max(60);
+export const holidayCreateSchema = z.strictObject({
+  date: z.iso.date(),
+  name: holidayNameSchema,
+  locationId: z.uuid().nullable(),
+  reason: changeReasonSchema,
+});
+export const holidayUpdateSchema = z.strictObject({
+  name: holidayNameSchema,
+  active: z.boolean(),
+  version: z.number().int().positive(),
+  reason: changeReasonSchema,
+});
+export const workWeekUpdateSchema = z.strictObject({
+  days: z
+    .array(isoWeekdaySchema)
+    .min(1)
+    .max(7)
+    .refine((days) => new Set(days).size === days.length, {
+      message: "Each weekday can appear once",
+    }),
+  version: z.number().int().positive(),
+  reason: changeReasonSchema,
+});
 export {
   activationReadiness,
   onboardingStarter,

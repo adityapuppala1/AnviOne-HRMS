@@ -49,6 +49,12 @@ import {
   attendanceCorrectionCreateSchema,
   attendanceCancelSchema,
   attendanceDecisionSchema,
+  calendarSchema,
+  holidaySchema,
+  holidayCreateSchema,
+  holidayUpdateSchema,
+  workWeekSchema,
+  workWeekUpdateSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -324,6 +330,48 @@ const spec = {
         "Approve or decline a routed correction",
         attendanceDecisionSchema,
         attendanceCorrectionSchema,
+      ),
+    },
+    "/calendar": {
+      get: {
+        ...read(
+          "Work week and holidays for the current legal entity",
+          calendarSchema,
+        ),
+        parameters: [
+          {
+            name: "year",
+            in: "query",
+            schema: { type: "integer", minimum: 2000, maximum: 2200 },
+          },
+        ],
+      },
+    },
+    "/calendar/holidays": {
+      post: write("Add a holiday (HR)", holidayCreateSchema, holidaySchema),
+    },
+    "/calendar/holidays/{id}": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      put: write(
+        "Rename or (de)activate a holiday (HR)",
+        holidayUpdateSchema,
+        holidaySchema,
+        "200",
+      ),
+    },
+    "/calendar/work-week": {
+      put: write(
+        "Change the working week (HR)",
+        workWeekUpdateSchema,
+        workWeekSchema,
+        "200",
       ),
     },
     "/organization": {

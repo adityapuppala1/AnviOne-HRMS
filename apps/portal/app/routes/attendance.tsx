@@ -37,7 +37,8 @@ const dayLabels: Record<AttendanceDayStatus, string> = {
   in_progress: "Checked in",
   incomplete: "Missing check-out",
   leave: "On leave",
-  weekend: "Weekend",
+  weekend: "Non-working day",
+  holiday: "Holiday",
   unaccounted: "Unaccounted (provisional LOP)",
   not_started: "Not checked in yet",
 };
@@ -49,7 +50,8 @@ const presenceLabels: Record<
   done: "Day complete",
   leave: "On leave",
   not_in: "Not in yet",
-  weekend: "Weekend",
+  weekend: "Non-working day",
+  holiday: "Holiday",
 };
 const correctionLabels: Record<AttendanceCorrection["state"], string> = {
   pending: "Awaiting decision",
@@ -228,6 +230,7 @@ function MyAttendance({
             [
               "present",
               "leave",
+              "holiday",
               "unaccounted",
               "incomplete",
               "weekend",
@@ -309,7 +312,9 @@ function DayThread({
               ? `Checked in at ${record.checkIn}`
               : today.status === "leave"
                 ? "You're on leave today"
-                : "Ready when you are"}
+                : today.status === "holiday"
+                  ? `Holiday: ${today.holiday}`
+                  : "Ready when you are"}
         </h2>
         <p>
           {record && !record.checkOut
@@ -367,6 +372,7 @@ function DayDetail({
     day.date < today &&
     !day.correctionPending &&
     day.status !== "leave" &&
+    day.status !== "holiday" &&
     day.status !== "weekend";
   return (
     <div className={`attendance-detail attendance-detail-${day.status}`}>
@@ -375,6 +381,7 @@ function DayDetail({
         <p>
           {dayLabels[day.status]}
           {day.leaveType ? `: ${day.leaveType}` : ""}
+          {day.holiday ? `: ${day.holiday}` : ""}
           {day.checkIn
             ? `. ${day.checkIn}${day.checkOut ? ` to ${day.checkOut}` : ", no check-out"}`
             : ""}

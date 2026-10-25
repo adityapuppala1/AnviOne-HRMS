@@ -55,9 +55,9 @@ function pastWeekday(today: string, n: number) {
 }
 
 await test("Attendance punches and correction workflow", async (t) => {
-  const config = readConfig({ ...process.env, API_PORT: "4404" });
+  const config = readConfig({ ...process.env, API_PORT: "4471" });
   const { app, store } = await createApp(config);
-  await app.listen(4404, "127.0.0.1");
+  await app.listen(4471, "127.0.0.1");
   const admin = makePool(process.env.MIGRATION_DATABASE_URL!);
   const actor = await store.resolveIdentity(
     "urn:anvione:local-demo",
@@ -69,7 +69,7 @@ await test("Attendance punches and correction workflow", async (t) => {
   const records: string[] = [];
   const touched: Array<[string, string]> = [];
   const request = (path: string, init: RequestInit = {}) =>
-    fetch(`http://127.0.0.1:4404/api/v1${path}`, {
+    fetch(`http://127.0.0.1:4471/api/v1${path}`, {
       ...init,
       headers: {
         Cookie: `anvi_dev_session=${token}`,

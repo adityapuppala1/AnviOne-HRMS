@@ -30,9 +30,9 @@ for (const name of ["DATABASE_URL", "MIGRATION_DATABASE_URL"]) {
 }
 
 await test("Organization and people lifecycle foundations", async (t) => {
-  const config = readConfig({ ...process.env, API_PORT: "4402" });
+  const config = readConfig({ ...process.env, API_PORT: "4476" });
   const { app, store } = await createApp(config);
-  await app.listen(4402, "127.0.0.1");
+  await app.listen(4476, "127.0.0.1");
   const admin = makePool(process.env.MIGRATION_DATABASE_URL!);
   const actor = await store.resolveIdentity(
     "urn:anvione:local-demo",
@@ -46,7 +46,7 @@ await test("Organization and people lifecycle foundations", async (t) => {
   const prefix = `QA-${randomUUID().slice(0, 8).toUpperCase()}`;
   const reason = "Synthetic organization acceptance check";
   const request = (path: string, init: RequestInit = {}) =>
-    fetch(`http://127.0.0.1:4402/api/v1${path}`, {
+    fetch(`http://127.0.0.1:4476/api/v1${path}`, {
       ...init,
       headers: {
         Cookie: `anvi_dev_session=${token}`,

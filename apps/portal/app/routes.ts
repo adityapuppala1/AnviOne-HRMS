@@ -16,6 +16,7 @@ export default [
     route("tasks", "routes/assigned-tasks.tsx"),
     route("leave", "routes/leave.tsx"),
     route("attendance", "routes/attendance.tsx"),
+    route("calendar", "routes/calendar.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

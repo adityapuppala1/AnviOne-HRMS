@@ -1,0 +1,226 @@
+/* Holidays: each month is a thread; holidays are marigold knots along it. */
+.calendar-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 22px;
+  align-items: stretch;
+}
+.calendar-year {
+  grid-column: 1 / -1;
+}
+.calendar-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 30px 32px;
+  border-radius: var(--radius-shell);
+  color: #f3f2ff;
+  background:
+    repeating-linear-gradient(90deg, #ffffff08 0 1px, transparent 1px 22px),
+    radial-gradient(
+      110% 90% at 100% 0%,
+      color-mix(in srgb, var(--brand) 70%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(135deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+  box-shadow: 0 30px 60px -36px var(--indigo-deep);
+}
+.calendar-hero h1 {
+  color: #fff;
+  font-size: clamp(32px, 4vw, 52px);
+}
+.calendar-hero p:last-child {
+  margin-top: 10px;
+  color: #cfcdf4;
+  font-size: 14px;
+  max-width: 48ch;
+}
+.calendar-hero-date {
+  flex-shrink: 0;
+  width: 112px;
+  height: 120px;
+  border-radius: 28px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  box-shadow: 0 16px 30px -16px var(--marigold);
+}
+.calendar-hero-date strong {
+  font:
+    700 52px/1 var(--display),
+    sans-serif;
+  letter-spacing: -0.04em;
+}
+.calendar-hero-date span {
+  font-weight: 700;
+  font-size: 14px;
+}
+.calendar-week {
+  padding-bottom: 22px;
+}
+.calendar-week-form {
+  padding: 0 24px;
+}
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.calendar-weekday {
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 14px;
+  font:
+    650 13px var(--display),
+    sans-serif;
+  color: var(--muted);
+  background: var(--surface-subtle);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+button.calendar-weekday:hover {
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.calendar-weekday.is-on {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: none;
+}
+[data-mode="dark"] .calendar-weekday.is-on {
+  color: var(--indigo-deep);
+}
+.calendar-week-save {
+  margin-top: 16px;
+}
+.calendar-year-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.calendar-months {
+  list-style: none;
+  margin: 0;
+  padding: 0 24px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 14px;
+}
+.calendar-month {
+  padding: 16px 16px 12px;
+  border-radius: 18px;
+  background: var(--surface-subtle);
+}
+.calendar-month h3 {
+  font-size: 15px;
+}
+.calendar-month.is-quiet h3 {
+  color: var(--muted);
+}
+.calendar-thread {
+  position: relative;
+  height: 2px;
+  margin: 12px 6px 14px;
+  background: color-mix(in srgb, var(--brand) 25%, transparent);
+}
+.calendar-thread span {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--marigold);
+  box-shadow: 0 0 0 3px var(--surface-subtle);
+}
+.calendar-month ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.calendar-month li li,
+.calendar-month ul > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.calendar-day {
+  width: 46px;
+  display: grid;
+  justify-items: center;
+  padding: 6px 0;
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--muted);
+}
+.calendar-day strong {
+  font:
+    650 18px/1.1 var(--display),
+    sans-serif;
+  color: var(--ink);
+}
+.calendar-name strong {
+  display: block;
+  font-size: 13px;
+}
+.calendar-name small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.calendar-inactive {
+  opacity: 0.6;
+}
+.calendar-inactive .calendar-name strong {
+  text-decoration: line-through;
+}
+.calendar-none {
+  color: var(--muted);
+  font-size: 12px;
+}
+.leave-form .calendar-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.calendar-check input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+}
+
+@media (max-width: 1050px) {
+  .calendar-page {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .calendar-hero {
+    padding: 24px 20px;
+  }
+  .calendar-hero-date {
+    width: 84px;
+    height: 92px;
+    border-radius: 22px;
+  }
+  .calendar-hero-date strong {
+    font-size: 38px;
+  }
+  .calendar-months,
+  .calendar-week-form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .calendar-weekday {
+    min-height: 40px;
+    font-size: 12px;
+  }
+}

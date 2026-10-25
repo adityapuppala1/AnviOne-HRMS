@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import { candidatePortalSchema, type CandidateDraft } from "@anvi/contracts";
-import "@fontsource-variable/outfit";
+import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/public-sans";
 import "@anvi/ui/theme.css";
 import "./style.css";

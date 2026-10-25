@@ -1,80 +1,107 @@
 @import "tailwindcss";
 @source './';
 
+/* Anvi Loom: indigo-dyed structure, a single marigold signal, lilac-mist canvas. */
 :root {
   color-scheme: light;
-  --brand: #197052;
-  --brand-hover: #115b42;
-  --brand-soft: #e6f0e9;
-  --brand-ink: #226044;
-  --canvas: #f4f5f3;
+  --indigo: #2a2970;
+  --indigo-deep: #1d1c55;
+  --marigold: #f4b23e;
+  --marigold-ink: #6b4300;
+  --coral: #d9573f;
+  --brand: #3b3a9e;
+  --brand-hover: #2a2970;
+  --brand-soft: #e9e8f8;
+  --brand-ink: #34338c;
+  --canvas: #f1f0f7;
   --surface: #fff;
-  --surface-subtle: #f7f8f6;
-  --ink: #252c2c;
-  --muted: #58655d;
-  --line: #e2e6e0;
-  --sidebar: #202626;
-  --sidebar-ink: #ebeeea;
-  --accent: #d8ebc0;
-  --success: #246446;
-  --warning: #855919;
-  --focus: #1b7d77;
-  --chart-0: #377d61;
-  --chart-1: #91b692;
-  --chart-2: #b6a1ce;
-  --chart-3: #dbbb81;
-  --chart-4: #81a9b7;
-  --chart-5: #d5947a;
-  --shadow: 0 2px 4px #29382c03, 0 14px 40px #29382c05;
+  --surface-subtle: #f6f5fb;
+  --ink: #1f1e3d;
+  --muted: #5d5b7a;
+  --line: #e3e1ef;
+  --sidebar: var(--indigo);
+  --sidebar-ink: #e8e7fb;
+  --accent: var(--marigold);
+  --success: #1a6849;
+  --warning: #8a5300;
+  --focus: #3b3a9e;
+  --chart-0: #3b3a9e;
+  --chart-1: #f4b23e;
+  --chart-2: #2f9c72;
+  --chart-3: #8f8ce0;
+  --chart-4: #e0816d;
+  --chart-5: #5fb7c9;
+  --radius-shell: 28px;
+  --radius-panel: 22px;
+  --radius-control: 12px;
+  --shadow: 0 1px 0 #2a29700a, 0 18px 40px -24px #2a29702e;
+  --display:
+    "Bricolage Grotesque Variable", "Public Sans Variable", system-ui,
+    sans-serif;
   font-family: "Public Sans Variable", system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
 :root[data-theme="iris"] {
-  --brand: #61508d;
-  --brand-hover: #4c3d73;
-  --brand-soft: #efebf7;
-  --brand-ink: #5a487f;
-  --accent: #dfd3f0;
-  --chart-0: #786697;
+  --indigo: #4a2a6e;
+  --indigo-deep: #351c52;
+  --sidebar: var(--indigo);
+  --brand: #6a3e9c;
+  --brand-hover: #4a2a6e;
+  --brand-soft: #f0e9f8;
+  --brand-ink: #5e3590;
+  --marigold: #f2a07b;
+  --accent: var(--marigold);
+  --focus: #6a3e9c;
+  --chart-0: #6a3e9c;
+  --chart-1: #f2a07b;
 }
 :root[data-theme="forest"] {
-  --brand: #52683e;
-  --brand-hover: #405230;
-  --brand-soft: #edf1e6;
-  --brand-ink: #435631;
-  --accent: #e0e8c6;
-  --chart-0: #60794a;
+  --indigo: #1e4a3f;
+  --indigo-deep: #133429;
+  --sidebar: var(--indigo);
+  --brand: #22705a;
+  --brand-hover: #1e4a3f;
+  --brand-soft: #e3f1ea;
+  --brand-ink: #1d6450;
+  --marigold: #e9c547;
+  --accent: var(--marigold);
+  --focus: #22705a;
+  --chart-0: #22705a;
+  --chart-1: #e9c547;
 }
 :root[data-mode="dark"] {
   color-scheme: dark;
-  --canvas: #191e1d;
-  --surface: #222a27;
-  --surface-subtle: #2a322f;
-  --ink: #edf2ec;
-  --muted: #b3beb5;
-  --line: #3c4740;
-  --brand: #b4d8a0;
-  --brand-hover: #c9e7b8;
-  --brand-soft: #344536;
-  --brand-ink: #c3e2b2;
-  --sidebar: #141b18;
-  --success: #b4d8a0;
-  --warning: #ecc48c;
-  --focus: #a0d2d3;
-  --shadow: 0 10px 30px #00000010;
+  --canvas: #13122b;
+  --surface: #1d1c3d;
+  --surface-subtle: #25244b;
+  --ink: #eeedfb;
+  --muted: #b2b0d3;
+  --line: #34335f;
+  --brand: #b9b7ff;
+  --brand-hover: #d2d1ff;
+  --brand-soft: #2f2e63;
+  --brand-ink: #c9c8ff;
+  --sidebar: #0e0d24;
+  --success: #7fd6ac;
+  --warning: #f6c66f;
+  --focus: #f4b23e;
+  --chart-0: #8f8cf0;
+  --shadow: 0 18px 40px -24px #00000080;
 }
 :root[data-mode="dark"][data-theme="iris"] {
-  --brand: #d0c0ef;
-  --brand-hover: #e2d5f8;
-  --brand-soft: #3d354c;
-  --brand-ink: #dbccf4;
+  --brand: #d6bcf5;
+  --brand-hover: #e6d4fb;
+  --brand-soft: #3a2a52;
+  --brand-ink: #dcc6f7;
+  --chart-0: #c39be8;
 }
 :root[data-mode="dark"][data-theme="forest"] {
-  --brand: #cad7a1;
-  --brand-hover: #dce6bb;
-  --brand-soft: #39422e;
-  --brand-ink: #d5e0ba;
+  --brand: #9fdcc2;
+  --brand-hover: #bce9d6;
+  --brand-soft: #1f3a32;
+  --brand-ink: #b0e3cd;
+  --chart-0: #6fc6a2;
 }
 @theme inline {
   --color-brand: var(--brand);
@@ -145,7 +172,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: "Outfit Variable", system-ui, sans-serif;
+  font-family: var(--display);
 }
 h1 {
   font-size: clamp(27px, 2.4vw, 36px);
@@ -227,7 +254,7 @@ button[data-disabled] {
   border-radius: 16px;
   color: #385348;
   background: #e5ece6;
-  font-family: "Outfit Variable", sans-serif;
+  font-family: var(--display);
   font-weight: 550;
   font-size: 16px;
   letter-spacing: -0.5px;

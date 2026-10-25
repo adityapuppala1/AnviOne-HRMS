@@ -12,7 +12,7 @@ import { z } from "zod";
 import { api, ApiError, useAuthConfig } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
-import { AtlasArt } from "../components/atlas-art";
+import { LoomWeave } from "../components/loom-weave";
 
 export default function Login() {
   const config = useAuthConfig();
@@ -46,18 +46,15 @@ export default function Login() {
       <section className="login-story">
         <Brand />
         <div className="login-story-copy">
-          <p className="eyebrow">People make the difference.</p>
-          <h1>
-            A little closer.
-            <br />A lot more <span>possible.</span>
-          </h1>
+          <h1>Every person, woven into one workspace.</h1>
           <p>
-            Your people, your teams, your everyday.
-            <br />
-            Find your place in AnviOne.
+            Find colleagues, guide new joiners and keep your organization in
+            step, all from one place.
           </p>
         </div>
-        <AtlasArt />
+        <div className="login-loom">
+          <LoomWeave knots={["MI", "KS", "TB"]} />
+        </div>
         <div className="login-story-footer">
           <span>AnviOne / MyAnvi</span>
           <span>

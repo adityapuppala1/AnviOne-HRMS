@@ -8,7 +8,15 @@ import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizon
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { CalendarBlank } from "@phosphor-icons/react/dist/csr/CalendarBlank";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
-import { Avatar, Badge, ErrorState, LoadingState } from "@anvi/ui";
+import {
+  Avatar,
+  Badge,
+  ErrorState,
+  LoadingState,
+  NumberTicker,
+} from "@anvi/ui";
+import { LoomWeave } from "../components/loom-weave";
+import { usePreferences } from "../lib/preferences";
 import { useWorkspace } from "./workspace";
 import { useDashboard } from "../lib/api";
 import { PersonRow } from "../components/people";
@@ -26,6 +34,7 @@ export default function Home() {
 function PeopleHome() {
   const { me } = useWorkspace();
   const { data, error, refetch } = useDashboard();
+  const { reduceMotion } = usePreferences();
   if (error)
     return (
       <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -39,78 +48,78 @@ function PeopleHome() {
   }).format(new Date());
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">Your workday, in focus</p>
+      <section className="loom-band" aria-label="Workspace summary">
+        <LoomWeave
+          className="loom-band-art"
+          knots={data.recent.map((p) => p.initials)}
+        />
+        <div className="loom-band-copy">
+          <p className="loom-date">
+            <CalendarBlank size={17} />
+            {date}
+          </p>
           <h1>
             Good to see you, {me.name.split(" ")[0]}
             <span className="heading-period">.</span>
           </h1>
-          <p>Here's how your people come together.</p>
+          <p>
+            {data.total} {data.total === 1 ? "person" : "people"} across{" "}
+            {data.departments.length} teams, woven into one workspace.
+          </p>
         </div>
-        <div className="date-pill">
-          <CalendarBlank size={18} />
-          <span>{date}</span>
-        </div>
-      </div>
-      <section className="summary-grid" aria-label="Workspace summary">
-        <Link to="/people" className="summary-card summary-featured">
-          <div className="summary-top">
-            <span>
-              <Users size={20} weight="duotone" />
+        <div className="loom-stats">
+          <Link to="/people" className="loom-stat loom-stat-featured">
+            <span className="loom-stat-label">
+              <Users size={19} weight="duotone" />
               {me.role === "employee"
                 ? "Your profile"
                 : "People in your workspace"}
             </span>
-            <ArrowUpRight size={19} />
-          </div>
-          <div className="summary-value">
-            <strong>{String(data.total).padStart(2, "0")}</strong>
-            <div className="avatar-stack">
+            <NumberTicker
+              className="loom-stat-value"
+              value={data.total}
+              pad={2}
+              disabled={reduceMotion}
+            />
+            <span className="avatar-stack">
               {data.recent.slice(0, 3).map((p) => (
                 <Avatar key={p.id} initials={p.initials} size="small" />
               ))}
-            </div>
-          </div>
-          <p>Active & notice-period employees</p>
-          <span className="summary-decoration" aria-hidden="true" />
-        </Link>
-        {[
-          {
-            label: "Departments",
-            value: data.departments.length,
-            icon: Buildings,
-            to: "/teams",
-            note: "Find the team behind the work",
-          },
-          {
-            label: "Work locations",
-            value: data.locations.length,
-            icon: MapPin,
-            to: "/teams?view=locations",
-            note: "Connected across your locations",
-          },
-        ].map(({ label, value, icon: Icon, to, note }) => (
-          <Link className="summary-card" key={label} to={to}>
-            <div className="summary-top">
-              <span>
-                <Icon size={20} weight="duotone" />
+            </span>
+            <ArrowUpRight className="loom-stat-arrow" size={18} />
+          </Link>
+          {[
+            {
+              label: "Departments",
+              value: data.departments.length,
+              icon: Buildings,
+              to: "/teams",
+              note: "Find the team behind the work",
+            },
+            {
+              label: "Work locations",
+              value: data.locations.length,
+              icon: MapPin,
+              to: "/teams?view=locations",
+              note: "Connected across your locations",
+            },
+          ].map(({ label, value, icon: Icon, to, note }) => (
+            <Link className="loom-stat" key={label} to={to}>
+              <span className="loom-stat-label">
+                <Icon size={19} weight="duotone" />
                 {label}
               </span>
-              <ArrowUpRight size={18} />
-            </div>
-            <div className="summary-value">
-              <strong>{String(value).padStart(2, "0")}</strong>
-              <Icon
-                className="summary-category"
-                size={37}
-                weight="duotone"
-                aria-hidden="true"
+              <NumberTicker
+                className="loom-stat-value"
+                value={value}
+                pad={2}
+                disabled={reduceMotion}
               />
-            </div>
-            <p>{note}</p>
-          </Link>
-        ))}
+              <small>{note}</small>
+              <ArrowUpRight className="loom-stat-arrow" size={18} />
+            </Link>
+          ))}
+        </div>
       </section>
       <div className="dashboard-grid">
         <section className="panel people-panel">

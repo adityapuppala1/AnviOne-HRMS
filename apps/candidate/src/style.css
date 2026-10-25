@@ -61,7 +61,7 @@ body {
 }
 .candidate-task h3 {
   font:
-    500 19px/1.4 "Outfit Variable",
+    500 19px/1.4 "Bricolage Grotesque Variable",
     sans-serif;
   margin: 0;
   overflow-wrap: anywhere;
@@ -117,7 +117,7 @@ body {
 }
 .candidate-logo {
   font:
-    600 29px "Outfit Variable",
+    600 29px "Bricolage Grotesque Variable",
     sans-serif;
   color: var(--ink);
   text-decoration: none;
@@ -137,9 +137,9 @@ body {
 .candidate-story {
   position: relative;
   padding: 65px 60px;
-  background: #e5eddc;
+  background: #dcdbee;
   overflow: hidden;
-  color: #283e2c;
+  color: #29273f;
 }
 .candidate-eyebrow {
   text-transform: uppercase;
@@ -151,13 +151,13 @@ body {
 }
 .candidate-story h1 {
   font:
-    500 clamp(38px, 4.5vw, 64px)/1.05 "Outfit Variable",
+    500 clamp(38px, 4.5vw, 64px)/1.05 "Bricolage Grotesque Variable",
     sans-serif;
   letter-spacing: -2px;
   margin: 22px 0;
 }
 .candidate-story h1 span {
-  color: #547140;
+  color: #413e73;
 }
 .candidate-story > p:not(.candidate-eyebrow) {
   max-width: 390px;
@@ -173,19 +173,19 @@ body {
   position: absolute;
   width: 150px;
   height: 140px;
-  border: 30px solid #a8c18e;
+  border: 30px solid #8f8bc4;
   border-radius: 50%;
   transform: rotate(-35deg) skewY(12deg);
   left: 40px;
   top: 15px;
   box-shadow:
-    inset 5px 6px 9px #516b4822,
-    8px 10px 0 #8da875;
+    inset 5px 6px 9px #49466d22,
+    8px 10px 0 #7672ab;
 }
 .candidate-rings i + i {
   left: 140px;
   top: 30px;
-  border-color: #c4d4ad;
+  border-color: #aeabd6;
   transform: rotate(35deg) skewY(-12deg);
 }
 .candidate-progress {
@@ -201,25 +201,25 @@ body {
   align-items: center;
   padding: 14px 0;
   font-size: 13px;
-  color: #536348;
+  color: #494764;
 }
 .candidate-progress span {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
-  border: 1px solid #afc39f;
+  border: 1px solid #a09dc5;
   border-radius: 50%;
   font-size: 11px;
 }
 .candidate-progress .complete span {
-  background: #2e5f40;
-  border-color: #2e5f40;
+  background: #2f2c61;
+  border-color: #2f2c61;
   color: white;
 }
 .candidate-story .candidate-preview {
   font-size: 11px !important;
-  color: #536348;
+  color: #494764;
 }
 .candidate-panel {
   padding: 65px 45px;
@@ -233,7 +233,7 @@ body {
 }
 .candidate-card h2 {
   font:
-    500 clamp(28px, 3vw, 38px)/1.2 "Outfit Variable",
+    500 clamp(28px, 3vw, 38px)/1.2 "Bricolage Grotesque Variable",
     sans-serif;
   letter-spacing: -0.8px;
   margin: 12px 0 20px;

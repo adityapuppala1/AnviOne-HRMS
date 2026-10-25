@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@fontsource-variable/outfit";
+import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/public-sans";
 import { PreferencesProvider } from "./lib/preferences";
 import "@anvi/ui/theme.css";
 import "./styles.css";
+import "./loom.css";
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">

@@ -5,6 +5,7 @@ import type { PlatformStore } from "./platform.store";
 import { LeaveStore } from "./leave.store";
 import { AttendanceStore } from "./attendance.store";
 import { OnboardingStore } from "./onboarding.store";
+import { DocumentStore } from "./document.store";
 
 // One inbox over every module's pending decisions. Each module still owns its
 // reads (and their RLS scope) and its decision endpoint; this only merges them.
@@ -12,24 +13,28 @@ export class ApprovalsStore {
   private readonly leave;
   private readonly attendance;
   private readonly onboarding;
+  private readonly documents;
   constructor(platform: PlatformStore) {
     this.leave = new LeaveStore(platform);
     this.attendance = new AttendanceStore(platform);
     this.onboarding = new OnboardingStore(platform);
+    this.documents = new DocumentStore(platform);
   }
 
   async inbox(actor: Principal): Promise<ApprovalInbox> {
     const leave = Boolean(scopeFor(actor, "leave.approve"));
     const attendance = Boolean(scopeFor(actor, "attendance.review"));
     const onboarding = Boolean(scopeFor(actor, "onboarding.manage"));
-    if (!leave && !attendance && !onboarding)
+    const documents = Boolean(scopeFor(actor, "document.review"));
+    if (!leave && !attendance && !onboarding && !documents)
       throw new ForbiddenException(
         "Your current workspace does not have access.",
       );
-    const [requests, corrections, reviews] = await Promise.all([
+    const [requests, corrections, reviews, uploads] = await Promise.all([
       leave ? this.leave.approvals(actor) : null,
       attendance ? this.attendance.pendingCorrections(actor) : [],
       onboarding ? this.onboarding.pendingReviews(actor) : [],
+      documents ? this.documents.pendingForInbox(actor) : [],
     ]);
     const items: ApprovalItem[] = [
       ...(requests?.pending ?? []).map((r): ApprovalItem => ({
@@ -64,6 +69,22 @@ export class ApprovalsStore {
         workDate: c.workDate,
         checkIn: c.checkIn,
         checkOut: c.checkOut,
+      })),
+      ...uploads.map((d): ApprovalItem => ({
+        kind: "document_review",
+        id: d.id,
+        version: d.version,
+        employeeId: d.employeeId,
+        employeeName: d.employeeName,
+        initials: d.initials,
+        department: d.department,
+        category: d.category,
+        title: d.title,
+        fileName: d.fileName,
+        sizeBytes: d.sizeBytes,
+        submittedAt: d.uploadedAt,
+        approver: "hr",
+        canDecide: d.canReview,
       })),
       ...reviews.map((r): ApprovalItem => ({
         kind: "readiness_review",

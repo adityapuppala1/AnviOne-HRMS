@@ -18,6 +18,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "onboarding.task.update": "self",
     "leave.request": "self",
     "attendance.self": "self",
+    "document.self": "self",
   },
   manager: {
     "directory.read": "team",
@@ -26,11 +27,13 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "leave.approve": "team",
     "attendance.self": "self",
     "attendance.review": "team",
+    "document.self": "self",
   },
   hr_admin: {
     "directory.read": "entity",
     "leave.approve": "entity",
     "attendance.review": "entity",
+    "document.review": "entity",
     "organization.read": "entity",
     "organization.write": "entity",
     "onboarding.manage": "entity",

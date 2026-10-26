@@ -56,6 +56,11 @@ import {
   workWeekSchema,
   workWeekUpdateSchema,
   approvalInboxSchema,
+  employeeDocumentSchema,
+  documentListSchema,
+  documentReviewSchema,
+  documentWithdrawSchema,
+  documentDecisionSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -380,6 +385,96 @@ const spec = {
         "Pending leave and attendance-correction decisions visible to the approver",
         approvalInboxSchema,
       ),
+    },
+    "/documents": {
+      get: read("Current actor's documents, newest first", documentListSchema),
+      post: {
+        summary: "Upload a document (PDF, PNG or JPEG up to 5 MB)",
+        security: [{ session: [], csrf: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                type: "object",
+                required: ["category", "title", "file"],
+                properties: {
+                  category: {
+                    type: "string",
+                    enum: ["identity", "education", "employment", "other"],
+                  },
+                  title: { type: "string", minLength: 2, maxLength: 80 },
+                  file: { type: "string", format: "binary" },
+                },
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        responses: { "201": response(employeeDocumentSchema), ...errors },
+      },
+    },
+    "/documents/review": {
+      get: read(
+        "Documents awaiting HR verification and recent decisions",
+        documentReviewSchema,
+      ),
+    },
+    "/documents/{id}/withdraw": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Withdraw your pending document",
+        documentWithdrawSchema,
+        employeeDocumentSchema,
+      ),
+    },
+    "/documents/{id}/decision": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      post: write(
+        "Verify or reject a document (HR)",
+        documentDecisionSchema,
+        employeeDocumentSchema,
+      ),
+    },
+    "/documents/{id}/content": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      get: {
+        summary: "Download a document as an attachment (audited)",
+        responses: {
+          "200": {
+            description: "File bytes",
+            content: {
+              "application/pdf": {
+                schema: { type: "string", format: "binary" },
+              },
+              "image/png": { schema: { type: "string", format: "binary" } },
+              "image/jpeg": { schema: { type: "string", format: "binary" } },
+            },
+          },
+          ...errors,
+        },
+      },
     },
     "/organization": {
       get: {

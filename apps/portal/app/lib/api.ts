@@ -16,6 +16,8 @@ import {
   attendanceTeamSchema,
   calendarSchema,
   approvalInboxSchema,
+  documentListSchema,
+  documentReviewSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -144,6 +146,19 @@ export const useApprovals = (enabled: boolean) =>
     enabled,
     refetchInterval: 60000,
     queryFn: ({ signal }) => api("/approvals", approvalInboxSchema, { signal }),
+  });
+export const useDocuments = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["documents", "mine"],
+    enabled,
+    queryFn: ({ signal }) => api("/documents", documentListSchema, { signal }),
+  });
+export const useDocumentReview = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["documents", "review"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/documents/review", documentReviewSchema, { signal }),
   });
 export const mutate = (
   path: string,

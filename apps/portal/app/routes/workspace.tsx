@@ -16,6 +16,7 @@ import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
+import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
@@ -125,7 +126,8 @@ function Shell({ me }: { me: Me }) {
   const approver =
     me.permissions.includes("leave.approve") ||
     me.permissions.includes("attendance.review") ||
-    me.permissions.includes("onboarding.manage");
+    me.permissions.includes("onboarding.manage") ||
+    me.permissions.includes("document.review");
   const waiting = useApprovals(approver).data?.waiting ?? 0;
   const links = [
     { to: "/", label: "Overview", icon: SquaresFour, visible: true },
@@ -181,6 +183,14 @@ function Shell({ me }: { me: Me }) {
       icon: Tray,
       visible: approver,
       count: waiting,
+    },
+    {
+      to: "/documents",
+      label: "Documents",
+      icon: FolderLock,
+      visible:
+        me.permissions.includes("document.self") ||
+        me.permissions.includes("document.review"),
     },
     { to: "/calendar", label: "Holidays", icon: CalendarStar, visible: true },
     {

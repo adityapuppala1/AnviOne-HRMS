@@ -55,3 +55,6 @@
 .approval-readiness_review .approval-kind {
   color: var(--success);
 }
+.leave-card.approval-document_review {
+  border-top-color: var(--chart-5);
+}

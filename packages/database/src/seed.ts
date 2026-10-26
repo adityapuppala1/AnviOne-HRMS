@@ -350,6 +350,40 @@ try {
       );
     }
   }
+  // One small synthetic PDF from Arjun so HR has something to verify. It goes
+  // through the document guards under Arjun's own context.
+  if (
+    !(
+      await client.query(
+        "SELECT 1 FROM employee_document WHERE tenant_id=$1 AND employee_id=$2",
+        [tenant, employeeId(2)],
+      )
+    ).rowCount
+  ) {
+    const bytes = Buffer.from(
+      "%PDF-1.4\n% Synthetic degree certificate for the AnviOne demo\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n",
+      "latin1",
+    );
+    const id = randomUUID();
+    const actorId = randomUUID();
+    await client.query(
+      `SELECT set_config('app.tenant_id',$1,true), set_config('app.entity_id',$2,true),
+        set_config('app.employee_id',$3,true), set_config('app.document_scope','self',true),
+        set_config('app.actor_id',$4,true), set_config('app.actor_label','Arjun Mehta',true)`,
+      [tenant, entity, employeeId(2), actorId],
+    );
+    await client.query(
+      `INSERT INTO employee_document(id,tenant_id,entity_id,employee_id,category,title,file_name,
+         content_type,size_bytes,sha256,status,version,uploaded_by_actor)
+       VALUES ($1,$2,$3,$4,'education','Degree certificate','degree-certificate.pdf',
+         'application/pdf',$5,encode(sha256($6::bytea),'hex'),'pending',1,$7)`,
+      [id, tenant, entity, employeeId(2), bytes.length, bytes, actorId],
+    );
+    await client.query(
+      "INSERT INTO employee_document_content(document_id,tenant_id,entity_id,bytes) VALUES ($1,$2,$3,$4)",
+      [id, tenant, entity, bytes],
+    );
+  }
   await client.query("COMMIT");
   console.log(
     "Synthetic people, employment and organization fixtures are initialized; existing records are preserved.",

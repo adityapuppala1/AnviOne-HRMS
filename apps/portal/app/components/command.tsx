@@ -12,6 +12,7 @@ import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
+import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import type { Me } from "@anvi/contracts";
@@ -108,6 +109,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/attendance")}>
             <CalendarDots size={18} />
             Attendance
+          </Button>
+        )}
+        {(me.permissions.includes("document.self") ||
+          me.permissions.includes("document.review")) && (
+          <Button variant="ghost" onPress={() => go("/documents")}>
+            <FolderLock size={18} />
+            Documents
           </Button>
         )}
         <Button variant="ghost" onPress={() => go("/calendar")}>

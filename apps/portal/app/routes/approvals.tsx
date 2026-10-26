@@ -5,6 +5,7 @@ import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { Check } from "@phosphor-icons/react/dist/csr/Check";
 import { SealCheck } from "@phosphor-icons/react/dist/csr/SealCheck";
+import { FileText } from "@phosphor-icons/react/dist/csr/FileText";
 import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
@@ -39,7 +40,17 @@ const subject = (item: ApprovalItem) =>
     leave: "leave",
     attendance_correction: "attendance correction",
     readiness_review: "readiness review",
+    document_review: "document",
   })[item.kind];
+const size = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+// What the requester said, or for documents what was uploaded.
+const summary = (item: ApprovalItem) =>
+  item.kind === "document_review"
+    ? `${item.fileName}, ${size(item.sizeBytes)}`
+    : item.reason;
 
 // Each module keeps its own versioned decision endpoint and body.
 function decisionRequest(
@@ -47,6 +58,15 @@ function decisionRequest(
   decision: Decision,
   note: string | null,
 ) {
+  if (item.kind === "document_review")
+    return {
+      path: `/documents/${item.id}/decision`,
+      body: {
+        version: item.version,
+        decision: decision === "approve" ? "verify" : "reject",
+        note,
+      },
+    };
   if (item.kind === "readiness_review")
     return {
       path: `/candidates/${item.caseId}/local-reviews/${item.id}`,
@@ -72,6 +92,7 @@ export default function Approvals() {
     "leave.approve",
     "attendance.review",
     "onboarding.manage",
+    "document.review",
   ].some((p) => me.permissions.includes(p as (typeof me.permissions)[number]));
   const query = useApprovals(allowed);
   const client = useQueryClient();
@@ -113,8 +134,8 @@ export default function Approvals() {
       setNoting(null);
       // Module screens and the nav count read the same records.
       await Promise.all(
-        ["approvals", "leave", "attendance", "candidates"].map((key) =>
-          client.invalidateQueries({ queryKey: [key] }),
+        ["approvals", "leave", "attendance", "candidates", "documents"].map(
+          (key) => client.invalidateQueries({ queryKey: [key] }),
         ),
       );
     } catch (cause) {
@@ -144,9 +165,9 @@ export default function Approvals() {
           </p>
           <h1>Decisions, in one place.</h1>
           <p>
-            Leave, attendance corrections and onboarding readiness reviews
-            routed to you, oldest first. Each decision is recorded with your
-            name.
+            Leave, attendance corrections, documents to verify and onboarding
+            readiness reviews routed to you, oldest first. Each decision is
+            recorded with your name.
           </p>
         </div>
       </header>
@@ -272,6 +293,13 @@ function KindLabel({ item }: { item: ApprovalItem }) {
         Attendance correction
       </>
     );
+  if (item.kind === "document_review")
+    return (
+      <>
+        <FileText size={16} />
+        Document to verify
+      </>
+    );
   return (
     <>
       <SealCheck size={16} />
@@ -299,6 +327,15 @@ function When({ item }: { item: ApprovalItem }) {
           {item.checkIn} to {item.checkOut}
         </strong>
         <span>Proposed times for {day(item.workDate)}</span>
+      </>
+    );
+  if (item.kind === "document_review")
+    return (
+      <>
+        <strong>{item.title}</strong>
+        <span>
+          {item.category[0]!.toUpperCase() + item.category.slice(1)} document
+        </span>
       </>
     );
   return (
@@ -343,7 +380,16 @@ function ApprovalCard({
       <div className="leave-card-when">
         <When item={item} />
       </div>
-      <p className="leave-reason">{item.reason}</p>
+      <p className="leave-reason">{summary(item)}</p>
+      {item.kind === "document_review" && (
+        <a
+          className="text-link"
+          href={`/api/v1/documents/${item.id}/content`}
+          download
+        >
+          View file
+        </a>
+      )}
       {item.canDecide && onDecide ? (
         <div className="leave-actions">
           <Button

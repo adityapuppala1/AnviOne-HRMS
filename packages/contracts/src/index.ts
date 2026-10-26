@@ -27,6 +27,8 @@ export const permissionSchema = z.enum([
   "leave.approve",
   "attendance.self",
   "attendance.review",
+  "document.self",
+  "document.review",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -647,6 +649,66 @@ export const workWeekUpdateSchema = z.strictObject({
   version: z.number().int().positive(),
   reason: changeReasonSchema,
 });
+// Documents (F0.14). File bytes travel as multipart; only metadata is JSON.
+export const documentCategorySchema = z.enum([
+  "identity",
+  "education",
+  "employment",
+  "other",
+]);
+export type DocumentCategory = z.infer<typeof documentCategorySchema>;
+export const documentStatusSchema = z.enum([
+  "pending",
+  "verified",
+  "rejected",
+  "withdrawn",
+]);
+export const employeeDocumentSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  initials: z.string(),
+  department: z.string(),
+  category: documentCategorySchema,
+  title: z.string(),
+  fileName: z.string(),
+  contentType: z.enum(["application/pdf", "image/png", "image/jpeg"]),
+  sizeBytes: z.number().int().positive(),
+  status: documentStatusSchema,
+  version: z.number().int().positive(),
+  uploadedAt: z.string(),
+  reviewedBy: z.string().nullable(),
+  reviewNote: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
+  canWithdraw: z.boolean(),
+  canReview: z.boolean(),
+});
+export type EmployeeDocument = z.infer<typeof employeeDocumentSchema>;
+export const documentListSchema = z.strictObject({
+  items: z.array(employeeDocumentSchema),
+});
+export const documentReviewSchema = z.strictObject({
+  pending: z.array(employeeDocumentSchema),
+  recent: z.array(employeeDocumentSchema),
+});
+export const documentUploadFieldsSchema = z.strictObject({
+  category: documentCategorySchema,
+  title: z.string().trim().min(2).max(80),
+});
+export const documentWithdrawSchema = z.strictObject({
+  version: z.number().int().positive(),
+});
+export const documentDecisionSchema = z
+  .strictObject({
+    version: z.number().int().positive(),
+    decision: z.enum(["verify", "reject"]),
+    note: z.string().trim().min(3).max(300).nullable(),
+  })
+  .refine((v) => v.decision === "verify" || v.note !== null, {
+    message: "Explain why the document is rejected",
+    path: ["note"],
+  });
+
 // Approvals inbox (F0.13): every decision waiting across modules.
 const approvalBase = {
   id: z.uuid(),
@@ -693,6 +755,22 @@ export const approvalItemSchema = z.discriminatedUnion("kind", [
     approver: z.literal("hr"),
     canDecide: z.boolean(),
     evidenceReady: z.boolean(),
+  }),
+  z.strictObject({
+    kind: z.literal("document_review"),
+    id: z.uuid(),
+    version: z.number().int().positive(),
+    employeeId: z.uuid(),
+    employeeName: z.string(),
+    initials: z.string(),
+    department: z.string(),
+    category: documentCategorySchema,
+    title: z.string(),
+    fileName: z.string(),
+    sizeBytes: z.number().int().positive(),
+    submittedAt: z.string(),
+    approver: z.literal("hr"),
+    canDecide: z.boolean(),
   }),
 ]);
 export type ApprovalItem = z.infer<typeof approvalItemSchema>;

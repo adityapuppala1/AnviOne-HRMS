@@ -23,6 +23,7 @@ import { LeaveController } from "./leave.controller";
 import { AttendanceController } from "./attendance.controller";
 import { CalendarController } from "./calendar.controller";
 import { ApprovalsController } from "./approvals.controller";
+import { DocumentController } from "./document.controller";
 import type { Config } from "./config";
 
 @Catch()
@@ -63,6 +64,7 @@ export async function createApp(config: Config) {
       AttendanceController,
       CalendarController,
       ApprovalsController,
+      DocumentController,
     ],
     providers: [{ provide: PlatformStore, useValue: store }],
   })
@@ -116,6 +118,22 @@ export async function createApp(config: Config) {
       limit: 20,
       standardHeaders: "draft-8",
       legacyHeaders: false,
+    }),
+  );
+  // Uploads buffer up to 5 MB in memory, so they get a tighter budget than other calls.
+  app.use(
+    "/api/v1/documents",
+    rateLimit({
+      windowMs: 60000,
+      limit: 20,
+      skip: (req) => req.method !== "POST" || req.path !== "/",
+      standardHeaders: "draft-8",
+      legacyHeaders: false,
+      handler: (_req: Request, res: Response) =>
+        res.status(429).type("application/problem+json").json({
+          status: 429,
+          title: "Too many uploads. Wait a minute and try again.",
+        }),
     }),
   );
   app.useGlobalGuards(new SessionGuard(store));

@@ -44,6 +44,7 @@ import {
 import { roleLabels, type Me, type Branding } from "@anvi/contracts";
 import { ApiError, useMe, useBranding, useApprovals, mutate } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
+import { copy } from "../lib/copy";
 import { Brand } from "../components/brand";
 import { Command } from "../components/command";
 
@@ -130,40 +131,40 @@ function Shell({ me }: { me: Me }) {
     me.permissions.includes("document.review");
   const waiting = useApprovals(approver).data?.waiting ?? 0;
   const links = [
-    { to: "/", label: "Overview", icon: SquaresFour, visible: true },
+    { to: "/", label: copy.nav.overview, icon: SquaresFour, visible: true },
     {
       to: "/people",
-      label: "People directory",
+      label: copy.nav.people,
       icon: Users,
       visible: me.permissions.includes("directory.read"),
     },
     {
       to: "/teams",
-      label: "Team explorer",
+      label: copy.nav.teams,
       icon: TreeStructure,
       visible: me.permissions.includes("directory.read"),
     },
     {
       to: "/organization",
-      label: "Organization",
+      label: copy.nav.organization,
       icon: Buildings,
       visible: me.permissions.includes("organization.read"),
     },
     {
       to: "/candidates",
-      label: "Candidate intake",
+      label: copy.nav.candidates,
       icon: Users,
       visible: me.permissions.includes("onboarding.manage"),
     },
     {
       to: "/tasks",
-      label: "My onboarding tasks",
+      label: copy.nav.tasks,
       icon: ClipboardText,
       visible: me.permissions.includes("onboarding.task.update"),
     },
     {
       to: "/leave",
-      label: "Leave",
+      label: copy.nav.leave,
       icon: AirplaneTilt,
       visible:
         me.permissions.includes("leave.request") ||
@@ -171,7 +172,7 @@ function Shell({ me }: { me: Me }) {
     },
     {
       to: "/attendance",
-      label: "Attendance",
+      label: copy.nav.attendance,
       icon: CalendarDots,
       visible:
         me.permissions.includes("attendance.self") ||
@@ -179,29 +180,34 @@ function Shell({ me }: { me: Me }) {
     },
     {
       to: "/approvals",
-      label: "Approvals",
+      label: copy.nav.approvals,
       icon: Tray,
       visible: approver,
       count: waiting,
     },
     {
       to: "/documents",
-      label: "Documents",
+      label: copy.nav.documents,
       icon: FolderLock,
       visible:
         me.permissions.includes("document.self") ||
         me.permissions.includes("document.review"),
     },
-    { to: "/calendar", label: "Holidays", icon: CalendarStar, visible: true },
+    {
+      to: "/calendar",
+      label: copy.nav.holidays,
+      icon: CalendarStar,
+      visible: true,
+    },
     {
       to: "/settings",
-      label: "Workspace settings",
+      label: copy.nav.settings,
       icon: GearSix,
       visible: me.permissions.includes("branding.write"),
     },
     {
       to: "/activity",
-      label: "Activity log",
+      label: copy.nav.activity,
       icon: ClockCounterClockwise,
       visible: me.permissions.includes("audit.read"),
     },
@@ -242,11 +248,11 @@ function Shell({ me }: { me: Me }) {
         </span>
         <span>
           {brand?.organizationName ?? me.entityName}
-          <small>Your people workspace</small>
+          <small>{copy.shell.peopleWorkspace}</small>
         </span>
       </div>
-      <p className="sidebar-label">Workspace</p>
-      <nav aria-label="Main navigation">
+      <p className="sidebar-label">{copy.shell.workspace}</p>
+      <nav aria-label={copy.nav.main}>
         {links
           .filter((link) => link.visible)
           .map(({ to, label, icon: Icon, count }) => (
@@ -265,7 +271,10 @@ function Shell({ me }: { me: Me }) {
               />
               <span>{label}</span>
               {count ? (
-                <span className="nav-count" aria-label={`${count} waiting`}>
+                <span
+                  className="nav-count"
+                  aria-label={copy.nav.waiting(count)}
+                >
                   {count}
                 </span>
               ) : (
@@ -274,16 +283,16 @@ function Shell({ me }: { me: Me }) {
             </NavLink>
           ))}
       </nav>
-      <p className="sidebar-label roadmap-label">On the roadmap</p>
+      <p className="sidebar-label roadmap-label">{copy.shell.roadmap}</p>
       <div className="planned-nav">
         {[
-          { icon: Wallet, label: "Payroll & expenses" },
-          { icon: Stack, label: "Assets & policies" },
+          { icon: Wallet, label: copy.shell.payroll },
+          { icon: Stack, label: copy.shell.assets },
         ].map(({ icon: Icon, label }) => (
-          <div key={label} title={`${label} · planned`}>
+          <div key={label} title={copy.shell.planned(label)}>
             <Icon size={20} />
             <span>{label}</span>
-            <span className="soon">Soon</span>
+            <span className="soon">{copy.shell.soon}</span>
           </div>
         ))}
       </div>
@@ -294,23 +303,23 @@ function Shell({ me }: { me: Me }) {
           className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
         >
           <SlidersHorizontal size={20} />
-          <span>Display preferences</span>
+          <span>{copy.shell.preferences}</span>
         </NavLink>
         <Button
           className="sidebar-help"
           variant="ghost"
-          aria-label="Workspace guide"
+          aria-label={copy.shell.guide}
           onPress={() => setHelp(true)}
         >
           <Question size={20} />
-          <span>Workspace guide</span>
+          <span>{copy.shell.guide}</span>
           <kbd>?</kbd>
         </Button>
         <Button
           className="sidebar-user"
           variant="ghost"
           onPress={() => setRoles(true)}
-          aria-label="Switch workspace role"
+          aria-label={copy.shell.switchRole}
         >
           <Avatar initials={initials} />
           <span>
@@ -344,13 +353,13 @@ function Shell({ me }: { me: Me }) {
             <Button
               variant="icon"
               className="mobile-menu"
-              aria-label="Open navigation"
+              aria-label={copy.shell.openNavigation}
               onPress={() => setDrawer(true)}
             >
               <List size={23} />
             </Button>
             <div className="breadcrumbs">
-              <span>Workspace</span>
+              <span>{copy.shell.workspace}</span>
               <span>/</span>
               <strong>{title}</strong>
             </div>
@@ -360,10 +369,10 @@ function Shell({ me }: { me: Me }) {
               variant="ghost"
               className="global-search"
               onPress={() => setCommand(true)}
-              aria-label="Search people and pages"
+              aria-label={copy.shell.search}
             >
               <MagnifyingGlass size={18} />
-              <span>Search people or pages</span>
+              <span>{copy.shell.searchHint}</span>
               <kbd>⌘ K</kbd>
             </Button>
             <span className="toolbar-divider" />
@@ -377,14 +386,14 @@ function Shell({ me }: { me: Me }) {
             <Button
               variant="icon"
               onPress={() => void logout()}
-              aria-label="Sign out"
+              aria-label={copy.shell.signOut}
             >
               <SignOut size={20} />
             </Button>
             <Button
               variant="icon"
               onPress={() => setRoles(true)}
-              aria-label="Your workspace role"
+              aria-label={copy.shell.yourRole}
             >
               <Avatar initials={initials} size="small" />
             </Button>
@@ -394,18 +403,16 @@ function Shell({ me }: { me: Me }) {
           <div className="workspace-status">
             <span className="context-pill">
               <span className="status-dot" />
-              {roleLabels[me.role]} workspace
+              {copy.shell.roleWorkspace(roleLabels[me.role])}
             </span>
-            {me.demo && (
-              <span className="demo-label">Demo · Synthetic employee data</span>
-            )}
+            {me.demo && <span className="demo-label">{copy.shell.demo}</span>}
           </div>
           {error && (
             <div className="inline-error" role="alert">
               {error}
               <Button
                 variant="icon"
-                aria-label="Dismiss error"
+                aria-label={copy.shell.dismissError}
                 onPress={() => setError("")}
               >
                 <X size={16} />

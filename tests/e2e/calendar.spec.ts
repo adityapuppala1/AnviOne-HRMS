@@ -46,10 +46,8 @@ test("HR adds and retires a holiday; everyone sees the calendar", async ({
     page.getByRole("heading", { name: `Holidays in ${year}` }),
   ).toBeVisible();
   const month = String(2 + Math.floor(Math.random() * 9)).padStart(2, "0");
-  const dayOfMonth = String(1 + Math.floor(Math.random() * 27)).padStart(
-    2,
-    "0",
-  );
+  // Seeded holidays never fall on the 28th, and earlier runs retire theirs.
+  const dayOfMonth = "28";
   const name = `Offsite ${Math.random().toString(36).slice(2, 7)}`;
 
   await page.getByRole("button", { name: "Add holiday" }).click();

@@ -15,6 +15,7 @@ import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
+import { copy } from "../lib/copy";
 import type { Me } from "@anvi/contracts";
 export function Command({
   open,
@@ -59,78 +60,78 @@ export function Command({
       <div className="command-results">
         <Button variant="ghost" onPress={() => go("/")}>
           <LayoutDashboard size={18} />
-          Overview
+          {copy.nav.overview}
         </Button>
         {me.permissions.includes("directory.read") && (
           <Button variant="ghost" onPress={() => go("/people")}>
             <Users size={18} />
-            People directory
+            {copy.nav.people}
           </Button>
         )}
         {me.permissions.includes("branding.write") && (
           <Button variant="ghost" onPress={() => go("/settings")}>
             <Settings size={18} />
-            Workspace settings
+            {copy.nav.settings}
           </Button>
         )}
         {me.permissions.includes("directory.read") && (
           <Button variant="ghost" onPress={() => go("/teams")}>
             <TreeStructure size={18} />
-            Team explorer
+            {copy.nav.teams}
           </Button>
         )}
         {me.permissions.includes("audit.read") && (
           <Button variant="ghost" onPress={() => go("/activity")}>
             <ClockCounterClockwise size={18} />
-            Activity log
+            {copy.nav.activity}
           </Button>
         )}
         {me.permissions.includes("onboarding.manage") && (
           <Button variant="ghost" onPress={() => go("/candidates")}>
             <Users size={18} />
-            Candidate intake
+            {copy.nav.candidates}
           </Button>
         )}
         {me.permissions.includes("onboarding.task.update") && (
           <Button variant="ghost" onPress={() => go("/tasks")}>
             <ClipboardText size={18} />
-            My onboarding tasks
+            {copy.nav.tasks}
           </Button>
         )}
         {(me.permissions.includes("leave.request") ||
           me.permissions.includes("leave.approve")) && (
           <Button variant="ghost" onPress={() => go("/leave")}>
             <AirplaneTilt size={18} />
-            Leave
+            {copy.nav.leave}
           </Button>
         )}
         {(me.permissions.includes("attendance.self") ||
           me.permissions.includes("attendance.review")) && (
           <Button variant="ghost" onPress={() => go("/attendance")}>
             <CalendarDots size={18} />
-            Attendance
+            {copy.nav.attendance}
           </Button>
         )}
         {(me.permissions.includes("document.self") ||
           me.permissions.includes("document.review")) && (
           <Button variant="ghost" onPress={() => go("/documents")}>
             <FolderLock size={18} />
-            Documents
+            {copy.nav.documents}
           </Button>
         )}
         <Button variant="ghost" onPress={() => go("/calendar")}>
           <CalendarStar size={18} />
-          Holidays
+          {copy.nav.holidays}
         </Button>
         {me.permissions.includes("organization.read") && (
           <Button variant="ghost" onPress={() => go("/organization")}>
             <Buildings size={18} />
-            Organization
+            {copy.nav.organization}
           </Button>
         )}
         <Button variant="ghost" onPress={() => go("/preferences")}>
           <SlidersHorizontal size={18} />
-          Display preferences
+          {copy.shell.preferences}
         </Button>
       </div>
       {open && me.permissions.includes("directory.read") && (

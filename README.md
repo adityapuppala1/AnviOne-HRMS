@@ -12,6 +12,21 @@ Once the form and every required task are complete, HR can hand the synthetic ca
 
 HR can assign non-candidate checklist work to an active employee in the same legal entity. Employee and manager workspaces expose only their own minimal task docket—never the candidate form or contact details—and allow a versioned status update with a required note. See [assigned-task evidence](docs/acceptance-evidence/assigned-onboarding-task-workspace.md).
 
+## Everyday HR modules
+
+These modules run on the same tenant isolation, versioned edits and audit/outbox trail as the foundation. All data is synthetic.
+
+| Module           | Who uses it                | What it does                                                                                                                      | Evidence                                                         |
+| ---------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **Leave**        | Employees, managers, HR    | Balances kept in a ledger, requests counted in business days, approve/decline/cancel with a reason                                | [leave](docs/acceptance-evidence/leave-ledger-workflow.md)       |
+| **Attendance**   | Employees, managers, HR    | Check in/out, correction requests and reviews                                                                                     | [attendance](docs/acceptance-evidence/attendance-corrections.md) |
+| **Holidays**     | HR (edit), everyone (view) | Working week and holiday calendar per legal entity, feeding leave day counts                                                      | [calendar](docs/acceptance-evidence/holiday-work-calendar.md)    |
+| **Approvals**    | Managers, HR               | One inbox for leave, attendance corrections, readiness reviews and documents, with shared routing rules                           | [approvals](docs/acceptance-evidence/approval-workflow-core.md)  |
+| **Documents**    | Employees, HR              | PDF/PNG/JPEG upload (5 MB, type checked from the file's bytes, PDFs with active content refused), verification, audited downloads | [documents](docs/acceptance-evidence/employee-documents.md)      |
+| **Activity log** | Auditors                   | Searchable record of every action, filterable by module                                                                           | [Atlas](docs/acceptance-evidence/atlas.md)                       |
+
+Interface text is centralized in `apps/portal/app/lib/copy.ts` and `apps/portal/app/lib/copy/` so a translation can replace one catalog without touching screens. The worker also purges expired and idle sessions every minute; refused sign-ins and rate-limited auth calls are logged as `auth.sign_in_failed` and `auth.rate_limited`. Set `TRUST_PROXY` to your reverse proxy's addresses (or a hop count of 1–5) when one is used.
+
 ## Run locally
 
 Prerequisites: Git, Docker Engine/Desktop, and pnpm 11.21.0. Bootstrap Node 24.18+ is supported; `pnpm install` provisions the project-pinned **Node 24.22.1** runtime without changing the machine-wide installation.
@@ -60,7 +75,7 @@ Integration and browser tests use the synthetic local database. They exercise ro
 | -------------------- | ---------------------------------------------------------------- |
 | `apps/portal`        | React Router SPA, responsive screens and TanStack Query hooks    |
 | `apps/api`           | NestJS HTTP boundaries, OIDC/session handling, platform services |
-| `apps/worker`        | Durable PostgreSQL outbox receipt consumer                       |
+| `apps/worker`        | Outbox receipt consumer and stale-session cleanup                |
 | `packages/contracts` | Shared Zod input/output contracts                                |
 | `packages/authz`     | Role-to-permission and scope policy                              |
 | `packages/database`  | SQL migrations, RLS transactions, audit/outbox, synthetic seed   |
@@ -71,6 +86,6 @@ Read [the consolidated architecture decision](docs/adr/0001-consolidated-foundat
 
 ## Release boundary
 
-Corporate OIDC is implemented but has **not** been verified against the organization's Entra tenant. Real identity provisioning, complete onboarding/activation, file handling, attendance, leave, payroll, AI, MCP and TimeSphere remain future slices. Production requires the identity, privacy, security and operations gates in the backlog, including TLS/CSP, managed keys, independent audit storage, backup restore evidence and security review. Automated tests are not a compliance certification.
+Corporate OIDC is implemented but has **not** been verified against the organization's Entra tenant. Leave, attendance, holidays, approvals and documents are implemented for synthetic data. Real identity provisioning, complete onboarding/activation, malware scanning and object storage for files, notifications, payroll, AI, MCP and TimeSphere remain future slices. Production requires the identity, privacy, security and operations gates in the backlog, including TLS/CSP, managed keys, independent audit storage, backup restore evidence and security review. Automated tests are not a compliance certification.
 
 No paid UI assets, third-party profile photographs, remote fonts or tracking scripts are included. Third-party licenses and design inspiration are described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Original planning prompts remain local; reviewed decisions and synthetic implementation are published.

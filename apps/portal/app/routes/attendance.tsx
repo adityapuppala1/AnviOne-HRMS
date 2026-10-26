@@ -27,38 +27,19 @@ import type {
   AttendanceTeam,
 } from "@anvi/contracts";
 import { api, useAttendance, useAttendanceTeam } from "../lib/api";
+import { attendanceCopy as text } from "../lib/copy/attendance";
 import { useWorkspace } from "./workspace";
 // Shared form, card and list styles come from the leave screen.
 import "./leave.css";
 import "./attendance.css";
 
-const dayLabels: Record<AttendanceDayStatus, string> = {
-  present: "Present",
-  in_progress: "Checked in",
-  incomplete: "Missing check-out",
-  leave: "On leave",
-  weekend: "Non-working day",
-  holiday: "Holiday",
-  unaccounted: "Unaccounted (provisional LOP)",
-  not_started: "Not checked in yet",
-};
+const dayLabels: Record<AttendanceDayStatus, string> = text.dayLabels;
 const presenceLabels: Record<
   AttendanceTeam["people"][number]["status"],
   string
-> = {
-  in: "In now",
-  done: "Day complete",
-  leave: "On leave",
-  not_in: "Not in yet",
-  weekend: "Non-working day",
-  holiday: "Holiday",
-};
-const correctionLabels: Record<AttendanceCorrection["state"], string> = {
-  pending: "Awaiting decision",
-  approved: "Approved",
-  rejected: "Declined",
-  cancelled: "Cancelled",
-};
+> = text.presenceLabels;
+const correctionLabels: Record<AttendanceCorrection["state"], string> =
+  text.correctionLabels;
 const at = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const longDate = (iso: string) =>
   at(iso).toLocaleDateString("en-IN", {
@@ -89,10 +70,7 @@ export default function Attendance() {
   const mine = useAttendance(canSelf);
   const team = useAttendanceTeam(canReview);
   const client = useQueryClient();
-  if (!canSelf && !canReview)
-    return (
-      <ErrorState message="Attendance is available in employee, manager and HR workspaces. Switch role to continue." />
-    );
+  if (!canSelf && !canReview) return <ErrorState message={text.noAccess} />;
   const refresh = () => client.invalidateQueries({ queryKey: ["attendance"] });
   const send: Send = (path, body) =>
     api(path, z.unknown(), {
@@ -105,24 +83,20 @@ export default function Attendance() {
     <div className="page-enter attendance-page">
       <header className="leave-hero">
         <div>
-          <h1>Your day, on the record.</h1>
-          <p>
-            {canSelf
-              ? "Check in when you start, check out when you finish, and fix any day that went unrecorded."
-              : "See who is in today and decide the corrections routed to you."}
-          </p>
+          <h1>{text.hero.title}</h1>
+          <p>{canSelf ? text.hero.selfIntro : text.hero.reviewerIntro}</p>
         </div>
       </header>
       {canSelf && canReview ? (
         <Tabs className="leave-tabs">
-          <TabList aria-label="Attendance views" className="tabs-list">
+          <TabList aria-label={text.tabs.label} className="tabs-list">
             <Tab id="mine" className="tab">
               <Clock size={18} />
-              Your attendance
+              {text.tabs.mine}
             </Tab>
             <Tab id="team" className="tab">
               <UsersThree size={18} />
-              Team today
+              {text.tabs.team}
               {Boolean(waiting) && <span className="tab-count">{waiting}</span>}
             </Tab>
           </TabList>
@@ -174,7 +148,7 @@ function MyAttendance({
       else await send("/attendance/check-in", {});
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save.");
+      setError(cause instanceof Error ? cause.message : text.errors.save);
     } finally {
       setBusy(false);
     }
@@ -187,7 +161,7 @@ function MyAttendance({
       });
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not cancel.");
+      setError(cause instanceof Error ? cause.message : text.errors.cancel);
     }
   }
   return (
@@ -201,8 +175,8 @@ function MyAttendance({
       <section className="panel attendance-month" aria-labelledby="month">
         <div className="panel-heading">
           <div>
-            <h2 id="month">The last 30 days</h2>
-            <p>Select a day to see its times or ask for a correction.</p>
+            <h2 id="month">{text.month.title}</h2>
+            <p>{text.month.hint}</p>
           </div>
         </div>
         <ol className="attendance-grid">
@@ -214,9 +188,11 @@ function MyAttendance({
                   d.date === day.date ? "is-selected" : ""
                 }`}
                 aria-pressed={d.date === day.date}
-                aria-label={`${longDate(d.date)}: ${dayLabels[d.status]}${
-                  d.correctionPending ? ", correction awaiting a decision" : ""
-                }`}
+                aria-label={text.month.cellLabel(
+                  longDate(d.date),
+                  dayLabels[d.status],
+                  d.correctionPending,
+                )}
                 onClick={() => setSelected(d.date)}
               >
                 <span>{at(d.date).getUTCDate()}</span>
@@ -225,7 +201,7 @@ function MyAttendance({
             </li>
           ))}
         </ol>
-        <ul className="attendance-legend" aria-label="Legend">
+        <ul className="attendance-legend" aria-label={text.month.legend}>
           {(
             [
               "present",
@@ -251,15 +227,15 @@ function MyAttendance({
       <section className="panel leave-requests" aria-labelledby="corrections">
         <div className="panel-heading">
           <div>
-            <h2 id="corrections">Your corrections</h2>
-            <p>Requests to fix a past day, newest first.</p>
+            <h2 id="corrections">{text.corrections.title}</h2>
+            <p>{text.corrections.hint}</p>
           </div>
         </div>
         {data.corrections.length === 0 ? (
           <div className="leave-empty">
             <Check size={34} weight="duotone" />
-            <h3>No corrections requested</h3>
-            <p>If a day was recorded wrongly, select it and request one.</p>
+            <h3>{text.corrections.emptyTitle}</h3>
+            <p>{text.corrections.emptyHint}</p>
           </div>
         ) : (
           <ol className="leave-list attendance-corrections">
@@ -307,21 +283,21 @@ function DayThread({
         <p className="loom-date">{longDate(data.today)}</p>
         <h2 id="today">
           {record?.checkOut
-            ? `Day complete, ${duration(worked)}`
+            ? text.thread.dayComplete(duration(worked))
             : record
-              ? `Checked in at ${record.checkIn}`
+              ? text.thread.checkedInAt(record.checkIn)
               : today.status === "leave"
-                ? "You're on leave today"
+                ? text.thread.onLeave
                 : today.status === "holiday"
-                  ? `Holiday: ${today.holiday}`
-                  : "Ready when you are"}
+                  ? text.thread.holiday(today.holiday)
+                  : text.thread.ready}
         </h2>
         <p>
           {record && !record.checkOut
-            ? `${duration(worked)} so far. Check out when you finish.`
+            ? text.thread.soFar(duration(worked))
             : record
-              ? `${record.checkIn} to ${record.checkOut}.`
-              : "Your check-in time comes from the server clock."}
+              ? text.thread.range(record.checkIn, record.checkOut)
+              : text.thread.serverClock}
         </p>
       </div>
       <div className="attendance-track" aria-hidden="true">
@@ -352,7 +328,11 @@ function DayThread({
           onPress={onPunch}
         >
           {record ? <SignOut size={19} /> : <SignIn size={19} />}
-          {busy ? "Saving…" : record ? "Check out" : "Check in"}
+          {busy
+            ? text.thread.saving
+            : record
+              ? text.thread.checkOut
+              : text.thread.checkIn}
         </Button>
       )}
     </section>
@@ -379,29 +359,26 @@ function DayDetail({
       <div>
         <h3>{longDate(day.date)}</h3>
         <p>
-          {dayLabels[day.status]}
-          {day.leaveType ? `: ${day.leaveType}` : ""}
-          {day.holiday ? `: ${day.holiday}` : ""}
-          {day.checkIn
-            ? `. ${day.checkIn}${day.checkOut ? ` to ${day.checkOut}` : ", no check-out"}`
-            : ""}
-          {day.minutes !== null ? ` (${duration(day.minutes)})` : ""}
-          {day.source === "correction" ? ", corrected" : ""}.
+          {text.detail.summary({
+            label: dayLabels[day.status],
+            leaveType: day.leaveType,
+            holiday: day.holiday,
+            checkIn: day.checkIn,
+            checkOut: day.checkOut,
+            duration: day.minutes !== null ? duration(day.minutes) : null,
+            corrected: day.source === "correction",
+          })}
         </p>
         {day.status === "unaccounted" && (
-          <p className="attendance-flag">
-            Flagged for review only. Nothing is deducted from pay.
-          </p>
+          <p className="attendance-flag">{text.detail.flagged}</p>
         )}
         {day.correctionPending && (
-          <p className="attendance-flag">
-            A correction is awaiting a decision.
-          </p>
+          <p className="attendance-flag">{text.detail.pending}</p>
         )}
       </div>
       {correctable && (
         <Button variant="secondary" onPress={onCorrect}>
-          Request a correction
+          {text.detail.request}
         </Button>
       )}
     </div>
@@ -431,7 +408,9 @@ function CorrectionItem({
       <div className="leave-item-body">
         <div className="leave-item-head">
           <strong>
-            {showPerson ? c.employeeName : `${c.checkIn} to ${c.checkOut}`}
+            {showPerson
+              ? c.employeeName
+              : text.item.range(c.checkIn, c.checkOut)}
           </strong>
           <Badge
             tone={
@@ -446,16 +425,25 @@ function CorrectionItem({
           </Badge>
         </div>
         <p>
-          {showPerson
-            ? `${shortDate(c.workDate)}, ${c.checkIn} to ${c.checkOut}`
-            : shortDate(c.workDate)}
-          . {c.approver === "manager" ? "Manager decides." : "HR decides."}
+          {text.item.meta(
+            showPerson
+              ? text.item.personWhen(
+                  shortDate(c.workDate),
+                  c.checkIn,
+                  c.checkOut,
+                )
+              : shortDate(c.workDate),
+            c.approver,
+          )}
         </p>
         <p className="leave-reason">{c.reason}</p>
         {c.decidedBy && c.state !== "cancelled" && (
           <p className="leave-decision">
-            {correctionLabels[c.state]} by {c.decidedBy}
-            {c.decisionNote ? `: ${c.decisionNote}` : "."}
+            {text.item.decidedBy(
+              correctionLabels[c.state],
+              c.decidedBy,
+              c.decisionNote,
+            )}
           </p>
         )}
       </div>
@@ -463,9 +451,9 @@ function CorrectionItem({
         <Button
           variant="secondary"
           onPress={onCancel}
-          aria-label={`Cancel correction for ${shortDate(c.workDate)}`}
+          aria-label={text.item.cancelLabel(shortDate(c.workDate))}
         >
-          Cancel
+          {text.item.cancel}
         </Button>
       )}
     </li>
@@ -506,9 +494,7 @@ function CorrectionDialog({
       await refresh();
       onClose();
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not send the request.",
-      );
+      setError(cause instanceof Error ? cause.message : text.errors.send);
     } finally {
       setBusy(false);
     }
@@ -519,18 +505,15 @@ function CorrectionDialog({
       onOpenChange={(open) => {
         if (!open) close();
       }}
-      title="Request a correction"
+      title={text.dialog.title}
       className="leave-modal"
     >
       {day && (
         <form className="leave-form" onSubmit={(event) => void submit(event)}>
-          <p>
-            {longDate(day.date)}. Enter the times you actually worked; your
-            approver sees your reason.
-          </p>
+          <p>{text.dialog.intro(longDate(day.date))}</p>
           <div className="leave-dates">
             <label>
-              Checked in at
+              {text.dialog.checkedIn}
               <input
                 type="time"
                 name="checkIn"
@@ -540,7 +523,7 @@ function CorrectionDialog({
               />
             </label>
             <label>
-              Checked out at
+              {text.dialog.checkedOut}
               <input
                 type="time"
                 name="checkOut"
@@ -550,7 +533,7 @@ function CorrectionDialog({
             </label>
           </div>
           <label>
-            What happened?
+            {text.dialog.reason}
             <textarea name="reason" required minLength={3} maxLength={300} />
           </label>
           {error && (
@@ -560,10 +543,10 @@ function CorrectionDialog({
           )}
           <div className="leave-actions">
             <Button variant="secondary" isDisabled={busy} onPress={close}>
-              Cancel
+              {text.dialog.cancel}
             </Button>
             <Button type="submit" isDisabled={busy}>
-              {busy ? "Sending…" : "Send correction"}
+              {busy ? text.dialog.sending : text.dialog.send}
             </Button>
           </div>
         </form>
@@ -614,9 +597,7 @@ function TeamToday({
       setDeclining(null);
       await refresh();
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not save the decision.",
-      );
+      setError(cause instanceof Error ? cause.message : text.errors.decision);
     } finally {
       setBusy(null);
     }
@@ -631,15 +612,19 @@ function TeamToday({
       <section className="panel attendance-board" aria-labelledby="board">
         <div className="panel-heading">
           <div>
-            <h2 id="board">Who's in, {longDate(date)}</h2>
+            <h2 id="board">{text.team.boardTitle(longDate(date))}</h2>
             <p>
-              {counts.in} in now, {counts.done} finished, {counts.leave} on
-              leave, of {people.length} people you can see.
+              {text.team.summary(
+                counts.in,
+                counts.done,
+                counts.leave,
+                people.length,
+              )}
             </p>
           </div>
         </div>
         {people.length === 0 ? (
-          <p className="leave-empty">Nobody reports to you yet.</p>
+          <p className="leave-empty">{text.team.nobody}</p>
         ) : (
           <ul className="attendance-people">
             {people.map((p) => (
@@ -661,13 +646,13 @@ function TeamToday({
       </section>
       <section aria-labelledby="awaiting-corrections">
         <h2 id="awaiting-corrections" className="leave-section-title">
-          Corrections awaiting a decision
+          {text.team.awaitingTitle}
         </h2>
         {pending.length === 0 ? (
           <div className="panel leave-empty">
             <Check size={34} weight="duotone" />
-            <h3>No corrections to review</h3>
-            <p>Requests routed to you will appear here.</p>
+            <h3>{text.team.noneTitle}</h3>
+            <p>{text.team.noneHint}</p>
           </div>
         ) : (
           <ul className="leave-cards">
@@ -692,10 +677,10 @@ function TeamToday({
                     <Button
                       isDisabled={busy === c.id}
                       onPress={() => void decide(c, "approve", null)}
-                      aria-label={`Approve correction for ${c.employeeName}`}
+                      aria-label={text.team.approveLabel(c.employeeName)}
                     >
                       <Check size={17} weight="bold" />
-                      {busy === c.id ? "Saving…" : "Approve"}
+                      {busy === c.id ? text.team.saving : text.team.approve}
                     </Button>
                     <Button
                       variant="secondary"
@@ -704,17 +689,17 @@ function TeamToday({
                         setError("");
                         setDeclining(c);
                       }}
-                      aria-label={`Decline correction for ${c.employeeName}`}
+                      aria-label={text.team.declineLabel(c.employeeName)}
                     >
                       <X size={17} />
-                      Decline
+                      {text.team.decline}
                     </Button>
                   </div>
                 ) : (
                   <p className="leave-routed">
                     {c.approver === "manager"
-                      ? "Their manager decides this correction."
-                      : "Another HR colleague decides this correction."}
+                      ? text.team.routedManager
+                      : text.team.routedHr}
                   </p>
                 )}
               </li>
@@ -726,8 +711,8 @@ function TeamToday({
         <section className="panel leave-decided" aria-labelledby="decided-c">
           <div className="panel-heading">
             <div>
-              <h2 id="decided-c">Recently decided</h2>
-              <p>The latest 20 corrections you can see.</p>
+              <h2 id="decided-c">{text.team.decidedTitle}</h2>
+              <p>{text.team.decidedHint}</p>
             </div>
           </div>
           <ol className="leave-list">
@@ -742,7 +727,7 @@ function TeamToday({
         onOpenChange={(open) => {
           if (!open && !busy) setDeclining(null);
         }}
-        title="Decline this correction?"
+        title={text.team.declineDialogTitle}
       >
         {declining && (
           <form
@@ -756,12 +741,15 @@ function TeamToday({
             }}
           >
             <p>
-              {declining.employeeName} asked to record {declining.checkIn}–
-              {declining.checkOut} on {longDate(declining.workDate)}. They will
-              see your note.
+              {text.team.declineIntro(
+                declining.employeeName,
+                declining.checkIn,
+                declining.checkOut,
+                longDate(declining.workDate),
+              )}
             </p>
             <label>
-              Why are you declining?
+              {text.team.declineWhy}
               <textarea
                 name="note"
                 required
@@ -781,10 +769,10 @@ function TeamToday({
                 isDisabled={Boolean(busy)}
                 onPress={() => setDeclining(null)}
               >
-                Go back
+                {text.team.goBack}
               </Button>
               <Button type="submit" isDisabled={Boolean(busy)}>
-                {busy ? "Saving…" : "Decline correction"}
+                {busy ? text.team.saving : text.team.declineSubmit}
               </Button>
             </div>
           </form>

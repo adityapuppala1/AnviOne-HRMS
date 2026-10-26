@@ -7,21 +7,18 @@ import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { assignedTaskSchema } from "@anvi/contracts";
 import { api, useAssignedTasks } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { assignedTasksCopy as text } from "../lib/copy/onboarding";
 import "./assigned-tasks.css";
 
 type AssignedTask = z.infer<typeof assignedTaskSchema>;
-const statusNames = {
-  pending: "To do",
-  blocked: "Blocked",
-  completed: "Completed",
-};
+const statusNames = text.statuses;
 
 export default function AssignedTasks() {
   const { me } = useWorkspace();
   return me.permissions.includes("onboarding.task.update") ? (
     <TaskDocket csrf={me.csrfToken} />
   ) : (
-    <ErrorState message="Assigned onboarding work requires an employee or manager workspace." />
+    <ErrorState message={text.denied} />
   );
 }
 
@@ -65,9 +62,7 @@ function TaskDocket({ csrf }: { csrf: string }) {
       setSelected(null);
       await query.refetch();
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not update this task.",
-      );
+      setError(cause instanceof Error ? cause.message : text.updateFailed);
     } finally {
       setBusy(false);
     }
@@ -76,38 +71,35 @@ function TaskDocket({ csrf }: { csrf: string }) {
     <div className="page-enter task-workspace">
       <header className="task-hero">
         <div>
-          <p className="eyebrow">Assigned onboarding</p>
-          <h1>Work in your name.</h1>
-          <p>
-            A private docket of the onboarding steps assigned to you—nothing
-            more.
-          </p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.heading}</h1>
+          <p>{text.intro}</p>
         </div>
         <div className="task-seal" aria-hidden="true">
           <ClipboardText size={30} weight="duotone" />
           <span>
-            MY
+            {text.sealMy}
             <br />
-            WORK
+            {text.sealWork}
           </span>
         </div>
       </header>
-      <section className="task-docket" aria-label="My onboarding tasks">
+      <section className="task-docket" aria-label={text.docketLabel}>
         <div className="task-docket-toolbar">
           <div>
-            <span className="docket-kicker">LIVE DOCKET</span>
-            <strong>{query.data?.items.length ?? "—"} assigned</strong>
+            <span className="docket-kicker">{text.kicker}</span>
+            <strong>{text.assigned(query.data?.items.length ?? "—")}</strong>
           </div>
           <label>
-            <span className="sr-only">Filter assigned tasks</span>
+            <span className="sr-only">{text.filterLabel}</span>
             <select
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
             >
-              <option value="open">Needs attention</option>
-              <option value="all">All tasks</option>
-              <option value="completed">Completed</option>
-              <option value="blocked">Blocked</option>
+              <option value="open">{text.filters.open}</option>
+              <option value="all">{text.filters.all}</option>
+              <option value="completed">{text.filters.completed}</option>
+              <option value="blocked">{text.filters.blocked}</option>
             </select>
           </label>
         </div>
@@ -121,8 +113,8 @@ function TaskDocket({ csrf }: { csrf: string }) {
         ) : !items?.length ? (
           <div className="task-empty">
             <CheckCircle size={34} weight="duotone" />
-            <h2>Your docket is clear.</h2>
-            <p>No assigned tasks match this view.</p>
+            <h2>{text.emptyTitle}</h2>
+            <p>{text.emptyBody}</p>
           </div>
         ) : (
           <ol className="docket-list">
@@ -156,21 +148,20 @@ function TaskDocket({ csrf }: { csrf: string }) {
                   <div className="docket-entry-head">
                     <Badge>{statusNames[task.state]}</Badge>
                     <span>
-                      {task.required ? "Required" : "Optional"} · {task.owner}
+                      {task.required ? text.required : text.optional} ·{" "}
+                      {task.owner}
                     </span>
                   </div>
                   <h2>{task.label}</h2>
                   <p className="docket-person">
-                    For <strong>{task.candidateName}</strong> ·{" "}
+                    {text.forCandidate} <strong>{task.candidateName}</strong> ·{" "}
                     {task.candidateTitle}
                   </p>
                   {task.waitingOn && (
-                    <p className="docket-warning">
-                      Waiting for a prerequisite to be completed.
-                    </p>
+                    <p className="docket-warning">{text.waiting}</p>
                   )}
                   {task.note && (
-                    <p className="docket-note">Latest note: {task.note}</p>
+                    <p className="docket-note">{text.latestNote(task.note)}</p>
                   )}
                   <Button
                     variant="secondary"
@@ -178,9 +169,9 @@ function TaskDocket({ csrf }: { csrf: string }) {
                       setError("");
                       setSelected(task);
                     }}
-                    aria-label={`Update ${task.label}`}
+                    aria-label={text.updateLabel(task.label)}
                   >
-                    Update work
+                    {text.updateWork}
                   </Button>
                 </article>
               </li>
@@ -193,17 +184,17 @@ function TaskDocket({ csrf }: { csrf: string }) {
         onOpenChange={(open) => {
           if (!open && !busy) setSelected(null);
         }}
-        title="Update assigned task"
+        title={text.dialogTitle}
       >
         {selected && (
           <form className="intake-form" onSubmit={(event) => void save(event)}>
             <p>
               <strong>{selected.label}</strong>
               <br />
-              For {selected.candidateName}
+              {text.forCandidate} {selected.candidateName}
             </p>
             <label>
-              New task status
+              {text.newStatus}
               <select
                 name="state"
                 autoFocus
@@ -230,13 +221,10 @@ function TaskDocket({ csrf }: { csrf: string }) {
               </select>
             </label>
             <label>
-              Completion / change note
+              {text.noteLabel}
               <textarea name="reason" required minLength={10} maxLength={300} />
             </label>
-            <p>
-              Use fictional operational notes only. Candidate contact details
-              are intentionally unavailable here.
-            </p>
+            <p>{text.noteHelp}</p>
             {error && (
               <p role="alert" className="inline-error">
                 {error}
@@ -248,10 +236,10 @@ function TaskDocket({ csrf }: { csrf: string }) {
                 isDisabled={busy}
                 onPress={() => setSelected(null)}
               >
-                Cancel
+                {text.cancel}
               </Button>
               <Button type="submit" isDisabled={busy}>
-                {busy ? "Saving…" : "Save task status"}
+                {busy ? text.saving : text.save}
               </Button>
             </div>
           </form>

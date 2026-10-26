@@ -26,14 +26,9 @@ import {
 } from "@anvi/contracts";
 import { api, useLeave, useLeaveApprovals } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { leaveCopy as text } from "../lib/copy/leave";
 import "./leave.css";
 
-const stateLabels: Record<LeaveState, string> = {
-  pending: "Awaiting decision",
-  approved: "Approved",
-  rejected: "Declined",
-  cancelled: "Cancelled",
-};
 const day = new Intl.DateTimeFormat("en-IN", {
   day: "numeric",
   month: "short",
@@ -58,7 +53,6 @@ function workingDays(start: string, end: string, calendar: PersonalCalendar) {
       count += 1;
   return count;
 }
-const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
 
 type Send = (path: string, body: unknown) => Promise<LeaveRequest>;
 
@@ -71,9 +65,7 @@ export default function Leave() {
   const client = useQueryClient();
   const [composing, setComposing] = useState(false);
   if (!canRequest && !canApprove)
-    return (
-      <ErrorState message="Leave is available in employee, manager and HR workspaces. Switch role to continue." />
-    );
+    return <ErrorState message={text.unavailable} />;
   const refresh = () => client.invalidateQueries({ queryKey: ["leave"] });
   const send: Send = (path, body) =>
     api(path, leaveRequestSchema, {
@@ -86,30 +78,28 @@ export default function Leave() {
     <div className="page-enter leave-page">
       <header className="leave-hero">
         <div>
-          <h1>Time away, planned together.</h1>
+          <h1>{text.hero.title}</h1>
           <p>
-            {canRequest
-              ? "See what you have left, ask for time off and follow each decision."
-              : "Decide the requests routed to you and keep an eye on what is coming up."}
+            {canRequest ? text.hero.requesterIntro : text.hero.approverIntro}
           </p>
         </div>
         {canRequest && (
           <Button onPress={() => setComposing(true)}>
             <Plus size={18} weight="bold" />
-            Request leave
+            {text.hero.requestLeave}
           </Button>
         )}
       </header>
       {canRequest && canApprove ? (
         <Tabs className="leave-tabs">
-          <TabList aria-label="Leave views" className="tabs-list">
+          <TabList aria-label={text.tabs.label} className="tabs-list">
             <Tab id="mine" className="tab">
               <AirplaneTilt size={18} />
-              Your leave
+              {text.tabs.mine}
             </Tab>
             <Tab id="team" className="tab">
               <CalendarCheck size={18} />
-              Team requests
+              {text.tabs.team}
               {Boolean(waiting) && <span className="tab-count">{waiting}</span>}
             </Tab>
           </TabList>
@@ -181,7 +171,7 @@ function MyLeave({
       await refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Could not cancel this leave.",
+        cause instanceof Error ? cause.message : text.cancelDialog.failed,
       );
     } finally {
       setBusy(false);
@@ -192,10 +182,8 @@ function MyLeave({
       <section className="panel leave-balances" aria-labelledby="balances">
         <div className="panel-heading">
           <div>
-            <h2 id="balances">Your {year} balance</h2>
-            <p>
-              Approved leave is used; requests awaiting a decision are held.
-            </p>
+            <h2 id="balances">{text.mine.balanceTitle(year)}</h2>
+            <p>{text.mine.balanceHint}</p>
           </div>
         </div>
         <ul className="leave-threads">
@@ -207,28 +195,28 @@ function MyLeave({
       <section className="panel leave-requests" aria-labelledby="requests">
         <div className="panel-heading">
           <div>
-            <h2 id="requests">Your requests</h2>
-            <p>Coming up first, then everything already decided.</p>
+            <h2 id="requests">{text.mine.requestsTitle}</h2>
+            <p>{text.mine.requestsHint}</p>
           </div>
         </div>
         {requests.length === 0 ? (
           <div className="leave-empty">
             <AirplaneTilt size={34} weight="duotone" />
-            <h3>No leave requested yet</h3>
-            <p>Use Request leave to plan your first time away.</p>
+            <h3>{text.mine.emptyTitle}</h3>
+            <p>{text.mine.emptyBody}</p>
           </div>
         ) : (
           <>
             {upcoming.length > 0 && (
               <RequestList
-                title="Coming up"
+                title={text.mine.comingUp}
                 items={upcoming}
                 onCancel={askCancel}
               />
             )}
             {history.length > 0 && (
               <RequestList
-                title="History"
+                title={text.mine.history}
                 items={history}
                 onCancel={askCancel}
               />
@@ -241,17 +229,17 @@ function MyLeave({
         onOpenChange={(open) => {
           if (!open && !busy) setCancelling(null);
         }}
-        title="Cancel this leave?"
+        title={text.cancelDialog.title}
       >
         {cancelling && (
           <div className="leave-form">
             <p>
-              {cancelling.leaveType.name},{" "}
-              {range(cancelling.startDate, cancelling.endDate)} (
-              {plural(cancelling.days)}).{" "}
-              {cancelling.state === "approved"
-                ? "The days return to your balance."
-                : "Your approver will no longer see it."}
+              {text.cancelDialog.summary(
+                cancelling.leaveType.name,
+                range(cancelling.startDate, cancelling.endDate),
+                cancelling.days,
+                cancelling.state === "approved",
+              )}
             </p>
             {error && (
               <p role="alert" className="inline-error">
@@ -264,10 +252,12 @@ function MyLeave({
                 isDisabled={busy}
                 onPress={() => setCancelling(null)}
               >
-                Keep it
+                {text.cancelDialog.keep}
               </Button>
               <Button isDisabled={busy} onPress={() => void cancel()}>
-                {busy ? "Cancelling…" : "Cancel leave"}
+                {busy
+                  ? text.cancelDialog.cancelling
+                  : text.cancelDialog.confirm}
               </Button>
             </div>
           </div>
@@ -283,12 +273,10 @@ function BalanceThread({ balance }: { balance: LeaveBalance }) {
       <li className="leave-thread leave-thread-open">
         <div className="leave-thread-head">
           <strong>{balance.name}</strong>
-          <span>{balance.paid ? "Paid" : "Unpaid"}, no annual limit</span>
+          <span>{text.balance.noLimit(balance.paid)}</span>
         </div>
         <p className="leave-thread-note">
-          {balance.used + balance.pending > 0
-            ? `${plural(balance.used)} taken, ${plural(balance.pending)} awaiting a decision this year.`
-            : "Nothing taken this year."}
+          {text.balance.openNote(balance.used, balance.pending)}
         </p>
       </li>
     );
@@ -299,13 +287,19 @@ function BalanceThread({ balance }: { balance: LeaveBalance }) {
       <div className="leave-thread-head">
         <strong>{balance.name}</strong>
         <span>
-          <b>{balance.available}</b> of {total} days left
+          <b>{balance.available}</b> {text.balance.ofLeft(total)}
         </span>
       </div>
       <div
         className="leave-rail"
         role="img"
-        aria-label={`${balance.name}: ${balance.used} used, ${balance.pending} awaiting a decision, ${balance.available} available of ${total}`}
+        aria-label={text.balance.railLabel(
+          balance.name,
+          balance.used,
+          balance.pending,
+          balance.available,
+          total,
+        )}
       >
         <span
           className="leave-rail-used"
@@ -317,8 +311,8 @@ function BalanceThread({ balance }: { balance: LeaveBalance }) {
         />
       </div>
       <p className="leave-thread-note">
-        {plural(balance.used)} used
-        {balance.pending > 0 && `, ${plural(balance.pending)} on hold`}
+        {text.balance.usedNote(balance.used)}
+        {balance.pending > 0 && text.balance.onHold(balance.pending)}
       </p>
     </li>
   );
@@ -346,16 +340,20 @@ function RequestList({
                 <StateBadge state={r.state} />
               </div>
               <p>
-                {range(r.startDate, r.endDate)}, {plural(r.days)}.{" "}
-                {r.approver === "manager"
-                  ? "Your manager decides."
-                  : "HR decides."}
+                {text.list.detail(
+                  range(r.startDate, r.endDate),
+                  r.days,
+                  r.approver === "manager",
+                )}
               </p>
               <p className="leave-reason">{r.reason}</p>
               {r.decidedBy && r.state !== "cancelled" && (
                 <p className="leave-decision">
-                  {stateLabels[r.state]} by {r.decidedBy}
-                  {r.decisionNote ? `: ${r.decisionNote}` : "."}
+                  {text.list.decision(
+                    text.states[r.state],
+                    r.decidedBy,
+                    r.decisionNote,
+                  )}
                 </p>
               )}
             </div>
@@ -363,9 +361,12 @@ function RequestList({
               <Button
                 variant="secondary"
                 onPress={() => onCancel(r)}
-                aria-label={`Cancel ${r.leaveType.name}, ${range(r.startDate, r.endDate)}`}
+                aria-label={text.list.cancelAria(
+                  r.leaveType.name,
+                  range(r.startDate, r.endDate),
+                )}
               >
-                Cancel
+                {text.list.cancel}
               </Button>
             )}
           </li>
@@ -390,7 +391,7 @@ function DateBlock({ request }: { request: LeaveRequest }) {
 function StateBadge({ state }: { state: LeaveState }) {
   const tone =
     state === "approved" ? "green" : state === "pending" ? "amber" : "neutral";
-  return <Badge tone={tone}>{stateLabels[state]}</Badge>;
+  return <Badge tone={tone}>{text.states[state]}</Badge>;
 }
 
 function Approvals({
@@ -430,7 +431,7 @@ function Approvals({
       await refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Could not save the decision.",
+        cause instanceof Error ? cause.message : text.approvals.saveFailed,
       );
     } finally {
       setBusy(null);
@@ -446,13 +447,13 @@ function Approvals({
       )}
       <section aria-labelledby="awaiting">
         <h2 id="awaiting" className="leave-section-title">
-          Awaiting a decision
+          {text.approvals.awaitingTitle}
         </h2>
         {pending.length === 0 ? (
           <div className="panel leave-empty">
             <CalendarCheck size={34} weight="duotone" />
-            <h3>You're all caught up</h3>
-            <p>New requests routed to you will appear here.</p>
+            <h3>{text.approvals.caughtUpTitle}</h3>
+            <p>{text.approvals.caughtUpBody}</p>
           </div>
         ) : (
           <ul className="leave-cards">
@@ -468,7 +469,7 @@ function Approvals({
                 <div className="leave-card-when">
                   <strong>{range(r.startDate, r.endDate)}</strong>
                   <span>
-                    {r.leaveType.name}, {plural(r.days)}
+                    {text.approvals.cardType(r.leaveType.name, r.days)}
                   </span>
                 </div>
                 <p className="leave-reason">{r.reason}</p>
@@ -477,10 +478,12 @@ function Approvals({
                     <Button
                       isDisabled={busy === r.id}
                       onPress={() => void decide(r, "approve", null)}
-                      aria-label={`Approve leave for ${r.employeeName}`}
+                      aria-label={text.approvals.approveAria(r.employeeName)}
                     >
                       <Check size={17} weight="bold" />
-                      {busy === r.id ? "Saving…" : "Approve"}
+                      {busy === r.id
+                        ? text.approvals.saving
+                        : text.approvals.approve}
                     </Button>
                     <Button
                       variant="secondary"
@@ -489,17 +492,15 @@ function Approvals({
                         setError("");
                         setDeclining(r);
                       }}
-                      aria-label={`Decline leave for ${r.employeeName}`}
+                      aria-label={text.approvals.declineAria(r.employeeName)}
                     >
                       <X size={17} />
-                      Decline
+                      {text.approvals.decline}
                     </Button>
                   </div>
                 ) : (
                   <p className="leave-routed">
-                    {r.approver === "manager"
-                      ? "Their manager decides this request."
-                      : "Another HR colleague decides this request."}
+                    {text.approvals.routed(r.approver === "manager")}
                   </p>
                 )}
               </li>
@@ -511,8 +512,8 @@ function Approvals({
         <section className="panel leave-decided" aria-labelledby="decided">
           <div className="panel-heading">
             <div>
-              <h2 id="decided">Recently decided</h2>
-              <p>The latest 20 decisions and cancellations you can see.</p>
+              <h2 id="decided">{text.approvals.decidedTitle}</h2>
+              <p>{text.approvals.decidedHint}</p>
             </div>
           </div>
           <ol className="leave-list">
@@ -525,13 +526,15 @@ function Approvals({
                     <StateBadge state={r.state} />
                   </div>
                   <p>
-                    {r.leaveType.name}, {range(r.startDate, r.endDate)},{" "}
-                    {plural(r.days)}
+                    {text.approvals.decidedDetail(
+                      r.leaveType.name,
+                      range(r.startDate, r.endDate),
+                      r.days,
+                    )}
                   </p>
                   {r.decidedBy && (
                     <p className="leave-decision">
-                      By {r.decidedBy}
-                      {r.decisionNote ? `: ${r.decisionNote}` : "."}
+                      {text.approvals.decidedBy(r.decidedBy, r.decisionNote)}
                     </p>
                   )}
                 </div>
@@ -545,7 +548,7 @@ function Approvals({
         onOpenChange={(open) => {
           if (!open && !busy) setDeclining(null);
         }}
-        title="Decline this request?"
+        title={text.declineDialog.title}
       >
         {declining && (
           <form
@@ -559,13 +562,14 @@ function Approvals({
             }}
           >
             <p>
-              {declining.employeeName} asked for{" "}
-              {declining.leaveType.name.toLowerCase()},{" "}
-              {range(declining.startDate, declining.endDate)}. They will see
-              your note.
+              {text.declineDialog.summary(
+                declining.employeeName,
+                declining.leaveType.name,
+                range(declining.startDate, declining.endDate),
+              )}
             </p>
             <label>
-              Why are you declining?
+              {text.declineDialog.reasonLabel}
               <textarea
                 name="note"
                 required
@@ -585,10 +589,10 @@ function Approvals({
                 isDisabled={Boolean(busy)}
                 onPress={() => setDeclining(null)}
               >
-                Go back
+                {text.declineDialog.goBack}
               </Button>
               <Button type="submit" isDisabled={Boolean(busy)}>
-                {busy ? "Saving…" : "Decline request"}
+                {busy ? text.declineDialog.saving : text.declineDialog.submit}
               </Button>
             </div>
           </form>
@@ -648,33 +652,27 @@ function RequestDialog({
       await refresh();
       onClose();
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not send this request.",
-      );
+      setError(cause instanceof Error ? cause.message : text.request.failed);
     } finally {
       setBusy(false);
     }
   }
-  let count = `${plural(days)} of leave, not counting days off or holidays.`;
+  let count = text.request.countOk(days);
   if (days === 0)
-    count =
-      start && end
-        ? "These dates are all days off or holidays. Choose at least one working day."
-        : "Pick your dates to see how many working days this uses.";
-  else if (short)
-    count = `${plural(days)}, more than the ${plural(left)} you have left.`;
+    count = start && end ? text.request.countAllOff : text.request.countPick;
+  else if (short) count = text.request.countShort(days, left);
   return (
     <DialogPanel
       open={open}
       onOpenChange={(next) => {
         if (!next) close();
       }}
-      title="Request leave"
+      title={text.request.title}
       className="leave-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
         <label>
-          Leave type
+          {text.request.typeLabel}
           <select
             name="type"
             value={type}
@@ -685,15 +683,15 @@ function RequestDialog({
               <option key={b.id} value={b.id}>
                 {b.name}
                 {b.available === null
-                  ? " (no limit)"
-                  : ` (${plural(b.available)} left)`}
+                  ? text.request.optionNoLimit
+                  : text.request.optionLeft(b.available)}
               </option>
             ))}
           </select>
         </label>
         <div className="leave-dates">
           <label>
-            First day
+            {text.request.firstDay}
             <input
               type="date"
               name="start"
@@ -707,7 +705,7 @@ function RequestDialog({
             />
           </label>
           <label>
-            Last day
+            {text.request.lastDay}
             <input
               type="date"
               name="end"
@@ -725,12 +723,10 @@ function RequestDialog({
           {count}
         </p>
         <label>
-          Reason
+          {text.request.reasonLabel}
           <textarea name="reason" required minLength={3} maxLength={300} />
         </label>
-        <p className="leave-hint">
-          Your approver sees this. Keep medical details private.
-        </p>
+        <p className="leave-hint">{text.request.hint}</p>
         {error && (
           <p role="alert" className="inline-error">
             {error}
@@ -738,10 +734,10 @@ function RequestDialog({
         )}
         <div className="leave-actions">
           <Button variant="secondary" isDisabled={busy} onPress={close}>
-            Cancel
+            {text.request.cancel}
           </Button>
           <Button type="submit" isDisabled={busy || days === 0 || short}>
-            {busy ? "Sending…" : "Send request"}
+            {busy ? text.request.sending : text.request.send}
           </Button>
         </div>
       </form>

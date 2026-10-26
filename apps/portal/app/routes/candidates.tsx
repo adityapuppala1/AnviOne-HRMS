@@ -24,21 +24,14 @@ import {
   SubmissionComparison,
 } from "../components/onboarding-checklist";
 import { LocalReadinessReview } from "../components/local-readiness-review";
-const labels: Record<Candidate["state"], string> = {
-  draft: "Draft",
-  invited: "Invited",
-  in_progress: "In progress",
-  submitted: "Ready for review",
-  changes_requested: "Changes requested",
-  approved: "Form approved",
-  cancelled: "Cancelled",
-};
+import { candidatesCopy as text } from "../lib/copy/onboarding";
+const labels: Record<Candidate["state"], string> = text.states;
 export default function Candidates() {
   const { me } = useWorkspace();
   return me.permissions.includes("onboarding.manage") ? (
     <Intake />
   ) : (
-    <ErrorState message="Candidate intake requires an assigned HR admin workspace." />
+    <ErrorState message={text.denied} />
   );
 }
 function Intake() {
@@ -75,24 +68,20 @@ function Intake() {
     <div className="page-enter intake-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">An introduction. A considered next step.</p>
-          <h1>Make room for someone new.</h1>
-          <p>
-            Invite, review and guide your next colleague through their first
-            form.
-          </p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.heading}</h1>
+          <p>{text.intro}</p>
         </div>
         <Button onPress={() => setCreating(true)}>
           <UserPlus size={19} />
-          New intake
+          {text.newIntake}
         </Button>
       </div>
       <div className="intake-notice">
         <ShieldCheck size={22} />
         <p>
-          <strong>Synthetic onboarding preview</strong> · Only @anvi.example
-          addresses. The local delivery tray previews messages; no email is
-          sent. Form approval is followed by separate activation checks.
+          <strong>{text.noticeTitle}</strong>
+          {text.noticeBody}
         </p>
       </div>
       {error && (
@@ -104,15 +93,15 @@ function Intake() {
         <section className="panel intake-ledger">
           <div className="panel-heading">
             <div>
-              <h2>Candidate intake</h2>
-              <p>Latest 50 records in your legal entity.</p>
+              <h2>{text.ledgerTitle}</h2>
+              <p>{text.ledgerSubtitle}</p>
             </div>
-            <Badge>{list.data?.items.length ?? "…"} shown</Badge>
+            <Badge>{text.shown(list.data?.items.length ?? "…")}</Badge>
           </div>
           <label className="intake-search">
-            <span className="sr-only">Search intake</span>
+            <span className="sr-only">{text.searchLabel}</span>
             <input
-              placeholder="Find a name or nominated address…"
+              placeholder={text.searchPlaceholder}
               maxLength={80}
               value={q}
               onChange={(e) => {
@@ -132,8 +121,8 @@ function Intake() {
           ) : !list.data.items.length ? (
             <div className="state-card">
               <UserPlus size={32} />
-              <h2>A thoughtful first welcome.</h2>
-              <p>Create a synthetic intake to start the invitation journey.</p>
+              <h2>{text.emptyTitle}</h2>
+              <p>{text.emptyBody}</p>
             </div>
           ) : (
             <div className="intake-rows">
@@ -169,11 +158,8 @@ function Intake() {
           {!selected ? (
             <div className="state-card">
               <PaperPlaneTilt size={36} />
-              <h2>Every welcome has a story.</h2>
-              <p>
-                Select an intake to see the form, review history and next
-                action.
-              </p>
+              <h2>{text.noSelectionTitle}</h2>
+              <p>{text.noSelectionBody}</p>
             </div>
           ) : detail.error ? (
             <ErrorState
@@ -226,9 +212,7 @@ function CreateIntake({
     const input = Object.fromEntries(new FormData(e.currentTarget));
     const parsed = candidateCreateSchema.safeParse(input);
     if (!parsed.success) {
-      setError(
-        "Review all fields. Use a synthetic @anvi.example address and active assignments.",
-      );
+      setError(text.create.reviewFields);
       return;
     }
     setBusy(true);
@@ -242,7 +226,7 @@ function CreateIntake({
         }),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create intake.");
+      setError(err instanceof Error ? err.message : text.create.failed);
     } finally {
       setBusy(false);
     }
@@ -253,30 +237,30 @@ function CreateIntake({
       onOpenChange={(open) => {
         if (!open && !busy) onClose();
       }}
-      title="New candidate intake"
+      title={text.create.title}
       className="intake-create"
     >
       <form className="intake-form" onSubmit={(e) => void submit(e)}>
-        <p>Prepare a synthetic welcome for your current legal entity.</p>
+        <p>{text.create.intro}</p>
         <label>
-          Full name
+          {text.create.fullName}
           <input name="name" required minLength={2} maxLength={120} />
         </label>
         <label>
-          Nominated email
+          {text.create.email}
           <input
             name="email"
             type="email"
             required
-            placeholder="new.colleague@anvi.example"
+            placeholder={text.create.emailPlaceholder}
           />
         </label>
         <label>
-          Proposed role
+          {text.create.role}
           <input name="title" required minLength={2} maxLength={80} />
         </label>
         <label>
-          Proposed joining date
+          {text.create.joiningDate}
           <input name="joinedOn" type="date" required />
         </label>
         {options.error ? (
@@ -288,17 +272,17 @@ function CreateIntake({
             {[
               {
                 name: "departmentId",
-                label: "Department",
+                label: text.create.department,
                 items: options.data.departments,
               },
               {
                 name: "locationId",
-                label: "Location",
+                label: text.create.location,
                 items: options.data.locations,
               },
               {
                 name: "managerId",
-                label: "Reporting manager",
+                label: text.create.manager,
                 items: options.data.managers,
               },
             ].map((field) => (
@@ -306,7 +290,7 @@ function CreateIntake({
                 {field.label}
                 <select name={field.name} required defaultValue="">
                   <option value="" disabled>
-                    Select…
+                    {text.create.select}
                   </option>
                   {field.items.map((o) => (
                     <option key={o.id} value={o.id}>
@@ -325,10 +309,10 @@ function CreateIntake({
         )}
         <div className="intake-actions">
           <Button variant="secondary" onPress={onClose} isDisabled={busy}>
-            Cancel
+            {text.create.cancel}
           </Button>
           <Button type="submit" isDisabled={busy || !options.data}>
-            {busy ? "Creating…" : "Create intake"}
+            {busy ? text.create.creating : text.create.submit}
           </Button>
         </div>
       </form>
@@ -358,7 +342,7 @@ function CaseReview({
     decision?: string,
   ) {
     if (reason.trim().length < 10) {
-      onError("Explain the action in at least 10 characters.");
+      onError(text.review.reasonTooShort);
       return;
     }
     setBusy(true);
@@ -376,7 +360,7 @@ function CaseReview({
       setReason("");
       onSaved();
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Could not update intake.");
+      onError(err instanceof Error ? err.message : text.review.updateFailed);
     } finally {
       setBusy(false);
     }
@@ -392,7 +376,9 @@ function CaseReview({
       );
       setDeliveryOpen(true);
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Preview unavailable.");
+      onError(
+        err instanceof Error ? err.message : text.review.previewUnavailable,
+      );
     } finally {
       setBusy(false);
     }
@@ -400,47 +386,48 @@ function CaseReview({
   return (
     <>
       <div className="intake-detail-header">
-        <p className="eyebrow">A welcome in progress</p>
+        <p className="eyebrow">{text.review.eyebrow}</p>
         <h2>{c.name}</h2>
         <p>{c.title}</p>
         <Badge>{labels[c.state]}</Badge>
       </div>
       <dl className="intake-facts">
         <div>
-          <dt>Nominated address</dt>
+          <dt>{text.review.nominatedAddress}</dt>
           <dd>{c.email}</dd>
         </div>
         <div>
-          <dt>Assignment</dt>
+          <dt>{text.review.assignment}</dt>
           <dd>
             {c.department} · {c.location}
           </dd>
         </div>
         <div>
-          <dt>Manager</dt>
+          <dt>{text.review.manager}</dt>
           <dd>{c.manager}</dd>
         </div>
         <div>
-          <dt>Joining date</dt>
+          <dt>{text.review.joiningDate}</dt>
           <dd>{c.joinedOn}</dd>
         </div>
       </dl>
       <div className="intake-submission">
         <h3>
           {["submitted", "approved"].includes(c.state)
-            ? "Submitted form"
-            : "Saved draft"}
+            ? text.review.submittedForm
+            : text.review.savedDraft}
         </h3>
         <p>
-          <strong>Preferred name:</strong>{" "}
-          {c.draft.preferredName || "Not supplied"}
+          <strong>{text.review.preferredName}</strong>{" "}
+          {c.draft.preferredName || text.review.notSupplied}
         </p>
         <p className="intake-introduction">
-          {c.draft.introduction ||
-            "The candidate has not added an introduction yet."}
+          {c.draft.introduction || text.review.noIntroduction}
         </p>
         {c.reviewNote && (
-          <p className="intake-feedback">Latest review: {c.reviewNote}</p>
+          <p className="intake-feedback">
+            {text.review.latestReview(c.reviewNote)}
+          </p>
         )}
       </div>
       <SubmissionComparison value={value} />
@@ -458,13 +445,10 @@ function CaseReview({
       />
       {value.submissions.length > 0 && (
         <details className="intake-history">
-          <summary>
-            {value.submissions.length} immutable submission
-            {value.submissions.length === 1 ? "" : "s"}
-          </summary>
+          <summary>{text.review.submissions(value.submissions.length)}</summary>
           {value.submissions.map((s) => (
             <article key={s.version}>
-              <strong>Version {s.version}</strong>
+              <strong>{text.review.version(s.version)}</strong>
               <p>{s.payload.preferredName}</p>
               <p className="intake-introduction">{s.payload.introduction}</p>
               <small>{new Date(s.submittedAt).toLocaleString("en-IN")}</small>
@@ -474,14 +458,14 @@ function CaseReview({
       )}
       {c.state !== "cancelled" && (
         <div className="intake-review-actions">
-          <label htmlFor="intake-reason">Action / review reason</label>
+          <label htmlFor="intake-reason">{text.review.reasonLabel}</label>
           <textarea
             id="intake-reason"
             rows={3}
             maxLength={300}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Record the reason; avoid confidential details."
+            placeholder={text.review.reasonPlaceholder}
           />
           <div className="intake-actions">
             <Button
@@ -490,15 +474,15 @@ function CaseReview({
               onPress={() => void action("invitation")}
             >
               {c.invitationExpiresAt
-                ? "Rotate invitation preview"
-                : "Create invitation preview"}
+                ? text.review.rotateInvitation
+                : text.review.createInvitation}
             </Button>
             <Button
               variant="secondary"
               isDisabled={busy}
               onPress={() => void preview()}
             >
-              Open delivery tray
+              {text.review.openTray}
             </Button>
           </div>
           {c.state === "submitted" && (
@@ -508,13 +492,13 @@ function CaseReview({
                 isDisabled={busy}
                 onPress={() => void action("review", "changes_requested")}
               >
-                Request changes
+                {text.review.requestChanges}
               </Button>
               <Button
                 isDisabled={busy}
                 onPress={() => void action("review", "approved")}
               >
-                Approve form
+                {text.review.approve}
               </Button>
             </div>
           )}
@@ -523,25 +507,19 @@ function CaseReview({
             isDisabled={busy}
             onPress={() => void action("revoke")}
           >
-            Cancel intake and revoke access
+            {text.review.cancelIntake}
           </Button>
-          <small>
-            Approval covers this form only. Employee activation and its
-            remaining checks are separate.
-          </small>
+          <small>{text.review.approvalNote}</small>
         </div>
       )}
       <DialogPanel
         open={deliveryOpen}
         onOpenChange={setDeliveryOpen}
-        title="Local delivery tray"
+        title={text.delivery.title}
       >
         <div className="intake-delivery">
-          <Badge>Development preview · no email sent</Badge>
-          <p>
-            Only synthetic addresses are supported. These previews expire and
-            are cleared after verification.
-          </p>
+          <Badge>{text.delivery.badge}</Badge>
+          <p>{text.delivery.note}</p>
           {delivery?.invitationUrl && (
             <p>
               <a
@@ -550,27 +528,24 @@ function CaseReview({
                 target="_blank"
                 rel="noreferrer"
               >
-                Open candidate invitation <ArrowUpRight size={16} />
+                {text.delivery.openInvitation} <ArrowUpRight size={16} />
               </a>
             </p>
           )}
           {delivery?.code && (
             <p className="intake-code">
-              Verification code <strong>{delivery.code}</strong>
+              {text.delivery.verificationCode} <strong>{delivery.code}</strong>
             </p>
           )}
           {!delivery?.code && !delivery?.invitationUrl && (
-            <p>
-              No active preview message. Request a verification code from the
-              latest invitation, then refresh.
-            </p>
+            <p>{text.delivery.none}</p>
           )}
           <Button
             variant="secondary"
             isDisabled={busy}
             onPress={() => void preview()}
           >
-            Refresh delivery tray
+            {text.delivery.refresh}
           </Button>
         </div>
       </DialogPanel>

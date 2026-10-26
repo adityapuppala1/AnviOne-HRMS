@@ -13,6 +13,7 @@ import { api, ApiError, useAuthConfig } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
 import { LoomWeave } from "../components/loom-weave";
+import { loginCopy as text } from "../lib/copy/screens";
 
 export default function Login() {
   const config = useAuthConfig();
@@ -36,7 +37,7 @@ export default function Login() {
       });
       void navigate("/");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to sign in.");
+      setError(e instanceof Error ? e.message : text.signInFailed);
     } finally {
       setBusy(false);
     }
@@ -46,19 +47,16 @@ export default function Login() {
       <section className="login-story">
         <Brand />
         <div className="login-story-copy">
-          <h1>Every person, woven into one workspace.</h1>
-          <p>
-            Find colleagues, guide new joiners and keep your organization in
-            step, all from one place.
-          </p>
+          <h1>{text.story.title}</h1>
+          <p>{text.story.body}</p>
         </div>
         <div className="login-loom">
           <LoomWeave knots={["MI", "KS", "TB"]} />
         </div>
         <div className="login-story-footer">
-          <span>AnviOne / MyAnvi</span>
+          <span>{text.story.footerBrand}</span>
           <span>
-            Made for your people <ArrowUpRight size={16} />
+            {text.story.footerTagline} <ArrowUpRight size={16} />
           </span>
         </div>
       </section>
@@ -69,7 +67,7 @@ export default function Login() {
           </div>
           <Button
             variant="icon"
-            aria-label={dark ? "Use light theme" : "Use dark theme"}
+            aria-label={dark ? text.useLightTheme : text.useDarkTheme}
             onPress={() => update({ mode: dark ? "light" : "dark" })}
           >
             {dark ? <Sun size={21} /> : <Moon size={21} />}
@@ -79,47 +77,43 @@ export default function Login() {
           <div className="login-icon">
             <Key size={28} weight="duotone" />
           </div>
-          <Badge>Your people workspace</Badge>
-          <h2>Welcome to AnviOne.</h2>
-          <p>Settle in. Your workday starts here.</p>
+          <Badge>{text.badge}</Badge>
+          <h2>{text.welcome}</h2>
+          <p>{text.welcomeSubtitle}</p>
           {config.data?.demo && (
             <div className="demo-login-note">
               <span className="status-dot" />
               <div>
-                <strong>A workspace to explore</strong>
-                <p>
-                  Meet a synthetic team, switch roles and try the experience. No
-                  real employee data.
-                </p>
+                <strong>{text.demoNote.title}</strong>
+                <p>{text.demoNote.body}</p>
               </div>
             </div>
           )}
           {(error || params.has("error")) && (
             <p className="inline-error" role="alert">
-              {error ||
-                "We could not verify your access. Try again or contact your HR team."}
+              {error || text.verifyFailed}
             </p>
           )}
           {config.error ? (
             <>
               <p className="inline-error" role="alert">
                 {config.error instanceof ApiError && config.error.status === 429
-                  ? "Too many sign-in requests. Wait a minute, then try again."
-                  : "The sign-in service is unavailable."}
+                  ? text.tooManyRequests
+                  : text.serviceUnavailable}
               </p>
               <Button
                 variant="secondary"
                 isDisabled={config.isFetching}
                 onPress={() => void config.refetch()}
               >
-                {config.isFetching ? "Trying again…" : "Try again"}
+                {config.isFetching ? text.retrying : text.retry}
               </Button>
             </>
           ) : !config.data ? (
-            <Button isDisabled>Preparing sign-in…</Button>
+            <Button isDisabled>{text.preparing}</Button>
           ) : config.data.demo ? (
             <Button isDisabled={busy} onPress={() => void demo()}>
-              {busy ? "Opening your workspace…" : "Explore demo workspace"}
+              {busy ? text.openingDemo : text.exploreDemo}
               <ArrowRight size={19} />
             </Button>
           ) : (
@@ -130,55 +124,42 @@ export default function Login() {
                 <i />
                 <i />
               </span>
-              Sign in with Microsoft
+              {text.microsoft}
               <ArrowRight size={19} />
             </a>
           )}
           <p className="login-help">
-            Use the company identity approved by your HR team.
+            {text.helpIdentity}
             <br />
-            New here? Your account starts with an invitation.
+            {text.helpInvite}
           </p>
           <div className="login-divider" />
           <div className="login-access-note">
             <LockKey size={19} />
-            <span>Access is limited to your assigned workspace.</span>
+            <span>{text.accessNote}</span>
           </div>
         </div>
         <footer className="login-footer">
-          <span>AnviOne · People, connected.</span>
+          <span>{text.footerBrand}</span>
           <Button variant="ghost" onPress={() => setHelp(true)}>
-            Sign-in help <ArrowUpRight size={15} />
+            {text.signInHelp} <ArrowUpRight size={15} />
           </Button>
         </footer>
       </section>
-      <DialogPanel
-        open={help}
-        onOpenChange={setHelp}
-        title="Getting into your workspace"
-      >
+      <DialogPanel open={help} onOpenChange={setHelp} title={text.help.title}>
         <dl className="guide-list">
           <div>
-            <dt>Already part of the team?</dt>
-            <dd>
-              Use the company account approved by HR. If sign-in fails, ask HR
-              or your identity administrator to confirm your access.
-            </dd>
+            <dt>{text.help.teamQuestion}</dt>
+            <dd>{text.help.teamAnswer}</dd>
           </div>
           <div>
-            <dt>Joining the organization?</dt>
-            <dd>
-              Employee access begins after HR approves your activation and binds
-              your company identity. There is no public signup.
-            </dd>
+            <dt>{text.help.joiningQuestion}</dt>
+            <dd>{text.help.joiningAnswer}</dd>
           </div>
           {config.data?.demo && (
             <div>
-              <dt>Exploring the preview?</dt>
-              <dd>
-                The demo opens a synthetic HR workspace. Use your avatar to try
-                other assigned roles.
-              </dd>
+              <dt>{text.help.previewQuestion}</dt>
+              <dd>{text.help.previewAnswer}</dd>
             </div>
           )}
         </dl>

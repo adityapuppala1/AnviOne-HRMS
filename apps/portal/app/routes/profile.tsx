@@ -25,6 +25,7 @@ import {
   TabPanel,
 } from "@anvi/ui";
 import { useEmployee } from "../lib/api";
+import { profileCopy as text } from "../lib/copy/screens";
 
 export default function Profile() {
   const { id = "" } = useParams();
@@ -43,9 +44,9 @@ export default function Profile() {
   async function copyEmail() {
     try {
       await navigator.clipboard.writeText(data!.email);
-      setCopyState("Email copied");
+      setCopyState(text.emailCopied);
     } catch {
-      setCopyState("Copy unavailable. Select and copy the email below.");
+      setCopyState(text.copyUnavailable);
     }
   }
   return (
@@ -53,13 +54,13 @@ export default function Profile() {
       <div className="profile-page-top">
         <Link className="text-link back-link" to="/people">
           <ArrowLeft size={18} />
-          Back to people
+          {text.backToPeople}
         </Link>
-        <span className="muted">Employee profile</span>
+        <span className="muted">{text.pageLabel}</span>
       </div>
       <section className="profile-cover">
         <div className="profile-banner">
-          <span>Every person brings a perspective.</span>
+          <span>{text.banner}</span>
           <div className="profile-banner-art" aria-hidden="true">
             <i />
             <i />
@@ -72,7 +73,9 @@ export default function Profile() {
             <div>
               <h1>{data.name}</h1>
               <Badge tone={data.status === "active" ? "green" : "amber"}>
-                {data.status === "active" ? "Active employee" : "Notice period"}
+                {data.status === "active"
+                  ? text.status.activeEmployee
+                  : text.status.notice}
               </Badge>
             </div>
             <p>{data.title}</p>
@@ -89,7 +92,7 @@ export default function Profile() {
           </div>
           <Button variant="secondary" onPress={() => void copyEmail()}>
             <Copy size={17} />
-            Copy work email
+            {text.copyEmail}
           </Button>
         </div>
         <p className="copy-feedback" role="status">
@@ -99,36 +102,38 @@ export default function Profile() {
       <div className="profile-body">
         <section className="panel profile-main">
           <Tabs defaultSelectedKey="about">
-            <TabList aria-label="Profile sections" className="tabs-list">
+            <TabList aria-label={text.sectionsLabel} className="tabs-list">
               <Tab id="about" className="tab">
                 <UserCircle size={18} />
-                Overview
+                {text.tabs.overview}
               </Tab>
               <Tab id="employment" className="tab">
                 <Briefcase size={18} />
-                Employment
+                {text.tabs.employment}
               </Tab>
             </TabList>
             <TabPanel id="about" className="tab-panel">
-              <h2>The essentials</h2>
-              <p className="section-description">
-                Work details to help you connect.
-              </p>
+              <h2>{text.overview.title}</h2>
+              <p className="section-description">{text.overview.description}</p>
               <dl className="profile-details">
                 {[
-                  { label: "Full name", value: data.name, icon: UserCircle },
                   {
-                    label: "Work email",
+                    label: text.overview.fullName,
+                    value: data.name,
+                    icon: UserCircle,
+                  },
+                  {
+                    label: text.overview.workEmail,
                     value: data.email,
                     icon: EnvelopeSimple,
                   },
                   {
-                    label: "Department",
+                    label: text.overview.department,
                     value: data.department,
                     icon: Buildings,
                   },
                   {
-                    label: "Work location",
+                    label: text.overview.workLocation,
                     value: data.location,
                     icon: MapPin,
                   },
@@ -144,23 +149,33 @@ export default function Profile() {
               </dl>
             </TabPanel>
             <TabPanel id="employment" className="tab-panel">
-              <h2>Employment record</h2>
+              <h2>{text.employment.title}</h2>
               <p className="section-description">
-                Current work assignment and joining details.
+                {text.employment.description}
               </p>
               <dl className="profile-details">
                 {[
                   {
-                    label: "Employee code",
+                    label: text.employment.code,
                     value: data.code,
                     icon: Fingerprint,
                   },
-                  { label: "Designation", value: data.title, icon: Briefcase },
-                  { label: "Joining date", value: joined, icon: CalendarBlank },
                   {
-                    label: "Employment status",
+                    label: text.employment.designation,
+                    value: data.title,
+                    icon: Briefcase,
+                  },
+                  {
+                    label: text.employment.joiningDate,
+                    value: joined,
+                    icon: CalendarBlank,
+                  },
+                  {
+                    label: text.employment.status,
                     value:
-                      data.status === "active" ? "Active" : "Notice period",
+                      data.status === "active"
+                        ? text.status.active
+                        : text.status.notice,
                     icon: Check,
                   },
                 ].map(({ label, value, icon: Icon }) => (
@@ -176,7 +191,7 @@ export default function Profile() {
               <div className="employment-milestone">
                 <ClockCounterClockwise size={22} />
                 <div>
-                  <strong>Joined the organization</strong>
+                  <strong>{text.employment.milestone}</strong>
                   <p>{joined}</p>
                 </div>
                 <span className="milestone-dot" />
@@ -185,10 +200,7 @@ export default function Profile() {
           </Tabs>
           <div className="profile-privacy">
             <LockKey size={19} />
-            <p>
-              This profile contains work details. Personal and confidential
-              records are not part of the directory.
-            </p>
+            <p>{text.privacy}</p>
           </div>
         </section>
         <aside className="profile-aside">
@@ -196,20 +208,21 @@ export default function Profile() {
             <span className="aside-icon">
               <Buildings size={26} weight="duotone" />
             </span>
-            <p className="eyebrow">Part of the team</p>
+            <p className="eyebrow">{text.aside.eyebrow}</p>
             <h2>{data.department}</h2>
-            <p>Explore colleagues visible in your workspace.</p>
+            <p>{text.aside.description}</p>
             <Link
               className="text-link"
               to={`/people?department=${encodeURIComponent(data.department)}`}
             >
-              View department <ArrowUpRight size={17} />
+              {text.aside.viewDepartment} <ArrowUpRight size={17} />
             </Link>
           </section>
           <section className="profile-joining">
             <CalendarBlank size={23} weight="duotone" />
             <span>
-              With the organization since<strong>{joined}</strong>
+              {text.aside.since}
+              <strong>{joined}</strong>
             </span>
           </section>
         </aside>

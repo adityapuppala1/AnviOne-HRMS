@@ -74,6 +74,10 @@ export const copy = {
       "session.": "Access & sessions",
       "branding.": "Workspace settings",
       "organization.": "Organization records",
+      "leave.": "Leave",
+      "attendance.": "Attendance",
+      "calendar.": "Holidays & work week",
+      "document.": "Documents",
     } as Record<string, string>,
     shown: (count: number | undefined) =>
       `${count ?? "…"} ${count === 1 ? "event" : "events"} shown`,

@@ -21,23 +21,14 @@ import {
 import type { DocumentCategory, EmployeeDocument } from "@anvi/contracts";
 import { api, ApiError, useDocumentReview, useDocuments } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { documentsCopy as text } from "../lib/copy/documents";
 // Shared card, form and list styles come from the leave screen.
 import "./leave.css";
 import "./documents.css";
 
 const MAX_BYTES = 5 * 1024 * 1024;
-const categories: Record<DocumentCategory, string> = {
-  identity: "Identity",
-  education: "Education",
-  employment: "Previous employment",
-  other: "Other",
-};
-const statusLabels: Record<EmployeeDocument["status"], string> = {
-  pending: "Awaiting HR",
-  verified: "Verified",
-  rejected: "Rejected",
-  withdrawn: "Withdrawn",
-};
+const categories: Record<DocumentCategory, string> = text.categories;
+const statusLabels: Record<EmployeeDocument["status"], string> = text.status;
 const size = (bytes: number) =>
   bytes < 1024 * 1024
     ? `${Math.max(1, Math.round(bytes / 1024))} KB`
@@ -59,10 +50,7 @@ export default function Documents() {
   const review = useDocumentReview(canReview);
   const client = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  if (!canOwn && !canReview)
-    return (
-      <ErrorState message="Documents are available in employee, manager and HR workspaces. Switch role to continue." />
-    );
+  if (!canOwn && !canReview) return <ErrorState message={text.denied} />;
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({ queryKey: ["documents"] }),
@@ -78,28 +66,24 @@ export default function Documents() {
     <div className="page-enter documents-page">
       <header className="leave-hero">
         <div>
-          <h1>Your papers, kept private.</h1>
-          <p>
-            {canOwn
-              ? "Upload the documents HR asks for. Only you and HR can open them; your manager cannot."
-              : "Verify the documents people upload. Only the owner and HR can open them."}
-          </p>
+          <h1>{text.title}</h1>
+          <p>{canOwn ? text.subtitleOwner : text.subtitleReviewer}</p>
         </div>
         {canOwn && (
           <Button onPress={() => setUploading(true)}>
             <UploadSimple size={18} weight="bold" />
-            Upload a document
+            {text.uploadButton}
           </Button>
         )}
       </header>
       {canOwn && canReview ? (
         <Tabs className="leave-tabs">
-          <TabList aria-label="Document views" className="tabs-list">
+          <TabList aria-label={text.tabs.label} className="tabs-list">
             <Tab id="mine" className="tab">
-              Your documents
+              {text.tabs.mine}
             </Tab>
             <Tab id="review" className="tab">
-              Review
+              {text.tabs.review}
             </Tab>
           </TabList>
           <TabPanel id="mine" className="tab-panel">
@@ -156,13 +140,21 @@ function DocumentRow({
           <Badge tone={tone}>{statusLabels[d.status]}</Badge>
         </div>
         <p>
-          {showOwner ? `${d.title}, ` : ""}
-          {categories[d.category]}. {d.fileName}, {size(d.sizeBytes)}. Uploaded{" "}
-          {when(d.uploadedAt)}.
+          {showOwner ? text.row.titleWithComma(d.title) : ""}
+          {text.row.detail(
+            categories[d.category],
+            d.fileName,
+            size(d.sizeBytes),
+            when(d.uploadedAt),
+          )}
         </p>
         {d.reviewNote && (
           <p className="leave-decision">
-            {statusLabels[d.status]} by {d.reviewedBy}: {d.reviewNote}
+            {text.row.reviewNote(
+              statusLabels[d.status],
+              d.reviewedBy ?? "",
+              d.reviewNote,
+            )}
           </p>
         )}
       </div>
@@ -172,10 +164,10 @@ function DocumentRow({
             className="button button-secondary"
             href={`/api/v1/documents/${d.id}/content`}
             download
-            aria-label={`Download ${d.title}`}
+            aria-label={text.row.downloadLabel(d.title)}
           >
             <DownloadSimple size={17} />
-            Download
+            {text.row.download}
           </a>
         )}
         {actions}
@@ -208,15 +200,17 @@ function Mine({
       await send(`/documents/${d.id}/withdraw`, { version: d.version });
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not withdraw.");
+      setError(
+        cause instanceof Error ? cause.message : text.mine.withdrawFailed,
+      );
     }
   }
   return (
     <section className="panel documents-list" aria-labelledby="your-documents">
       <div className="panel-heading">
         <div>
-          <h2 id="your-documents">Your documents</h2>
-          <p>Newest first. Withdraw a file while HR has not reviewed it.</p>
+          <h2 id="your-documents">{text.mine.heading}</h2>
+          <p>{text.mine.hint}</p>
         </div>
       </div>
       {error && (
@@ -227,8 +221,8 @@ function Mine({
       {query.data.items.length === 0 ? (
         <div className="leave-empty">
           <FolderLock size={34} weight="duotone" />
-          <h3>No documents yet</h3>
-          <p>Upload a PDF, PNG or JPEG of up to 5 MB.</p>
+          <h3>{text.mine.emptyTitle}</h3>
+          <p>{text.mine.emptyBody}</p>
         </div>
       ) : (
         <ul className="documents">
@@ -241,9 +235,9 @@ function Mine({
                   <Button
                     variant="secondary"
                     onPress={() => void withdraw(d)}
-                    aria-label={`Withdraw ${d.title}`}
+                    aria-label={text.mine.withdrawLabel(d.title)}
                   >
-                    Withdraw
+                    {text.mine.withdraw}
                   </Button>
                 )
               }
@@ -291,7 +285,7 @@ function Review({
       setRejecting(null);
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save.");
+      setError(cause instanceof Error ? cause.message : text.review.saveFailed);
     } finally {
       setBusy(null);
     }
@@ -307,15 +301,15 @@ function Review({
       <section className="panel documents-list" aria-labelledby="to-verify">
         <div className="panel-heading">
           <div>
-            <h2 id="to-verify">Waiting for verification</h2>
-            <p>Open the file, check it, then verify or reject with a note.</p>
+            <h2 id="to-verify">{text.review.pendingHeading}</h2>
+            <p>{text.review.pendingHint}</p>
           </div>
         </div>
         {pending.length === 0 ? (
           <div className="leave-empty">
             <FolderLock size={34} weight="duotone" />
-            <h3>Nothing to verify</h3>
-            <p>New uploads appear here and in Approvals.</p>
+            <h3>{text.review.emptyTitle}</h3>
+            <p>{text.review.emptyBody}</p>
           </div>
         ) : (
           <ul className="documents">
@@ -330,9 +324,12 @@ function Review({
                       <Button
                         isDisabled={busy === d.id}
                         onPress={() => void decide(d, "verify", null)}
-                        aria-label={`Verify ${d.title} for ${d.employeeName}`}
+                        aria-label={text.review.verifyLabel(
+                          d.title,
+                          d.employeeName,
+                        )}
                       >
-                        Verify
+                        {text.review.verify}
                       </Button>
                       <Button
                         variant="secondary"
@@ -341,9 +338,12 @@ function Review({
                           setError("");
                           setRejecting(d);
                         }}
-                        aria-label={`Reject ${d.title} for ${d.employeeName}`}
+                        aria-label={text.review.rejectLabel(
+                          d.title,
+                          d.employeeName,
+                        )}
                       >
-                        Reject
+                        {text.review.reject}
                       </Button>
                     </>
                   )
@@ -357,8 +357,8 @@ function Review({
         <section className="panel documents-list" aria-labelledby="reviewed">
           <div className="panel-heading">
             <div>
-              <h2 id="reviewed">Recently reviewed</h2>
-              <p>The latest 20 decisions and withdrawals.</p>
+              <h2 id="reviewed">{text.review.recentHeading}</h2>
+              <p>{text.review.recentHint}</p>
             </div>
           </div>
           <ul className="documents">
@@ -381,7 +381,7 @@ function Review({
         onOpenChange={(open) => {
           if (!open && !busy) setRejecting(null);
         }}
-        title="Reject this document?"
+        title={text.review.dialogTitle}
       >
         {rejecting && (
           <form
@@ -394,12 +394,9 @@ function Review({
               void decide(rejecting, "reject", note);
             }}
           >
-            <p>
-              {rejecting.employeeName} will see your note and can upload a
-              replacement.
-            </p>
+            <p>{text.review.dialogIntro(rejecting.employeeName)}</p>
             <label>
-              What needs to change?
+              {text.review.noteLabel}
               <textarea
                 name="note"
                 required
@@ -419,10 +416,10 @@ function Review({
                 isDisabled={Boolean(busy)}
                 onPress={() => setRejecting(null)}
               >
-                Go back
+                {text.review.goBack}
               </Button>
               <Button type="submit" isDisabled={Boolean(busy)}>
-                {busy ? "Saving…" : "Reject document"}
+                {busy ? text.review.saving : text.review.rejectSubmit}
               </Button>
             </div>
           </form>
@@ -455,11 +452,11 @@ function UploadDialog({
     const form = new FormData(event.currentTarget);
     const file = form.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      setError("Choose a file to upload.");
+      setError(text.upload.chooseFile);
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError("Files can be up to 5 MB.");
+      setError(text.upload.tooLarge);
       return;
     }
     setBusy(true);
@@ -477,14 +474,14 @@ function UploadDialog({
           title?: string;
         } | null;
         throw new ApiError(
-          problem?.title ?? "The upload did not complete. Try again.",
+          problem?.title ?? text.upload.incomplete,
           response.status,
         );
       }
       await refresh();
       onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not upload.");
+      setError(cause instanceof Error ? cause.message : text.upload.failed);
     } finally {
       setBusy(false);
     }
@@ -495,12 +492,12 @@ function UploadDialog({
       onOpenChange={(next) => {
         if (!next) close();
       }}
-      title="Upload a document"
+      title={text.upload.dialogTitle}
       className="leave-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
         <label>
-          What is it?
+          {text.upload.categoryLabel}
           <select name="category" defaultValue="identity" autoFocus>
             {Object.entries(categories).map(([value, label]) => (
               <option key={value} value={value}>
@@ -510,17 +507,17 @@ function UploadDialog({
           </select>
         </label>
         <label>
-          Title
+          {text.upload.titleLabel}
           <input
             name="title"
             required
             minLength={2}
             maxLength={80}
-            placeholder="For example, Passport"
+            placeholder={text.upload.titlePlaceholder}
           />
         </label>
         <label>
-          File
+          {text.upload.fileLabel}
           <input
             type="file"
             name="file"
@@ -528,9 +525,7 @@ function UploadDialog({
             accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
           />
         </label>
-        <p className="leave-hint">
-          PDF, PNG or JPEG, up to 5 MB. Use synthetic files in this preview.
-        </p>
+        <p className="leave-hint">{text.upload.hint}</p>
         {error && (
           <p role="alert" className="inline-error">
             {error}
@@ -538,10 +533,10 @@ function UploadDialog({
         )}
         <div className="leave-actions">
           <Button variant="secondary" isDisabled={busy} onPress={close}>
-            Cancel
+            {text.upload.cancel}
           </Button>
           <Button type="submit" isDisabled={busy}>
-            {busy ? "Uploading…" : "Upload"}
+            {busy ? text.upload.uploading : text.upload.submit}
           </Button>
         </div>
       </form>

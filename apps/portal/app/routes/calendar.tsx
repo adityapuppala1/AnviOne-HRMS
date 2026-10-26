@@ -8,20 +8,12 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { Badge, Button, DialogPanel, ErrorState, LoadingState } from "@anvi/ui";
 import type { Calendar as CalendarData, Holiday } from "@anvi/contracts";
 import { api, useCalendar } from "../lib/api";
+import { calendarCopy as text } from "../lib/copy/calendar";
 import { useWorkspace } from "./workspace";
 // Shared form styles come from the leave screen.
 import "./leave.css";
 import "./calendar.css";
 
-const weekdays = [
-  [1, "Mon", "Monday"],
-  [2, "Tue", "Tuesday"],
-  [3, "Wed", "Wednesday"],
-  [4, "Thu", "Thursday"],
-  [5, "Fri", "Friday"],
-  [6, "Sat", "Saturday"],
-  [7, "Sun", "Sunday"],
-] as const;
 const at = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const fmt = (iso: string, options: Intl.DateTimeFormatOptions) =>
   at(iso).toLocaleDateString("en-IN", { ...options, timeZone: "UTC" });
@@ -59,23 +51,22 @@ export default function CalendarPage() {
       <section className="panel calendar-year" aria-labelledby="year">
         <div className="panel-heading">
           <div>
-            <h2 id="year">Holidays in {data.year}</h2>
+            <h2 id="year">{text.year.title(data.year)}</h2>
             <p>
-              {data.holidays.filter((h) => h.active).length} observed. Holidays
-              for one office apply only to people based there.
+              {text.year.summary(data.holidays.filter((h) => h.active).length)}
             </p>
           </div>
           <div className="calendar-year-actions">
             <Button
               variant="icon"
-              aria-label={`Show ${data.year - 1}`}
+              aria-label={text.year.show(data.year - 1)}
               onPress={() => setYear(data.year - 1)}
             >
               <CaretLeft size={18} />
             </Button>
             <Button
               variant="icon"
-              aria-label={`Show ${data.year + 1}`}
+              aria-label={text.year.show(data.year + 1)}
               onPress={() => setYear(data.year + 1)}
             >
               <CaretRight size={18} />
@@ -83,7 +74,7 @@ export default function CalendarPage() {
             {data.canManage && (
               <Button onPress={() => setEditing({ kind: "new" })}>
                 <Plus size={17} weight="bold" />
-                Add holiday
+                {text.year.add}
               </Button>
             )}
           </div>
@@ -118,7 +109,7 @@ export default function CalendarPage() {
                     ))}
                 </div>
                 {items.length === 0 ? (
-                  <p className="calendar-none">No holidays</p>
+                  <p className="calendar-none">{text.year.none}</p>
                 ) : (
                   <ul>
                     {items.map((h) => (
@@ -133,14 +124,14 @@ export default function CalendarPage() {
                         <span className="calendar-name">
                           <strong>{h.name}</strong>
                           <small>
-                            {h.locationName ?? "Whole organization"}
-                            {h.active ? "" : ", not observed"}
+                            {h.locationName ?? text.year.wholeOrganization}
+                            {h.active ? "" : text.year.notObserved}
                           </small>
                         </span>
                         {data.canManage && (
                           <Button
                             variant="icon"
-                            aria-label={`Edit ${h.name}`}
+                            aria-label={text.year.edit(h.name)}
                             onPress={() =>
                               setEditing({ kind: "edit", holiday: h })
                             }
@@ -175,19 +166,27 @@ function NextHoliday({ data }: { data: CalendarData }) {
   const wait = next ? daysBetween(data.today, next.date) : 0;
   let when = "";
   if (next) {
-    if (wait === 0) when = "Today";
-    else if (wait === 1) when = "Tomorrow";
-    else when = `In ${wait} days`;
+    if (wait === 0) when = text.hero.today;
+    else if (wait === 1) when = text.hero.tomorrow;
+    else when = text.hero.inDays(wait);
   }
   return (
     <section className="calendar-hero" aria-labelledby="next">
       <div>
-        <p className="loom-date">{next ? when : "Nothing scheduled"}</p>
-        <h1 id="next">{next ? next.name : "No holidays ahead yet."}</h1>
+        <p className="loom-date">{next ? when : text.hero.nothing}</p>
+        <h1 id="next">{next ? next.name : text.hero.noneAhead}</h1>
         <p>
           {next
-            ? `${fmt(next.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}${next.locationName ? `, ${next.locationName} office` : ", whole organization"}.`
-            : "HR adds holidays here; they show up in leave and attendance automatically."}
+            ? text.hero.detail(
+                fmt(next.date, {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }),
+                next.locationName,
+              )
+            : text.hero.empty}
         </p>
       </div>
       {next && (
@@ -229,7 +228,7 @@ function WorkWeek({
       setDays(null);
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save.");
+      setError(cause instanceof Error ? cause.message : text.errors.save);
     } finally {
       setBusy(false);
     }
@@ -238,21 +237,17 @@ function WorkWeek({
     <section className="panel calendar-week" aria-labelledby="week">
       <div className="panel-heading">
         <div>
-          <h2 id="week">Working week</h2>
-          <p>
-            {data.canManage
-              ? "Leave and attendance count only these days. Changes apply to new requests."
-              : "The days your organization works. Leave counts only these days."}
-          </p>
+          <h2 id="week">{text.week.title}</h2>
+          <p>{data.canManage ? text.week.manageHint : text.week.viewHint}</p>
         </div>
       </div>
       <form className="calendar-week-form" onSubmit={(e) => void save(e)}>
         <div
           className="calendar-weekdays"
           role="group"
-          aria-label="Working days"
+          aria-label={text.week.groupLabel}
         >
-          {weekdays.map(([n, short, long]) => {
+          {text.weekdays.map(([n, short, long]) => {
             const on = current.includes(n);
             return data.canManage ? (
               <button
@@ -275,7 +270,7 @@ function WorkWeek({
               <span
                 key={n}
                 className={`calendar-weekday ${on ? "is-on" : ""}`}
-                aria-label={`${long}: ${on ? "working day" : "day off"}`}
+                aria-label={text.week.dayState(long, on)}
                 role="img"
               >
                 {short}
@@ -286,7 +281,7 @@ function WorkWeek({
         {changed && (
           <div className="leave-form calendar-week-save">
             <label>
-              Why are you changing the working week?
+              {text.week.reasonLabel}
               <textarea name="reason" required minLength={10} maxLength={300} />
             </label>
             {error && (
@@ -300,10 +295,10 @@ function WorkWeek({
                 isDisabled={busy}
                 onPress={() => setDays(null)}
               >
-                Discard
+                {text.week.discard}
               </Button>
               <Button type="submit" isDisabled={busy || current.length === 0}>
-                {busy ? "Saving…" : "Save working week"}
+                {busy ? text.week.saving : text.week.save}
               </Button>
             </div>
           </div>
@@ -357,7 +352,7 @@ function HolidayDialog({
       await refresh();
       onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save.");
+      setError(cause instanceof Error ? cause.message : text.errors.save);
     } finally {
       setBusy(false);
     }
@@ -368,7 +363,7 @@ function HolidayDialog({
       onOpenChange={(open) => {
         if (!open) close();
       }}
-      title={holiday ? "Edit holiday" : "Add a holiday"}
+      title={holiday ? text.dialog.editTitle : text.dialog.addTitle}
       className="leave-modal"
     >
       <form
@@ -378,19 +373,20 @@ function HolidayDialog({
       >
         {holiday ? (
           <p>
-            {fmt(holiday.date, {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            , {holiday.locationName ?? "whole organization"}. The date and
-            office stay fixed; add a new holiday to move it.
+            {text.dialog.fixedNote(
+              fmt(holiday.date, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }),
+              holiday.locationName,
+            )}
           </p>
         ) : (
           <div className="leave-dates">
             <label>
-              Date
+              {text.dialog.date}
               <input
                 type="date"
                 name="date"
@@ -401,12 +397,12 @@ function HolidayDialog({
               />
             </label>
             <label>
-              Applies to
+              {text.dialog.appliesTo}
               <select name="location" defaultValue="">
-                <option value="">Whole organization</option>
+                <option value="">{text.dialog.wholeOrganization}</option>
                 {data.locations.map((l) => (
                   <option key={l.id} value={l.id}>
-                    {l.name} office
+                    {text.dialog.office(l.name)}
                   </option>
                 ))}
               </select>
@@ -414,7 +410,7 @@ function HolidayDialog({
           </div>
         )}
         <label>
-          Name
+          {text.dialog.name}
           <input
             name="name"
             required
@@ -431,11 +427,11 @@ function HolidayDialog({
               name="active"
               defaultChecked={holiday.active}
             />
-            Observed this year
+            {text.dialog.observed}
           </label>
         )}
         <label>
-          Reason for this change
+          {text.dialog.reason}
           <textarea name="reason" required minLength={10} maxLength={300} />
         </label>
         {error && (
@@ -445,14 +441,18 @@ function HolidayDialog({
         )}
         <div className="leave-actions">
           <Button variant="secondary" isDisabled={busy} onPress={close}>
-            Cancel
+            {text.dialog.cancel}
           </Button>
           <Button type="submit" isDisabled={busy}>
-            {busy ? "Saving…" : holiday ? "Save holiday" : "Add holiday"}
+            {busy
+              ? text.dialog.saving
+              : holiday
+                ? text.dialog.saveHoliday
+                : text.dialog.addHoliday}
           </Button>
         </div>
         {holiday && !holiday.active && (
-          <Badge>Not observed: it will not reduce leave or attendance.</Badge>
+          <Badge>{text.dialog.notObservedBadge}</Badge>
         )}
       </form>
     </DialogPanel>

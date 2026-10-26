@@ -16,13 +16,14 @@ import {
 import { useDashboard } from "../lib/api";
 import { useWorkspace } from "./workspace";
 import { Distribution } from "../components/distribution";
+import { teamsCopy as text } from "../lib/copy/screens";
 
 export default function Teams() {
   const { me } = useWorkspace();
   return me.permissions.includes("directory.read") ? (
     <Explorer />
   ) : (
-    <ErrorState message="Your current workspace does not include team or people access." />
+    <ErrorState message={text.noAccess} />
   );
 }
 function Explorer() {
@@ -38,17 +39,17 @@ function Explorer() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Different talents. Shared direction.</p>
-          <h1>Meet the bigger picture.</h1>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.title}</h1>
           <p>
             {me.role === "employee"
-              ? "Your department and location, based on your own profile."
-              : "Explore the departments and locations within your access."}
+              ? text.subtitleEmployee
+              : text.subtitleOther}
           </p>
         </div>
         <Badge>
           <UsersThree size={16} />
-          {data.total} {data.total === 1 ? "person" : "people"} in scope
+          {text.inScope(data.total)}
         </Badge>
       </div>
       <div className="team-explorer-layout">
@@ -63,18 +64,15 @@ function Explorer() {
               })
             }
           >
-            <TabList
-              aria-label="Explore your organization"
-              className="tabs-list"
-            >
+            <TabList aria-label={text.exploreLabel} className="tabs-list">
               <Tab id="departments" className="tab">
                 <TreeStructure size={18} />
-                Departments{" "}
+                {text.tabs.departments}{" "}
                 <span className="tab-count">{data.departments.length}</span>
               </Tab>
               <Tab id="locations" className="tab">
                 <MapPin size={18} />
-                Locations{" "}
+                {text.tabs.locations}{" "}
                 <span className="tab-count">{data.locations.length}</span>
               </Tab>
             </TabList>
@@ -101,11 +99,7 @@ function Explorer() {
                           <ArrowUpRight size={20} />
                         </div>
                         <h2>{group.name}</h2>
-                        <p>
-                          {group.count}{" "}
-                          {group.count === 1 ? "person" : "people"} in your
-                          workspace
-                        </p>
+                        <p>{text.card.inWorkspace(group.count)}</p>
                         <div className="team-share">
                           <div>
                             <span
@@ -115,18 +109,19 @@ function Explorer() {
                             />
                           </div>
                           <span>
-                            {data.total
-                              ? Math.round((group.count / data.total) * 100)
-                              : 0}
-                            % of scope
+                            {text.card.share(
+                              data.total
+                                ? Math.round((group.count / data.total) * 100)
+                                : 0,
+                            )}
                           </span>
                         </div>
                       </Link>
                     ))
                   ) : (
                     <div className="state-card">
-                      <h2>No {kind} to show</h2>
-                      <p>Visible assignments will appear here.</p>
+                      <h2>{text.empty.title(kind)}</h2>
+                      <p>{text.empty.detail}</p>
                     </div>
                   )}
                 </div>
@@ -137,15 +132,12 @@ function Explorer() {
         <aside className="panel team-breakdown">
           <div className="panel-heading">
             <div>
-              <h2>Connected by people</h2>
-              <p>Your department composition.</p>
+              <h2>{text.breakdown.title}</h2>
+              <p>{text.breakdown.subtitle}</p>
             </div>
           </div>
           <Distribution data={data} />
-          <p className="team-scope-note">
-            Counts reflect your current role. They may represent part of a
-            department or location.
-          </p>
+          <p className="team-scope-note">{text.breakdown.note}</p>
         </aside>
       </div>
     </div>

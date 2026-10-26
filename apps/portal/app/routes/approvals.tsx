@@ -18,6 +18,7 @@ import {
 } from "@anvi/ui";
 import type { ApprovalItem } from "@anvi/contracts";
 import { api, useApprovals } from "../lib/api";
+import { approvalsCopy as text } from "../lib/copy/approvals";
 import { useWorkspace } from "./workspace";
 // Shared card, form and list styles come from the leave screen.
 import "./leave.css";
@@ -32,24 +33,17 @@ const day = (iso: string) =>
     month: "short",
     timeZone: "UTC",
   });
-const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
 const person = (item: ApprovalItem) =>
   item.kind === "readiness_review" ? item.candidateName : item.employeeName;
-const subject = (item: ApprovalItem) =>
-  ({
-    leave: "leave",
-    attendance_correction: "attendance correction",
-    readiness_review: "readiness review",
-    document_review: "document",
-  })[item.kind];
+const subject = (item: ApprovalItem) => text.subject[item.kind];
 const size = (bytes: number) =>
   bytes < 1024 * 1024
-    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
-    : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    ? text.sizeKb(Math.max(1, Math.round(bytes / 1024)))
+    : text.sizeMb((bytes / 1024 / 1024).toFixed(1));
 // What the requester said, or for documents what was uploaded.
 const summary = (item: ApprovalItem) =>
   item.kind === "document_review"
-    ? `${item.fileName}, ${size(item.sizeBytes)}`
+    ? text.fileSummary(item.fileName, size(item.sizeBytes))
     : item.reason;
 
 // Each module keeps its own versioned decision endpoint and body.
@@ -103,10 +97,7 @@ export default function Approvals() {
   } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  if (!allowed)
-    return (
-      <ErrorState message="Approvals are for managers and HR. Switch role to continue." />
-    );
+  if (!allowed) return <ErrorState message={text.errors.notAllowed} />;
   if (query.error)
     return (
       <ErrorState
@@ -139,9 +130,7 @@ export default function Approvals() {
         ),
       );
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not save the decision.",
-      );
+      setError(cause instanceof Error ? cause.message : text.errors.decision);
     } finally {
       setBusy(null);
     }
@@ -160,15 +149,11 @@ export default function Approvals() {
           <p className="loom-date">
             <Tray size={16} />
             {mine.length === 0
-              ? "Nothing waiting"
-              : `${mine.length} waiting for you`}
+              ? text.hero.none
+              : text.hero.waiting(mine.length)}
           </p>
-          <h1>Decisions, in one place.</h1>
-          <p>
-            Leave, attendance corrections, documents to verify and onboarding
-            readiness reviews routed to you, oldest first. Each decision is
-            recorded with your name.
-          </p>
+          <h1>{text.hero.title}</h1>
+          <p>{text.hero.body}</p>
         </div>
       </header>
       {error && !noting && (
@@ -178,13 +163,13 @@ export default function Approvals() {
       )}
       <section aria-labelledby="yours">
         <h2 id="yours" className="leave-section-title">
-          Needs your decision
+          {text.sections.yours}
         </h2>
         {mine.length === 0 ? (
           <div className="panel leave-empty">
             <Check size={34} weight="duotone" />
-            <h3>You're all caught up</h3>
-            <p>New requests routed to you will appear here.</p>
+            <h3>{text.empty.title}</h3>
+            <p>{text.empty.body}</p>
           </div>
         ) : (
           <ul className="leave-cards">
@@ -202,7 +187,7 @@ export default function Approvals() {
       {others.length > 0 && (
         <section aria-labelledby="others">
           <h2 id="others" className="leave-section-title">
-            Routed to someone else
+            {text.sections.others}
           </h2>
           <ul className="leave-cards">
             {others.map((item) => (
@@ -218,8 +203,8 @@ export default function Approvals() {
         }}
         title={
           noting?.decision === "approve"
-            ? "Approve this readiness review?"
-            : "Decline this request?"
+            ? text.dialog.approveTitle
+            : text.dialog.declineTitle
         }
       >
         {noting && (
@@ -235,13 +220,16 @@ export default function Approvals() {
           >
             <p>
               {noting.decision === "approve"
-                ? `Record why ${person(noting.item)}'s local readiness evidence is sufficient. This is a local review, not employee activation.`
-                : `${person(noting.item)}'s ${subject(noting.item)} will show your note.`}
+                ? text.dialog.approveNote(person(noting.item))
+                : text.dialog.declineNote(
+                    person(noting.item),
+                    subject(noting.item),
+                  )}
             </p>
             <label>
               {noting.decision === "approve"
-                ? "Reason for approving"
-                : "Why are you declining?"}
+                ? text.dialog.approveLabel
+                : text.dialog.declineLabel}
               <textarea
                 name="note"
                 required
@@ -261,14 +249,14 @@ export default function Approvals() {
                 isDisabled={Boolean(busy)}
                 onPress={() => setNoting(null)}
               >
-                Go back
+                {text.dialog.back}
               </Button>
               <Button type="submit" isDisabled={Boolean(busy)}>
                 {busy
-                  ? "Saving…"
+                  ? text.actions.saving
                   : noting.decision === "approve"
-                    ? "Approve"
-                    : "Decline"}
+                    ? text.actions.approve
+                    : text.actions.decline}
               </Button>
             </div>
           </form>
@@ -290,20 +278,20 @@ function KindLabel({ item }: { item: ApprovalItem }) {
     return (
       <>
         <CalendarDots size={16} />
-        Attendance correction
+        {text.kind.attendance}
       </>
     );
   if (item.kind === "document_review")
     return (
       <>
         <FileText size={16} />
-        Document to verify
+        {text.kind.document}
       </>
     );
   return (
     <>
       <SealCheck size={16} />
-      Onboarding readiness review
+      {text.kind.readiness}
     </>
   );
 }
@@ -315,36 +303,32 @@ function When({ item }: { item: ApprovalItem }) {
         <strong>
           {item.startDate === item.endDate
             ? day(item.startDate)
-            : `${day(item.startDate)} – ${day(item.endDate)}`}
+            : text.when.range(day(item.startDate), day(item.endDate))}
         </strong>
-        <span>{plural(item.days)} away</span>
+        <span>{text.when.away(text.days(item.days))}</span>
       </>
     );
   if (item.kind === "attendance_correction")
     return (
       <>
-        <strong>
-          {item.checkIn} to {item.checkOut}
-        </strong>
-        <span>Proposed times for {day(item.workDate)}</span>
+        <strong>{text.when.times(item.checkIn, item.checkOut)}</strong>
+        <span>{text.when.proposedTimes(day(item.workDate))}</span>
       </>
     );
   if (item.kind === "document_review")
     return (
       <>
         <strong>{item.title}</strong>
-        <span>
-          {item.category[0]!.toUpperCase() + item.category.slice(1)} document
-        </span>
+        <span>{text.when.documentCategory(item.category)}</span>
       </>
     );
   return (
     <>
-      <strong>Proposed by {item.proposerLabel}</strong>
+      <strong>{text.when.proposedBy(item.proposerLabel)}</strong>
       <span>
         {item.evidenceReady
-          ? "Form approved and required tasks complete"
-          : "Evidence incomplete: approve the form and finish required tasks first"}
+          ? text.when.evidenceReady
+          : text.when.evidenceIncomplete}
       </span>
     </>
   );
@@ -372,7 +356,7 @@ function ApprovalCard({
           <strong>{name}</strong>
           <span>
             {item.kind === "readiness_review"
-              ? `${item.candidateTitle}, ${item.department}`
+              ? text.card.candidate(item.candidateTitle, item.department)
               : item.department}
           </span>
         </div>
@@ -387,7 +371,7 @@ function ApprovalCard({
           href={`/api/v1/documents/${item.id}/content`}
           download
         >
-          View file
+          {text.actions.viewFile}
         </a>
       )}
       {item.canDecide && onDecide ? (
@@ -395,28 +379,28 @@ function ApprovalCard({
           <Button
             isDisabled={busy || blocked}
             onPress={() => onDecide("approve")}
-            aria-label={`Approve ${subject(item)} for ${name}`}
+            aria-label={text.actions.approveLabel(subject(item), name)}
           >
             <Check size={17} weight="bold" />
-            {busy ? "Saving…" : "Approve"}
+            {busy ? text.actions.saving : text.actions.approve}
           </Button>
           <Button
             variant="secondary"
             isDisabled={busy}
             onPress={() => onDecide("reject")}
-            aria-label={`Decline ${subject(item)} for ${name}`}
+            aria-label={text.actions.declineLabel(subject(item), name)}
           >
             <X size={17} />
-            Decline
+            {text.actions.decline}
           </Button>
         </div>
       ) : (
         <Badge>
           {item.kind === "readiness_review"
-            ? "You proposed this; another HR colleague checks it"
+            ? text.card.proposedByYou
             : item.approver === "manager"
-              ? "Their manager decides"
-              : "Another HR colleague decides"}
+              ? text.card.managerDecides
+              : text.card.hrDecides}
         </Badge>
       )}
     </li>

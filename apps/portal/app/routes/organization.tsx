@@ -32,20 +32,19 @@ import {
 } from "@anvi/contracts";
 import { api, ApiError, useOrganization } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { organizationCopy as text } from "../lib/copy/organization";
 import "./organization.css";
 
 type UnitKind = OrganizationUnit["kind"];
-const labels: Record<UnitKind, { singular: string; plural: string }> = {
-  department: { singular: "department", plural: "departments" },
-  location: { singular: "location", plural: "locations" },
-};
+const labels: Record<UnitKind, { singular: string; plural: string }> =
+  text.kinds;
 
 export default function Organization() {
   const { me } = useWorkspace();
   return me.permissions.includes("organization.read") ? (
     <OrganizationRecords />
   ) : (
-    <ErrorState message="Organization records require an assigned HR admin workspace." />
+    <ErrorState message={text.denied} />
   );
 }
 
@@ -86,7 +85,7 @@ function OrganizationRecords() {
 
   async function refreshAfterSave(unit: OrganizationUnit, created: boolean) {
     setEditing(null);
-    setSaved(`${unit.name} ${created ? "created" : "saved"}.`);
+    setSaved(text.saved(unit.name, created));
     // Renames must be reflected by the scoped directory, profiles and chart labels.
     await Promise.all([
       client.invalidateQueries({ queryKey: ["organization"] }),
@@ -101,14 +100,14 @@ function OrganizationRecords() {
     <div className="page-enter organization-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Organization</p>
-          <h1>Organization, kept in order.</h1>
-          <p>Manage the departments and locations your people belong to.</p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.heading}</h1>
+          <p>{text.intro}</p>
         </div>
         {writable && (
           <Button onPress={() => setEditing("create")}>
             <Plus size={18} />
-            Add {label.singular}
+            {text.add(label.singular)}
           </Button>
         )}
       </div>
@@ -117,10 +116,10 @@ function OrganizationRecords() {
           <Buildings size={24} weight="duotone" />
         </span>
         <div>
-          <small>Current legal entity</small>
+          <small>{text.currentEntity}</small>
           <strong>{data?.entityName ?? me.entityName}</strong>
         </div>
-        <Badge>HR workspace</Badge>
+        <Badge>{text.hrWorkspace}</Badge>
       </div>
       {saved && (
         <div className="save-success organization-success" role="status">
@@ -128,7 +127,7 @@ function OrganizationRecords() {
           <span>{saved}</span>
           <Button
             variant="icon"
-            aria-label="Dismiss saved message"
+            aria-label={text.dismissSaved}
             onPress={() => setSaved("")}
           >
             <X size={16} />
@@ -138,31 +137,28 @@ function OrganizationRecords() {
       <div className="organization-layout">
         <section
           className="panel organization-records"
-          aria-label="Organization records"
+          aria-label={text.recordsLabel}
         >
           <Tabs
             selectedKey={kind}
             onSelectionChange={(value) => filter("kind", String(value))}
           >
-            <TabList
-              aria-label="Organization record type"
-              className="tabs-list"
-            >
+            <TabList aria-label={text.typeLabel} className="tabs-list">
               <Tab id="department" className="tab">
                 <TreeStructure size={18} />
-                Departments
+                {text.departments}
               </Tab>
               <Tab id="location" className="tab">
                 <MapPin size={18} />
-                Locations
+                {text.locations}
               </Tab>
             </TabList>
             <div className="organization-toolbar">
               <label className="search-box">
                 <MagnifyingGlass size={19} />
                 <input
-                  aria-label={`Search ${label.plural}`}
-                  placeholder={`Find a ${label.singular} by name or code…`}
+                  aria-label={text.searchLabel(label.plural)}
+                  placeholder={text.searchPlaceholder(label.singular)}
                   maxLength={80}
                   value={search}
                   onChange={(event) => filter("q", event.target.value)}
@@ -170,7 +166,7 @@ function OrganizationRecords() {
               </label>
               {search && (
                 <Button variant="ghost" onPress={() => filter("q", "")}>
-                  Clear search
+                  {text.clearSearch}
                   <X size={15} />
                 </Button>
               )}
@@ -178,10 +174,9 @@ function OrganizationRecords() {
             <TabPanel id={kind} className="organization-tab-panel">
               <div className="organization-count" aria-live="polite">
                 <strong>
-                  {data?.total ?? "…"}{" "}
-                  {data?.total === 1 ? label.singular : label.plural}
+                  {text.count(data?.total, label.singular, label.plural)}
                 </strong>
-                <span>Active and inactive records</span>
+                <span>{text.countNote}</span>
               </div>
               {error ? (
                 <ErrorState
@@ -194,18 +189,16 @@ function OrganizationRecords() {
                 <div className="organization-empty">
                   <Icon size={32} weight="duotone" />
                   <h2>
-                    {search
-                      ? "No matching records"
-                      : `Your ${label.plural} start here`}
+                    {search ? text.noMatches : text.emptyTitle(label.plural)}
                   </h2>
                   <p>
                     {search
-                      ? "Try a different name or code, or clear your search."
-                      : `Add the first ${label.singular} for this legal entity.`}
+                      ? text.noMatchesBody
+                      : text.emptyBody(label.singular)}
                   </p>
                   {search ? (
                     <Button variant="secondary" onPress={() => filter("q", "")}>
-                      Clear search
+                      {text.clearSearch}
                     </Button>
                   ) : (
                     writable && (
@@ -214,7 +207,7 @@ function OrganizationRecords() {
                         onPress={() => setEditing("create")}
                       >
                         <Plus size={16} />
-                        Add {label.singular}
+                        {text.add(label.singular)}
                       </Button>
                     )
                   )}
@@ -225,11 +218,9 @@ function OrganizationRecords() {
                     className="organization-column-labels"
                     aria-hidden="true"
                   >
-                    <span>
-                      {kind === "department" ? "Department" : "Location"}
-                    </span>
-                    <span>Assigned people</span>
-                    <span>Availability</span>
+                    <span>{text.columns[kind]}</span>
+                    <span>{text.columns.assigned}</span>
+                    <span>{text.columns.availability}</span>
                     <span />
                   </div>
                   <div className="organization-list">
@@ -250,21 +241,23 @@ function OrganizationRecords() {
                           </div>
                         </div>
                         <div className="organization-assigned">
-                          <small>Assigned people</small>
+                          <small>{text.columns.assigned}</small>
                           <strong>{unit.employeeCount}</strong>
                           <span>
-                            {unit.employeeCount === 1 ? "person" : "people"}
+                            {unit.employeeCount === 1
+                              ? text.person
+                              : text.people}
                           </span>
                         </div>
                         <div className="organization-availability">
                           <Badge tone={unit.active ? "green" : "amber"}>
-                            {unit.active ? "Active" : "Inactive"}
+                            {unit.active ? text.active : text.inactive}
                           </Badge>
                         </div>
                         {writable ? (
                           <Button
                             variant="icon"
-                            aria-label={`Edit ${unit.name}`}
+                            aria-label={text.edit(unit.name)}
                             onPress={() => setEditing(unit)}
                           >
                             <PencilSimple size={19} />
@@ -276,9 +269,7 @@ function OrganizationRecords() {
                     ))}
                   </div>
                   <div className="organization-pagination">
-                    <span>
-                      Page {data.page} of {Math.max(data.pages, 1)}
-                    </span>
+                    <span>{text.page(data.page, Math.max(data.pages, 1))}</span>
                     <div>
                       <Button
                         variant="secondary"
@@ -286,14 +277,14 @@ function OrganizationRecords() {
                         onPress={() => filter("page", String(data.page - 1))}
                       >
                         <CaretLeft size={16} />
-                        Previous
+                        {text.previous}
                       </Button>
                       <Button
                         variant="secondary"
                         isDisabled={data.page >= data.pages}
                         onPress={() => filter("page", String(data.page + 1))}
                       >
-                        Next
+                        {text.next}
                         <CaretRight size={16} />
                       </Button>
                     </div>
@@ -307,38 +298,28 @@ function OrganizationRecords() {
           <div className="organization-guide-symbol" aria-hidden="true">
             <TreeStructure size={32} weight="duotone" />
           </div>
-          <p className="eyebrow">Keep the connections</p>
+          <p className="eyebrow">{text.guide.eyebrow}</p>
           <h2>
-            Names can change.
+            {text.guide.heading1}
             <br />
-            History stays connected.
+            {text.guide.heading2}
           </h2>
-          <p>
-            Each record has a permanent code. Rename it as your organization
-            evolves.
-          </p>
+          <p>{text.guide.body}</p>
           <div className="organization-guide-rule">
             <Archive size={21} />
             <div>
-              <h3>Inactivate, retain history</h3>
-              <p>
-                Inactive records remain on existing profiles and cannot be used
-                for new assignments.
-              </p>
+              <h3>{text.guide.inactivateTitle}</h3>
+              <p>{text.guide.inactivateBody}</p>
             </div>
           </div>
           <div className="organization-guide-rule">
             <ArrowClockwise size={21} />
             <div>
-              <h3>Ready to use again?</h3>
-              <p>
-                Reactivate a record to make it available for future assignments.
-              </p>
+              <h3>{text.guide.reactivateTitle}</h3>
+              <p>{text.guide.reactivateBody}</p>
             </div>
           </div>
-          <p className="organization-guide-footnote">
-            Every change records your reason in the audit history.
-          </p>
+          <p className="organization-guide-footnote">{text.guide.footnote}</p>
         </aside>
       </div>
       {editing !== null && (
@@ -391,17 +372,13 @@ function OrganizationEditor({
       ? organizationUpdateSchema.safeParse(input)
       : organizationCreateSchema.safeParse(input);
     if (!parsed.success) {
-      const messages: Record<string, string> = {
-        name: "Enter a name between 2 and 60 characters.",
-        code: "Use a code of 2–20 characters, starting with a letter, with uppercase letters, numbers, underscores or hyphens.",
-        reason: "Explain the change in 10–300 characters.",
-      };
+      const messages: Record<string, string> = text.editor.validation;
       setError(
         parsed.error.issues
           .map(
             (issue) =>
               messages[String(issue.path[0])] ??
-              "Review the form and try again.",
+              text.editor.validation.fallback,
           )
           .filter((value, index, values) => values.indexOf(value) === index)
           .join(" "),
@@ -424,11 +401,7 @@ function OrganizationEditor({
       onSaved(saved, !unit);
     } catch (e) {
       setConflict(Boolean(unit && e instanceof ApiError && e.status === 409));
-      setError(
-        e instanceof Error
-          ? e.message
-          : "The record could not be saved. Try again.",
-      );
+      setError(e instanceof Error ? e.message : text.editor.saveFailed);
     } finally {
       setBusy(false);
     }
@@ -439,7 +412,7 @@ function OrganizationEditor({
       onOpenChange={(open) => {
         if (!open && !busy) onClose();
       }}
-      title={unit ? `Edit ${label.singular}` : `Add ${label.singular}`}
+      title={text.editor.title(Boolean(unit), label.singular)}
       className="organization-editor"
     >
       <form
@@ -448,11 +421,11 @@ function OrganizationEditor({
       >
         <p className="organization-form-intro">
           {unit
-            ? "Update this record for your current legal entity."
-            : `Create a ${label.singular} for ${me.entityName}.`}
+            ? text.editor.introEdit
+            : text.editor.introCreate(label.singular, me.entityName)}
         </p>
         <label htmlFor="organization-name">
-          <strong>Name</strong>
+          <strong>{text.editor.name}</strong>
           <input
             id="organization-name"
             autoFocus
@@ -466,7 +439,7 @@ function OrganizationEditor({
         </label>
         <div className="organization-field">
           <label htmlFor="organization-code">
-            <strong>Permanent code</strong>
+            <strong>{text.editor.code}</strong>
           </label>
           <input
             id="organization-code"
@@ -484,14 +457,12 @@ function OrganizationEditor({
             spellCheck={false}
           />
           <small id="organization-code-help">
-            {unit
-              ? "This code stays the same throughout the record's history."
-              : "2–20 characters. Start with a letter; use uppercase letters, numbers, underscores or hyphens."}
+            {unit ? text.editor.codeHelpEdit : text.editor.codeHelpCreate}
           </small>
         </div>
         {unit && (
           <fieldset className="organization-state-choice">
-            <legend>Availability</legend>
+            <legend>{text.editor.availability}</legend>
             <label className={active ? "selected" : ""}>
               <input
                 type="radio"
@@ -502,8 +473,8 @@ function OrganizationEditor({
                 disabled={busy}
               />
               <div>
-                <strong>Active</strong>
-                <span>Available for future assignments</span>
+                <strong>{text.active}</strong>
+                <span>{text.editor.activeNote}</span>
               </div>
               <CheckCircle size={20} />
             </label>
@@ -517,8 +488,8 @@ function OrganizationEditor({
                 disabled={busy}
               />
               <div>
-                <strong>Inactive</strong>
-                <span>Retain existing assignments and history</span>
+                <strong>{text.inactive}</strong>
+                <span>{text.editor.inactiveNote}</span>
               </div>
               <Archive size={20} />
             </label>
@@ -526,16 +497,12 @@ function OrganizationEditor({
         )}
         {unit && !active && unit.active && (
           <p className="organization-impact">
-            {unit.employeeCount}{" "}
-            {unit.employeeCount === 1
-              ? "person keeps their existing assignment"
-              : "people keep their existing assignments"}
-            . This {label.singular} will be unavailable for new assignments.
+            {text.editor.impact(unit.employeeCount, label.singular)}
           </p>
         )}
         <div className="organization-field">
           <label htmlFor="organization-reason">
-            <strong>Reason for change</strong>
+            <strong>{text.editor.reason}</strong>
           </label>
           <textarea
             id="organization-reason"
@@ -548,22 +515,16 @@ function OrganizationEditor({
             aria-describedby="organization-reason-help"
             disabled={busy}
           />
-          <small id="organization-reason-help">
-            Explain the organization change in 10–300 characters. Avoid
-            confidential employee details.
-          </small>
+          <small id="organization-reason-help">{text.editor.reasonHelp}</small>
         </div>
         {error && (
           <div className="inline-error organization-form-error" role="alert">
             <p>{error}</p>
             {conflict && (
               <>
-                <p>
-                  Another change may have been saved. Reload the list and review
-                  the latest record before trying again.
-                </p>
+                <p>{text.editor.conflict}</p>
                 <Button variant="secondary" onPress={onReload}>
-                  Reload list
+                  {text.editor.reload}
                   <ArrowClockwise size={16} />
                 </Button>
               </>
@@ -572,14 +533,14 @@ function OrganizationEditor({
         )}
         <div className="organization-form-actions">
           <Button variant="secondary" isDisabled={busy} onPress={onClose}>
-            Cancel
+            {text.editor.cancel}
           </Button>
           <Button type="submit" isDisabled={busy || !dirty || conflict}>
             {busy
-              ? "Saving…"
+              ? text.editor.saving
               : unit
-                ? "Save changes"
-                : `Create ${label.singular}`}
+                ? text.editor.saveChanges
+                : text.editor.create(label.singular)}
           </Button>
         </div>
       </form>

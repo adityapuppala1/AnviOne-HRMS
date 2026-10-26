@@ -9,6 +9,7 @@ import { ArrowsOutLineVertical } from "@phosphor-icons/react/dist/csr/ArrowsOutL
 import { motion } from "motion/react";
 import { Badge, Switch } from "@anvi/ui";
 import { usePreferences } from "../lib/preferences";
+import { preferencesCopy as text } from "../lib/copy/settings";
 
 export default function Preferences() {
   const { preferences, update, reduceMotion } = usePreferences();
@@ -16,26 +17,30 @@ export default function Preferences() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Make room for your way of working</p>
-          <h1>A space that suits you.</h1>
-          <p>Your display preferences apply on this browser.</p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.title}</h1>
+          <p>{text.subtitle}</p>
         </div>
         <Badge>
           <Check size={15} />
-          Saved automatically
+          {text.saved}
         </Badge>
       </div>
       <div className="preferences-layout">
         <section className="panel preferences-form">
           <fieldset>
-            <legend>Appearance</legend>
-            <p>Choose your light. Follow your device, or set your own.</p>
+            <legend>{text.appearance.legend}</legend>
+            <p>{text.appearance.hint}</p>
             <div className="mode-options">
               {(
                 [
-                  { value: "light", label: "Light", icon: Sun },
-                  { value: "dark", label: "Dark", icon: Moon },
-                  { value: "system", label: "System", icon: Desktop },
+                  { value: "light", label: text.appearance.light, icon: Sun },
+                  { value: "dark", label: text.appearance.dark, icon: Moon },
+                  {
+                    value: "system",
+                    label: text.appearance.system,
+                    icon: Desktop,
+                  },
                 ] as const
               ).map(({ value, label, icon: Icon }) => (
                 <label
@@ -70,21 +75,21 @@ export default function Preferences() {
             </div>
           </fieldset>
           <fieldset>
-            <legend>Workspace density</legend>
-            <p>Adjust the space between rows and cards.</p>
+            <legend>{text.density.legend}</legend>
+            <p>{text.density.hint}</p>
             <div className="density-options">
               {(
                 [
                   {
                     value: "comfortable",
-                    label: "Comfortable",
-                    description: "More breathing room",
+                    label: text.density.comfortable.label,
+                    description: text.density.comfortable.description,
                     icon: ArrowsOutLineVertical,
                   },
                   {
                     value: "compact",
-                    label: "Compact",
-                    description: "More in one view",
+                    label: text.density.compact.label,
+                    description: text.density.compact.description,
                     icon: ArrowsInLineVertical,
                   },
                 ] as const
@@ -113,17 +118,14 @@ export default function Preferences() {
             <div>
               <h2>
                 <CursorClick size={20} />
-                Reduce motion
+                {text.motion.heading}
               </h2>
-              <p>
-                Keep transitions and decorative effects still. Your device's
-                reduced-motion setting is always respected.
-              </p>
+              <p>{text.motion.body}</p>
             </div>
             <Switch
               className={`switch button ${preferences.reduceMotion ? "on" : ""}`}
               isSelected={preferences.reduceMotion}
-              aria-label="Reduce motion"
+              aria-label={text.motion.heading}
               onChange={(value) => update({ reduceMotion: value })}
             >
               <motion.span
@@ -142,34 +144,27 @@ export default function Preferences() {
           <div className="preference-sample">
             <div className="sample-top">
               <SlidersHorizontal size={22} />
-              <Badge>Live preview</Badge>
+              <Badge>{text.sample.badge}</Badge>
             </div>
             <h2>
-              Your workspace,
+              {text.sample.titleLine1}
               <br />
-              your rhythm.
+              {text.sample.titleLine2}
             </h2>
             <div className="sample-rows">
-              {["People directory", "Team explorer", "Work profile"].map(
-                (label, index) => (
-                  <div key={label}>
-                    <span>
-                      {index === 0 ? "MI" : index === 1 ? "NR" : "AS"}
-                    </span>
-                    <div>
-                      <strong>{label}</strong>
-                      <i />
-                    </div>
-                    <Check size={16} />
+              {text.sample.rows.map(({ label, initials }) => (
+                <div key={label}>
+                  <span>{initials}</span>
+                  <div>
+                    <strong>{label}</strong>
+                    <i />
                   </div>
-                ),
-              )}
+                  <Check size={16} />
+                </div>
+              ))}
             </div>
           </div>
-          <p>
-            Appearance changes are personal. Organization branding is managed
-            separately by your platform admin.
-          </p>
+          <p>{text.aside}</p>
         </aside>
       </div>
     </div>

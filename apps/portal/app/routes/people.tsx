@@ -10,14 +10,13 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import { Button, ErrorState, LoadingState } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
+import { peopleCopy as text } from "../lib/copy/screens";
 import { PersonCard, PersonRow } from "../components/people";
 import { useWorkspace } from "./workspace";
 export default function People() {
   const { me } = useWorkspace();
   if (!me.permissions.includes("directory.read"))
-    return (
-      <ErrorState message="This workspace does not include access to the people directory. Choose an assigned people workspace to continue." />
-    );
+    return <ErrorState message={text.noAccess} />;
   return <Directory />;
 }
 function Directory() {
@@ -50,7 +49,7 @@ function Directory() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">People directory</p>
+          <p className="eyebrow">{text.eyebrow}</p>
           <h1>{copy.peopleTitle}</h1>
           <p>{copy.peopleSubtitle}</p>
         </div>
@@ -63,8 +62,8 @@ function Directory() {
           <label className="search-box">
             <Search size={18} />
             <input
-              aria-label="Search directory"
-              placeholder="Search by name, role, or team…"
+              aria-label={text.searchLabel}
+              placeholder={text.searchPlaceholder}
               maxLength={80}
               value={params.get("q") ?? ""}
               onChange={(event) => filter("q", event.target.value)}
@@ -73,27 +72,27 @@ function Directory() {
           <div className="directory-filters">
             <SlidersHorizontal size={16} />
             <label className="sr-only" htmlFor="department">
-              Department
+              {text.department}
             </label>
             <select
               id="department"
               value={params.get("department") ?? ""}
               onChange={(e) => filter("department", e.target.value)}
             >
-              <option value="">All departments</option>
+              <option value="">{text.allDepartments}</option>
               {data?.departments.map((d) => (
                 <option key={d}>{d}</option>
               ))}
             </select>
             <label className="sr-only" htmlFor="location">
-              Location
+              {text.location}
             </label>
             <select
               id="location"
               value={params.get("location") ?? ""}
               onChange={(e) => filter("location", e.target.value)}
             >
-              <option value="">All locations</option>
+              <option value="">{text.allLocations}</option>
               {data?.locations.map((l) => (
                 <option key={l}>{l}</option>
               ))}
@@ -102,20 +101,18 @@ function Directory() {
         </div>
         <div className="directory-meta">
           <div aria-live="polite">
-            <strong>
-              {data?.total ?? "…"} {data?.total === 1 ? "person" : "people"}
-            </strong>
-            <span> · Your current workspace</span>
+            <strong>{text.total(data?.total)}</strong>
+            <span>{text.workspaceSuffix}</span>
             {filtered && (
               <Button variant="ghost" onPress={() => void setParams({})}>
-                Clear filters <X size={14} />
+                {text.clearFilters} <X size={14} />
               </Button>
             )}
           </div>
-          <div className="view-toggle" aria-label="Directory display">
+          <div className="view-toggle" aria-label={text.displayLabel}>
             <Button
               variant="icon"
-              aria-label="Grid view"
+              aria-label={text.gridView}
               aria-pressed={view === "grid"}
               onPress={() => setView("grid")}
             >
@@ -123,7 +120,7 @@ function Directory() {
             </Button>
             <Button
               variant="icon"
-              aria-label="List view"
+              aria-label={text.listView}
               aria-pressed={view === "list"}
               onPress={() => setView("list")}
             >
@@ -141,7 +138,7 @@ function Directory() {
             <h2>{copy.noPeople}</h2>
             <p>{copy.noPeopleDetail}</p>
             <Button variant="secondary" onPress={() => void setParams({})}>
-              Clear filters
+              {text.clearFilters}
             </Button>
           </div>
         ) : (
@@ -156,26 +153,24 @@ function Directory() {
           </div>
         )}
         <div className="pagination">
-          <p>
-            Page {data?.page ?? 1} of {data?.pages ?? 1}
-          </p>
+          <p>{text.page(data?.page ?? 1, data?.pages ?? 1)}</p>
           <div>
             <Button
               variant="secondary"
-              aria-label="Previous page"
+              aria-label={text.previousLabel}
               isDisabled={!data || data.page <= 1}
               onPress={() => filter("page", String((data?.page ?? 1) - 1))}
             >
               <ChevronLeft size={16} />
-              Previous
+              {text.previous}
             </Button>
             <Button
               variant="secondary"
-              aria-label="Next page"
+              aria-label={text.nextLabel}
               isDisabled={!data || data.page >= data.pages}
               onPress={() => filter("page", String((data?.page ?? 1) + 1))}
             >
-              Next
+              {text.next}
               <ChevronRight size={16} />
             </Button>
           </div>

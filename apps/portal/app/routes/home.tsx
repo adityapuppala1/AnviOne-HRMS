@@ -22,6 +22,7 @@ import { useDashboard } from "../lib/api";
 import { PersonRow } from "../components/people";
 import { Distribution } from "../components/distribution";
 import type { Me } from "@anvi/contracts";
+import { homeCopy as text } from "../lib/copy/screens";
 
 export default function Home() {
   const { me } = useWorkspace();
@@ -48,7 +49,7 @@ function PeopleHome() {
   }).format(new Date());
   return (
     <div className="page-enter">
-      <section className="loom-band" aria-label="Workspace summary">
+      <section className="loom-band" aria-label={text.summaryLabel}>
         <LoomWeave
           className="loom-band-art"
           knots={data.recent.map((p) => p.initials)}
@@ -59,21 +60,18 @@ function PeopleHome() {
             {date}
           </p>
           <h1>
-            Good to see you, {me.name.split(" ")[0]}
+            {text.greeting(me.name.split(" ")[0])}
             <span className="heading-period">.</span>
           </h1>
-          <p>
-            {data.total} {data.total === 1 ? "person" : "people"} across{" "}
-            {data.departments.length} teams, woven into one workspace.
-          </p>
+          <p>{text.summary(data.total, data.departments.length)}</p>
         </div>
         <div className="loom-stats">
           <Link to="/people" className="loom-stat loom-stat-featured">
             <span className="loom-stat-label">
               <Users size={19} weight="duotone" />
               {me.role === "employee"
-                ? "Your profile"
-                : "People in your workspace"}
+                ? text.stats.yourProfile
+                : text.stats.peopleInWorkspace}
             </span>
             <NumberTicker
               className="loom-stat-value"
@@ -90,18 +88,18 @@ function PeopleHome() {
           </Link>
           {[
             {
-              label: "Departments",
+              label: text.stats.departments,
               value: data.departments.length,
               icon: Buildings,
               to: "/teams",
-              note: "Find the team behind the work",
+              note: text.stats.departmentsNote,
             },
             {
-              label: "Work locations",
+              label: text.stats.locations,
               value: data.locations.length,
               icon: MapPin,
               to: "/teams?view=locations",
-              note: "Connected across your locations",
+              note: text.stats.locationsNote,
             },
           ].map(({ label, value, icon: Icon, to, note }) => (
             <Link className="loom-stat" key={label} to={to}>
@@ -125,16 +123,16 @@ function PeopleHome() {
         <section className="panel people-panel">
           <div className="panel-heading">
             <div>
-              <h2>New faces, shared purpose</h2>
-              <p>Recently joined in your current workspace.</p>
+              <h2>{text.recent.title}</h2>
+              <p>{text.recent.subtitle}</p>
             </div>
             <Link className="text-link" to="/people">
-              View people <ArrowUpRight size={16} />
+              {text.recent.viewPeople} <ArrowUpRight size={16} />
             </Link>
           </div>
           <div className="people-table-labels">
-            <span>Colleague</span>
-            <span>Department</span>
+            <span>{text.recent.colleague}</span>
+            <span>{text.recent.department}</span>
           </div>
           <div className="people-list">
             {data.recent.length ? (
@@ -142,21 +140,18 @@ function PeopleHome() {
                 <PersonRow key={person.id} person={person} />
               ))
             ) : (
-              <p className="panel-empty">
-                No people are visible in this workspace.
-              </p>
+              <p className="panel-empty">{text.recent.empty}</p>
             )}
           </div>
           <div className="panel-footnote">
-            <span className="status-dot" /> Ordered by joining date ·{" "}
-            {data.total} {data.total === 1 ? "person" : "people"} in scope
+            <span className="status-dot" /> {text.recent.footnote(data.total)}
           </div>
         </section>
         <section className="panel composition-panel">
           <div className="panel-heading">
             <div>
-              <h2>The shape of your team</h2>
-              <p>Select a department to explore.</p>
+              <h2>{text.composition.title}</h2>
+              <p>{text.composition.subtitle}</p>
             </div>
             <TreeStructure size={21} className="muted" />
           </div>
@@ -167,11 +162,11 @@ function PeopleHome() {
         <section className="panel location-panel">
           <div className="panel-heading">
             <div>
-              <h2>A shared place to work</h2>
-              <p>People by work location.</p>
+              <h2>{text.locations.title}</h2>
+              <p>{text.locations.subtitle}</p>
             </div>
             <Link className="text-link" to="/teams?view=locations">
-              Explore <ArrowUpRight size={16} />
+              {text.locations.explore} <ArrowUpRight size={16} />
             </Link>
           </div>
           <div className="location-cards">
@@ -185,10 +180,7 @@ function PeopleHome() {
                 </span>
                 <span>
                   <strong>{location.name}</strong>
-                  <small>
-                    {location.count}{" "}
-                    {location.count === 1 ? "person" : "people"}
-                  </small>
+                  <small>{text.locations.count(location.count)}</small>
                 </span>
                 <ArrowUpRight size={17} />
               </Link>
@@ -201,9 +193,9 @@ function PeopleHome() {
             <ArrowUpRight size={20} />
           </div>
           <div>
-            <span className="eyebrow">Your place in the picture</span>
-            <h2>Your work profile</h2>
-            <p>Work details. Your team. All together.</p>
+            <span className="eyebrow">{text.shortcut.eyebrow}</span>
+            <h2>{text.shortcut.title}</h2>
+            <p>{text.shortcut.subtitle}</p>
           </div>
           <div className="shortcut-identity">
             <Avatar
@@ -214,7 +206,7 @@ function PeopleHome() {
               size="small"
             />
             <strong>{me.name}</strong>
-            <Badge>View profile</Badge>
+            <Badge>{text.shortcut.badge}</Badge>
           </div>
         </Link>
       </div>
@@ -227,12 +219,10 @@ function AdminHome({ me }: { me: Me }) {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Your workspace, in focus</p>
-          <h1>Good to see you, {me.name.split(" ")[0]}.</h1>
+          <p className="eyebrow">{text.admin.eyebrow}</p>
+          <h1>{text.greeting(me.name.split(" ")[0])}.</h1>
           <p>
-            {auditor
-              ? "A clear record of your workspace's activity."
-              : "Shape the everyday experience for your organization."}
+            {auditor ? text.admin.subtitleAuditor : text.admin.subtitleAdmin}
           </p>
         </div>
       </div>
@@ -246,32 +236,22 @@ function AdminHome({ me }: { me: Me }) {
         </div>
         <div>
           <Badge>
-            {auditor ? "Auditor workspace" : "Platform admin workspace"}
+            {auditor ? text.admin.badgeAuditor : text.admin.badgeAdmin}
           </Badge>
-          <h2>
-            {auditor ? "Every change has a story." : "Make AnviOne your own."}
-          </h2>
-          <p>
-            {auditor
-              ? "Review sign-ins, role changes and published settings. Filter the record and open an event for its details."
-              : "Choose a palette, update your workspace names and preview the result before publishing."}
-          </p>
+          <h2>{auditor ? text.admin.titleAuditor : text.admin.titleAdmin}</h2>
+          <p>{auditor ? text.admin.bodyAuditor : text.admin.bodyAdmin}</p>
           <Link
             className="button button-primary"
             to={auditor ? "/activity" : "/settings"}
           >
-            {auditor ? "View activity" : "Customize workspace"}
+            {auditor ? text.admin.actionAuditor : text.admin.actionAdmin}
             <ArrowUpRight size={18} />
           </Link>
         </div>
       </section>
       <div className="admin-note">
         <Fingerprint size={22} />
-        <p>
-          This role manages{" "}
-          {auditor ? "activity records" : "workspace configuration"}. Switch to
-          an assigned people role to open employee records.
-        </p>
+        <p>{text.admin.note(auditor)}</p>
       </div>
     </div>
   );

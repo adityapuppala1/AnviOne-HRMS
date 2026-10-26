@@ -13,6 +13,7 @@ import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
 import { Brand } from "../components/brand";
 import { usePreferences } from "../lib/preferences";
+import { settingsCopy as text } from "../lib/copy/settings";
 export default function Settings() {
   const { me, branding } = useWorkspace();
   const { reduceMotion } = usePreferences();
@@ -36,9 +37,7 @@ export default function Settings() {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   if (!me.permissions.includes("branding.write"))
-    return (
-      <ErrorState message="Workspace settings require the Platform admin role. Switch to an assigned role to continue." />
-    );
+    return <ErrorState message={text.denied} />;
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -54,7 +53,7 @@ export default function Settings() {
       setForm(updated);
       setSaved(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Settings could not be saved.");
+      setError(e instanceof Error ? e.message : text.saveFailed);
     } finally {
       setBusy(false);
     }
@@ -63,11 +62,11 @@ export default function Settings() {
     <div className="page-enter">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Organization identity</p>
-          <h1>Your workspace. Your signature.</h1>
-          <p>Choose the names and colors your people come home to.</p>
+          <p className="eyebrow">{text.eyebrow}</p>
+          <h1>{text.title}</h1>
+          <p>{text.subtitle}</p>
         </div>
-        <Badge>Version {branding.version}</Badge>
+        <Badge>{text.version(branding.version)}</Badge>
       </div>
       <form
         onSubmit={(event) => void submit(event)}
@@ -75,7 +74,7 @@ export default function Settings() {
       >
         <div className="panel settings-form">
           <div className="panel-heading">
-            <h2>The essentials</h2>
+            <h2>{text.essentials}</h2>
             <Palette size={20} />
           </div>
           <div className="form-fields">
@@ -83,20 +82,20 @@ export default function Settings() {
               [
                 {
                   key: "organizationName",
-                  label: "Organization name",
-                  help: "Shown in your workspace navigation.",
+                  label: text.fields.organizationName.label,
+                  help: text.fields.organizationName.help,
                   max: 60,
                 },
                 {
                   key: "platformName",
-                  label: "Platform name",
-                  help: "The name for your HR and administration workspace.",
+                  label: text.fields.platformName.label,
+                  help: text.fields.platformName.help,
                   max: 30,
                 },
                 {
                   key: "employeeName",
-                  label: "Employee workspace name",
-                  help: "A familiar name for the employee experience.",
+                  label: text.fields.employeeName.label,
+                  help: text.fields.employeeName.help,
                   max: 30,
                 },
               ] as const
@@ -117,14 +116,14 @@ export default function Settings() {
               </label>
             ))}
             <fieldset className="theme-options">
-              <legend>Workspace palette</legend>
-              <p>Considered colors, with readable contrast.</p>
+              <legend>{text.palette.legend}</legend>
+              <p>{text.palette.hint}</p>
               <div>
                 {(
                   [
-                    { value: "ocean", label: "Atlas" },
-                    { value: "iris", label: "Iris" },
-                    { value: "forest", label: "Woodland" },
+                    { value: "ocean", label: text.palette.names.ocean },
+                    { value: "iris", label: text.palette.names.iris },
+                    { value: "forest", label: text.palette.names.forest },
                   ] satisfies { value: Theme; label: string }[]
                 ).map((theme) => (
                   <label
@@ -160,7 +159,7 @@ export default function Settings() {
             {saved && (
               <p className="save-success" role="status">
                 <Check size={17} />
-                Workspace settings published.
+                {text.published}
               </p>
             )}
             <div className="settings-actions">
@@ -174,10 +173,10 @@ export default function Settings() {
                   setSaved(false);
                 }}
               >
-                Discard changes
+                {text.discard}
               </Button>
               <Button type="submit" isDisabled={busy || !dirty}>
-                {busy ? "Publishing…" : "Publish changes"}
+                {busy ? text.publishing : text.publish}
                 <ArrowUpRight size={16} />
               </Button>
             </div>
@@ -185,11 +184,11 @@ export default function Settings() {
         </div>
         <aside className={`settings-preview preview-${form.theme}`}>
           <div className="preview-heading">
-            <p className="eyebrow">Your workspace, previewed</p>
+            <p className="eyebrow">{text.preview.eyebrow}</p>
             <div className="view-toggle">
               <Button
                 variant="icon"
-                aria-label="Desktop preview"
+                aria-label={text.preview.desktop}
                 aria-pressed={previewMode === "desktop"}
                 onPress={() => setPreviewMode("desktop")}
               >
@@ -197,7 +196,7 @@ export default function Settings() {
               </Button>
               <Button
                 variant="icon"
-                aria-label="Mobile preview"
+                aria-label={text.preview.mobile}
                 aria-pressed={previewMode === "mobile"}
                 onPress={() => setPreviewMode("mobile")}
               >
@@ -209,26 +208,28 @@ export default function Settings() {
             <div className={`preview-window preview-device-${previewMode}`}>
               <div className="preview-sidebar">
                 <Brand name={form.platformName} light />
-                <span className="preview-nav active">Overview</span>
+                <span className="preview-nav active">
+                  {text.preview.overview}
+                </span>
                 <span className="preview-nav">
                   <Users size={12} />
-                  People
+                  {text.preview.people}
                 </span>
                 <span className="preview-nav">
                   <TreeStructure size={12} />
-                  Teams
+                  {text.preview.teams}
                 </span>
               </div>
               <div className="preview-content">
                 <span>{form.organizationName}</span>
                 <h3>
-                  Welcome to
+                  {text.preview.welcomeTo}
                   <br />
                   {form.employeeName}.
                 </h3>
                 <div className="preview-block">
                   <Users size={22} weight="duotone" />
-                  <strong>Your people, connected.</strong>
+                  <strong>{text.preview.connected}</strong>
                 </div>
                 <div className="preview-block short">
                   <i />
@@ -238,10 +239,7 @@ export default function Settings() {
               </div>
             </div>
           </MagicCard>
-          <p>
-            Your names and palette update throughout the workspace when you
-            publish.
-          </p>
+          <p>{text.preview.note}</p>
         </aside>
       </form>
     </div>

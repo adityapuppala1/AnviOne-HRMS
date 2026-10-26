@@ -22,6 +22,29 @@ describe("deployment boundaries", () => {
     expect(() => readConfig({ ...local, AUTH_MODE: undefined })).toThrow(
       "OIDC",
     ));
+  it("trusts only explicitly configured proxies", () => {
+    expect(readConfig(local).TRUST_PROXY).toBeUndefined();
+    expect(() => readConfig({ ...local, TRUST_PROXY: "1" })).toThrow(
+      "trusted proxy",
+    );
+    const oidc = {
+      ...local,
+      AUTH_MODE: "oidc",
+      OIDC_ISSUER: "https://login.example.com/tenant-id/v2.0",
+      OIDC_CLIENT_ID: "client",
+      OIDC_CLIENT_SECRET: "secret",
+      OIDC_REDIRECT_URI: "http://127.0.0.1:5173/api/v1/auth/callback",
+    };
+    expect(readConfig({ ...oidc, TRUST_PROXY: "2" }).TRUST_PROXY).toBe(2);
+    expect(
+      readConfig({ ...oidc, TRUST_PROXY: "10.0.0.0/8, 192.168.1.4" })
+        .TRUST_PROXY,
+    ).toEqual(["10.0.0.0/8", "192.168.1.4"]);
+    for (const value of ["true", "0", "9", "*", "loopback; rm"])
+      expect(() => readConfig({ ...oidc, TRUST_PROXY: value })).toThrow(
+        "TRUST_PROXY",
+      );
+  });
   it("does not include secret configuration values in errors", () => {
     expect(() =>
       readConfig({ ...local, APP_ORIGIN: "private-secret-value" }),

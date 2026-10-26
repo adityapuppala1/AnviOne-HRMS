@@ -73,6 +73,8 @@ export async function createApp(config: Config) {
     logger: ["error", "warn"],
     bodyParser: false,
   });
+  // Without a configured proxy, client addresses come from the socket only.
+  app.set("trust proxy", config.TRUST_PROXY ?? false);
   app.useBodyParser("json", { limit: "16kb" });
   app.use(
     helmet({

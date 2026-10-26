@@ -19,6 +19,21 @@ const schema = z.object({
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_REDIRECT_URI: z.url().optional(),
   OIDC_REQUIRED_ACR: z.string().optional(),
+  // Proxies allowed to set X-Forwarded-For: a hop count, or proxy IPs/CIDRs.
+  // "Trust everything" is refused because any client could then spoof its IP.
+  TRUST_PROXY: z
+    .union([
+      z.coerce.number().int().min(1).max(5),
+      z
+        .string()
+        .regex(
+          /^[0-9A-Fa-f:.]+(\/\d{1,3})?(\s*,\s*[0-9A-Fa-f:.]+(\/\d{1,3})?)*$/,
+        )
+        .transform((value) => value.split(",").map((part) => part.trim()))
+        // Each entry must be an address, so out-of-range hop counts never slip through.
+        .refine((parts) => parts.every((part) => /[.:]/.test(part))),
+    ])
+    .optional(),
 });
 export function readConfig(env: Record<string, string | undefined>) {
   const parsed = schema.safeParse(
@@ -41,6 +56,8 @@ export function readConfig(env: Record<string, string | undefined>) {
     throw new Error(
       "Demo authentication requires development and loopback-only hosts",
     );
+  if (config.AUTH_MODE === "demo" && config.TRUST_PROXY !== undefined)
+    throw new Error("Demo authentication cannot run behind a trusted proxy");
   if (config.AUTH_MODE === "oidc") {
     if (
       !config.OIDC_ISSUER ||

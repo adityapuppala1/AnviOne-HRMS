@@ -21,6 +21,19 @@ import {
   type AppRequest,
 } from "./auth";
 
+// One structured event per refused sign-in, for security monitoring.
+function signInFailed(req: AppRequest, method: string, reason: string) {
+  console.warn(
+    JSON.stringify({
+      event: "auth.sign_in_failed",
+      method,
+      reason,
+      client: req.ip,
+      requestId: req.requestId,
+    }),
+  );
+}
+
 // Health, sign-in, session and role context.
 @Controller()
 export class SessionController {
@@ -51,8 +64,10 @@ export class SessionController {
       !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
         req.socket.remoteAddress ?? "",
       )
-    )
+    ) {
+      signInFailed(req, "demo", "not_allowed");
       throw new ForbiddenException("Demo sign-in is unavailable.");
+    }
     const actor = await this.store.resolveIdentity(
       "urn:anvione:local-demo",
       "maya-demo",
@@ -77,9 +92,12 @@ export class SessionController {
   ) {
     try {
       await this.oidc.callback(req, res);
-    } catch {
-      console.warn(
-        JSON.stringify({ event: "oidc.denied", requestId: req.requestId }),
+    } catch (error) {
+      // The error class only: messages can echo tokens or identity claims.
+      signInFailed(
+        req,
+        "oidc",
+        error instanceof Error ? error.name : "unknown",
       );
       res.redirect("/login?error=access");
     }

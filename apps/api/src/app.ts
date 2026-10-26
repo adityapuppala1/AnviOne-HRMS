@@ -120,6 +120,19 @@ export async function createApp(config: Config) {
       limit: 20,
       standardHeaders: "draft-8",
       legacyHeaders: false,
+      handler: (req: Request, res: Response) => {
+        console.warn(
+          JSON.stringify({
+            event: "auth.rate_limited",
+            client: req.ip,
+            requestId: (req as AppRequest).requestId,
+          }),
+        );
+        res.status(429).type("application/problem+json").json({
+          status: 429,
+          title: "Too many sign-in requests. Wait a minute and try again.",
+        });
+      },
     }),
   );
   // Uploads buffer up to 5 MB in memory, so they get a tighter budget than other calls.

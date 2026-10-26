@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { makePool, purgeStaleSessions } from "../packages/database/src/index";
+import { createApp } from "../apps/api/src/app";
+import { readConfig } from "../apps/api/src/config";
 
 if (
   process.env.NODE_ENV !== "development" ||
@@ -77,5 +79,33 @@ await test("Stale session cleanup", async (t) => {
       `${prefix}%`,
     ]);
     await Promise.all([admin.end(), worker.end()]);
+  }
+});
+
+await test("Refused sign-ins are observable", async () => {
+  const config = readConfig({ ...process.env, API_PORT: "4481" });
+  const { app } = await createApp(config);
+  await app.listen(4481, "127.0.0.1");
+  const warnings: string[] = [];
+  const original = console.warn;
+  console.warn = (line: unknown) => warnings.push(String(line));
+  try {
+    // Demo deployments have no OIDC provider, so the callback is refused.
+    const response = await fetch(
+      "http://127.0.0.1:4481/api/v1/auth/callback?code=secret-code&state=x",
+      { redirect: "manual" },
+    );
+    assert.equal(response.status, 302);
+    assert.equal(response.headers.get("location"), "/login?error=access");
+    const event = warnings
+      .map((line) => JSON.parse(line) as Record<string, string>)
+      .find((entry) => entry.event === "auth.sign_in_failed")!;
+    assert.equal(event.method, "oidc");
+    assert.equal(event.reason, "UnauthorizedException");
+    assert.ok(event.requestId);
+    assert.ok(!warnings.join("").includes("secret-code"));
+  } finally {
+    console.warn = original;
+    await app.close();
   }
 });

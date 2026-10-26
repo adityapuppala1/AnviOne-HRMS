@@ -25,6 +25,7 @@ import { CalendarController } from "./calendar.controller";
 import { ApprovalsController } from "./approvals.controller";
 import { DocumentController } from "./document.controller";
 import type { Config } from "./config";
+import { RateLimits, storeUnavailableHandler } from "./rate-limit";
 
 @Catch()
 class ProblemFilter implements ExceptionFilter {
@@ -52,6 +53,7 @@ class ProblemFilter implements ExceptionFilter {
   }
 }
 export async function createApp(config: Config) {
+  const limits = await RateLimits.connect(config.RATE_LIMIT_URL);
   const store = new PlatformStore(config);
   await store.verifyRuntimeRole();
   @Module({
@@ -66,7 +68,10 @@ export async function createApp(config: Config) {
       ApprovalsController,
       DocumentController,
     ],
-    providers: [{ provide: PlatformStore, useValue: store }],
+    providers: [
+      { provide: PlatformStore, useValue: store },
+      { provide: RateLimits, useValue: limits },
+    ],
   })
   class AppModule {}
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -103,6 +108,9 @@ export async function createApp(config: Config) {
   app.use(
     rateLimit({
       windowMs: 60000,
+      store: limits.store("api"),
+      // Availability over strictness for ordinary calls if the store is down.
+      passOnStoreError: true,
       limit: 240,
       standardHeaders: "draft-8",
       legacyHeaders: false,
@@ -117,6 +125,7 @@ export async function createApp(config: Config) {
     "/api/v1/auth",
     rateLimit({
       windowMs: 60000,
+      store: limits.store("auth"),
       limit: 20,
       standardHeaders: "draft-8",
       legacyHeaders: false,
@@ -140,6 +149,7 @@ export async function createApp(config: Config) {
     "/api/v1/documents",
     rateLimit({
       windowMs: 60000,
+      store: limits.store("upload"),
       limit: 20,
       skip: (req) => req.method !== "POST" || req.path !== "/",
       standardHeaders: "draft-8",
@@ -151,6 +161,7 @@ export async function createApp(config: Config) {
         }),
     }),
   );
+  app.use(storeUnavailableHandler);
   app.useGlobalGuards(new SessionGuard(store));
   app.useGlobalFilters(new ProblemFilter());
   app.enableShutdownHooks();

@@ -45,6 +45,33 @@ describe("deployment boundaries", () => {
         "TRUST_PROXY",
       );
   });
+  it("requires a shared TLS rate-limit store in production", () => {
+    const production = {
+      NODE_ENV: "production",
+      AUTH_MODE: "oidc",
+      API_HOST: "0.0.0.0",
+      APP_ORIGIN: "https://hr.example.com",
+      DATABASE_URL: "postgresql://db.example.com/anvione?sslmode=verify-full",
+      OIDC_ISSUER: "https://login.example.com/tenant-id/v2.0",
+      OIDC_CLIENT_ID: "client",
+      OIDC_CLIENT_SECRET: "secret",
+      OIDC_REDIRECT_URI: "https://hr.example.com/api/v1/auth/callback",
+      OIDC_REQUIRED_ACR: "mfa",
+    };
+    for (const value of [undefined, "redis://cache.example.com:6379"])
+      expect(() =>
+        readConfig({ ...production, RATE_LIMIT_URL: value }),
+      ).toThrow("rate-limit store");
+    expect(
+      readConfig({
+        ...production,
+        RATE_LIMIT_URL: "rediss://cache.example.com:6380",
+      }).RATE_LIMIT_URL,
+    ).toBe("rediss://cache.example.com:6380");
+    expect(() =>
+      readConfig({ ...local, RATE_LIMIT_URL: "http://cache.example.com" }),
+    ).toThrow("RATE_LIMIT_URL");
+  });
   it("does not include secret configuration values in errors", () => {
     expect(() =>
       readConfig({ ...local, APP_ORIGIN: "private-secret-value" }),

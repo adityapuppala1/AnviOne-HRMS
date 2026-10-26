@@ -18,8 +18,21 @@ services:
     security_opt: ["no-new-privileges:true"]
   valkey:
     image: valkey/valkey:8.1.5-alpine
-    command: ["valkey-server", "--save", "", "--appendonly", "no"]
-    # Reserved for future queues; no host port and no dependency for durable work.
+    # Shared rate-limit counters only; nothing durable is stored here.
+    command:
+      [
+        "valkey-server",
+        "--save",
+        "",
+        "--appendonly",
+        "no",
+        "--requirepass",
+        "${VALKEY_PASSWORD:?Run pnpm setup:local first}",
+      ]
+    environment:
+      REDISCLI_AUTH: ${VALKEY_PASSWORD}
+    ports:
+      - "127.0.0.1:56379:6379"
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s

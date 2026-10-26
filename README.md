@@ -25,7 +25,7 @@ These modules run on the same tenant isolation, versioned edits and audit/outbox
 | **Documents**    | Employees, HR              | PDF/PNG/JPEG upload (5 MB, type checked from the file's bytes, PDFs with active content refused), verification, audited downloads | [documents](docs/acceptance-evidence/employee-documents.md)      |
 | **Activity log** | Auditors                   | Searchable record of every action, filterable by module                                                                           | [Atlas](docs/acceptance-evidence/atlas.md)                       |
 
-Interface text is centralized in `apps/portal/app/lib/copy.ts` and `apps/portal/app/lib/copy/` so a translation can replace one catalog without touching screens. The worker also purges expired and idle sessions every minute; refused sign-ins and rate-limited auth calls are logged as `auth.sign_in_failed` and `auth.rate_limited`. Set `TRUST_PROXY` to your reverse proxy's addresses (or a hop count of 1–5) when one is used.
+Interface text is centralized in `apps/portal/app/lib/copy.ts` and `apps/portal/app/lib/copy/` so a translation can replace one catalog without touching screens. The worker also purges expired and idle sessions every minute; refused sign-ins and rate-limited auth calls are logged as `auth.sign_in_failed` and `auth.rate_limited`. Rate-limit counters are shared through Valkey when `RATE_LIMIT_URL` is set (required, over TLS, in production; see [shared rate limits](docs/plans/shared-rate-limit.md)). Set `TRUST_PROXY` to your reverse proxy's addresses (or a hop count of 1–5) when one is used.
 
 ## Run locally
 
@@ -40,7 +40,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Open **http://127.0.0.1:5173** and choose **Explore demo workspace**. Use `127.0.0.1`, not `localhost`, because the exact application origin is checked. The API binds to `127.0.0.1:4000`; PostgreSQL is exposed only on `127.0.0.1:55432`. Stop app processes with Ctrl+C; `docker compose stop` retains the local data volume. Do not tunnel or publicly expose demo mode.
+Open **http://127.0.0.1:5173** and choose **Explore demo workspace**. Use `127.0.0.1`, not `localhost`, because the exact application origin is checked. The API binds to `127.0.0.1:4000`; PostgreSQL is exposed only on `127.0.0.1:55432` and Valkey only on `127.0.0.1:56379`. Stop app processes with Ctrl+C; `docker compose stop` retains the local data volume. Do not tunnel or publicly expose demo mode.
 
 `setup:local` generates random credentials in ignored `.env` and never replaces an existing file. The seed is development-only and idempotent. All names and `anvi.example` addresses are fictional. The profile button opens assigned roles: HR admin, Employee, Team manager, Platform admin and Auditor. Employee sees only self; manager sees direct reports; platform admin configures branding; auditor reads activity.
 

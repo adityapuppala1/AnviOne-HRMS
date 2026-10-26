@@ -6,6 +6,13 @@ import {
   writeFileSync,
 } from "node:fs";
 const secret = () => randomBytes(32).toString("hex");
+const valkey = () => {
+  const value = secret();
+  return [
+    `VALKEY_PASSWORD=${value}`,
+    `RATE_LIMIT_URL=redis://default:${value}@127.0.0.1:56379`,
+  ];
+};
 const pairs = [
   ["IDENTITY_OPERATOR", "anvione_identity_operator"],
   ["CANDIDATE", "anvione_candidate"],
@@ -24,7 +31,9 @@ if (existsSync(".env")) {
       ([prefix]) =>
         values[`${prefix}_DB_PASSWORD`] && values[`${prefix}_DATABASE_URL`],
     ) &&
-    values.ONBOARDING_PREVIEW_KEY
+    values.ONBOARDING_PREVIEW_KEY &&
+    values.VALKEY_PASSWORD &&
+    values.RATE_LIMIT_URL
   ) {
     console.log(".env already exists; no settings changed.");
     process.exit(0);
@@ -64,6 +73,11 @@ if (existsSync(".env")) {
   }
   if (!values.ONBOARDING_PREVIEW_KEY)
     additions.push(`ONBOARDING_PREVIEW_KEY=${secret()}`);
+  if (Boolean(values.VALKEY_PASSWORD) !== Boolean(values.RATE_LIMIT_URL))
+    throw new Error(
+      "A credential pair is partially configured; complete it without replacing existing secrets.",
+    );
+  if (!values.RATE_LIMIT_URL) additions.push(...valkey());
   appendFileSync(".env", `\n${additions.join("\n")}\n`);
   console.log(
     "Added missing random local credentials; existing settings were preserved.",
@@ -86,6 +100,7 @@ const fields = [
   `DATABASE_URL=postgresql://anvione_app:${runtime}@127.0.0.1:55432/anvione`,
   `WORKER_DATABASE_URL=postgresql://anvione_worker:${worker}@127.0.0.1:55432/anvione`,
   `ONBOARDING_PREVIEW_KEY=${secret()}`,
+  ...valkey(),
 ];
 for (const [prefix, role] of pairs) {
   const value = secret();

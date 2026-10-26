@@ -34,6 +34,12 @@ const schema = z.object({
         .refine((parts) => parts.every((part) => /[.:]/.test(part))),
     ])
     .optional(),
+  // Shared rate-limit counters (Valkey/Redis). Required in production so replicas
+  // cannot each grant a full budget.
+  RATE_LIMIT_URL: z
+    .string()
+    .regex(/^rediss?:\/\/\S+$/)
+    .optional(),
 });
 export function readConfig(env: Record<string, string | undefined>) {
   const parsed = schema.safeParse(
@@ -91,6 +97,10 @@ export function readConfig(env: Record<string, string | undefined>) {
     )
       throw new Error(
         "Production database connection must validate TLS certificates",
+      );
+    if (!config.RATE_LIMIT_URL?.startsWith("rediss://"))
+      throw new Error(
+        "Production requires a shared rate-limit store over TLS (rediss://)",
       );
   }
   return config;

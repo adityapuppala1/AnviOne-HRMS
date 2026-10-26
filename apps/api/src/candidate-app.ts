@@ -35,6 +35,7 @@ import {
 import { CandidateStore, type CandidateActor } from "./candidate.store";
 import { csrfMatches } from "./auth";
 import type { Config } from "./config";
+import { RateLimits, storeUnavailableHandler } from "./rate-limit";
 type CandidateRequest = Request & {
   candidate: CandidateActor;
   requestId: string;
@@ -145,11 +146,15 @@ class CandidateController {
   }
 }
 export async function createCandidateApp(config: Config, port = 4001) {
+  const limits = await RateLimits.connect(config.RATE_LIMIT_URL);
   const store = new CandidateStore(config);
   await store.verifyRole();
   @Module({
     controllers: [CandidateController],
-    providers: [{ provide: CandidateStore, useValue: store }],
+    providers: [
+      { provide: CandidateStore, useValue: store },
+      { provide: RateLimits, useValue: limits },
+    ],
   })
   class CandidateModule {}
   const app = await NestFactory.create<NestExpressApplication>(
@@ -189,6 +194,8 @@ export async function createCandidateApp(config: Config, port = 4001) {
   app.use(
     rateLimit({
       windowMs: 60000,
+      store: limits.store("candidate"),
+      passOnStoreError: true,
       limit: 120,
       standardHeaders: "draft-8",
       legacyHeaders: false,
@@ -198,6 +205,7 @@ export async function createCandidateApp(config: Config, port = 4001) {
     "/api/candidate/challenge",
     rateLimit({
       windowMs: 60000,
+      store: limits.store("candidate-challenge"),
       limit: 20,
       standardHeaders: "draft-8",
       legacyHeaders: false,
@@ -207,11 +215,13 @@ export async function createCandidateApp(config: Config, port = 4001) {
     "/api/candidate/exchange",
     rateLimit({
       windowMs: 60000,
+      store: limits.store("candidate-exchange"),
       limit: 30,
       standardHeaders: "draft-8",
       legacyHeaders: false,
     }),
   );
+  app.use(storeUnavailableHandler);
   app.useGlobalGuards({
     async canActivate(context) {
       const req = context.switchToHttp().getRequest<CandidateRequest>();

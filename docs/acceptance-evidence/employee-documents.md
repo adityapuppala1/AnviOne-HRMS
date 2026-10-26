@@ -17,4 +17,4 @@ An independent security review found nothing blocking. Its hardening findings (u
 
 ## Honest boundary
 
-This is structural validation, not malware scanning. Markers inside compressed PDF object streams, parser exploits and malformed images are not detected. Antivirus scanning or server-side re-rendering, quarantine release, a private object store with signed downloads, retention rules and auditing of denied download attempts remain open under DOC-01. PDFs with ordinary web links (`/URI`) are accepted; whether to block them is a product decision. Use synthetic files only.
+This is structural validation, not malware scanning. Markers inside compressed PDF object streams, parser exploits and malformed images are not detected. Antivirus scanning or server-side re-rendering, quarantine release, a private object store with signed downloads and retention rules remain open under DOC-01. Denied download attempts are audited. PDFs with ordinary web links (`/URI`) are accepted; whether to block them is a product decision. Use synthetic files only.

@@ -179,7 +179,7 @@ export class DocumentStore {
       throw new ForbiddenException(
         "Your current workspace does not have access.",
       );
-    return scoped(this.platform.pool, actor, async (client) => {
+    const file = await scoped(this.platform.pool, actor, async (client) => {
       const { rows } = await client.query<{
         bytes: Buffer;
         contentType: string;
@@ -192,7 +192,18 @@ export class DocumentStore {
         [id],
       );
       const row = rows[0];
-      if (!row) throw new NotFoundException("This document is unavailable.");
+      if (!row) {
+        // Missing and forbidden look the same to the caller; both are recorded
+        // so probing other people's document IDs leaves a trail.
+        await audit(
+          client,
+          actor,
+          "document.download_denied",
+          `document:${id}`,
+          requestId,
+        );
+        return null;
+      }
       await audit(
         client,
         actor,
@@ -202,6 +213,8 @@ export class DocumentStore {
       );
       return row;
     });
+    if (!file) throw new NotFoundException("This document is unavailable.");
+    return file;
   }
 
   private transition(

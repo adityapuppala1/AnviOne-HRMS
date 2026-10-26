@@ -242,6 +242,14 @@ await test("Employee documents and HR verification", async (t) => {
           (await request(`/documents/${arjunDocument}/content`)).status,
           404,
         );
+        const denied = await admin.query(
+          "SELECT role FROM audit_event WHERE action='document.download_denied' AND target=$1",
+          [`document:${arjunDocument}`],
+        );
+        assert.deepEqual(
+          denied.rows.map((r: { role: string }) => r.role),
+          ["manager"],
+        );
         assert.equal((await request("/documents/review")).status, 403);
         await assert.rejects(
           transaction(store.pool, (client) =>

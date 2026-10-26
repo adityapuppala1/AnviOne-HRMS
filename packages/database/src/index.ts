@@ -119,3 +119,10 @@ export async function drainOutbox(pool: pg.Pool) {
     return events.rowCount ?? 0;
   });
 }
+// Sessions the sign-in path would already refuse, and expired sign-in attempts.
+export async function purgeStaleSessions(pool: pg.Pool) {
+  const { rows } = await pool.query<{ sessions: number; attempts: number }>(
+    "SELECT sessions, attempts FROM purge_stale_sessions()",
+  );
+  return rows[0]!;
+}

@@ -32,6 +32,8 @@ export const permissionSchema = z.enum([
   "insights.read",
   "asset.manage",
   "asset.self",
+  "policy.manage",
+  "policy.self",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -998,6 +1000,149 @@ export const assetStatusChangeSchema = z.strictObject({
 export const assetAcknowledgeSchema = z.strictObject({
   version: z.number().int().positive(),
 });
+// HR policies: versioned wording, published to everyone or one department, acknowledged by employees.
+export const policyCategorySchema = z.enum([
+  "conduct",
+  "leave",
+  "it_security",
+  "safety",
+  "compliance",
+  "other",
+]);
+export const policyStatusSchema = z.enum([
+  "draft",
+  "published",
+  "superseded",
+  "withdrawn",
+]);
+export type PolicyCategory = z.infer<typeof policyCategorySchema>;
+export type PolicyStatus = z.infer<typeof policyStatusSchema>;
+export const policyVersionSchema = z.strictObject({
+  id: z.uuid(),
+  policyId: z.uuid(),
+  code: z.string(),
+  category: policyCategorySchema,
+  versionNumber: z.number().int().positive(),
+  status: policyStatusSchema,
+  title: z.string(),
+  summary: z.string(),
+  effectiveOn: z.string(),
+  requiresAcknowledgement: z.boolean(),
+  audienceDepartment: z
+    .strictObject({ id: z.uuid(), name: z.string() })
+    .nullable(),
+  version: z.number().int().positive(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  publishedAt: z.string().nullable(),
+  publishedBy: z.string().nullable(),
+});
+export type PolicyVersion = z.infer<typeof policyVersionSchema>;
+export const policyVersionDetailSchema = policyVersionSchema.extend({
+  body: z.string(),
+});
+export type PolicyVersionDetail = z.infer<typeof policyVersionDetailSchema>;
+const policyStatsSchema = z.strictObject({
+  audience: z.number().int().nonnegative(),
+  acknowledged: z.number().int().nonnegative(),
+});
+export const policyListItemSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  category: policyCategorySchema,
+  title: z.string(),
+  current: policyVersionSchema.nullable(),
+  draft: policyVersionSchema.nullable(),
+  stats: policyStatsSchema.nullable(),
+});
+export const policyListSchema = z.strictObject({
+  items: z.array(policyListItemSchema),
+  counts: z.strictObject({
+    published: z.number().int().nonnegative(),
+    drafts: z.number().int().nonnegative(),
+    outstanding: z.number().int().nonnegative(),
+  }),
+});
+export type PolicyList = z.infer<typeof policyListSchema>;
+export const policyDetailSchema = z.strictObject({
+  policy: z.strictObject({
+    id: z.uuid(),
+    code: z.string(),
+    category: policyCategorySchema,
+  }),
+  versions: z.array(policyVersionDetailSchema),
+  compliance: z
+    .strictObject({
+      versionId: z.uuid(),
+      stats: policyStatsSchema,
+      people: z.array(
+        z.strictObject({
+          employeeId: z.uuid(),
+          name: z.string(),
+          initials: z.string(),
+          department: z.string(),
+          acknowledgedAt: z.string().nullable(),
+        }),
+      ),
+    })
+    .nullable(),
+});
+export type PolicyDetail = z.infer<typeof policyDetailSchema>;
+export const myPolicySchema = z.strictObject({
+  versionId: z.uuid(),
+  policyId: z.uuid(),
+  code: z.string(),
+  category: policyCategorySchema,
+  title: z.string(),
+  summary: z.string(),
+  versionNumber: z.number().int().positive(),
+  effectiveOn: z.string(),
+  requiresAcknowledgement: z.boolean(),
+  publishedAt: z.string(),
+  acknowledgedAt: z.string().nullable(),
+});
+export type MyPolicy = z.infer<typeof myPolicySchema>;
+export const myPoliciesSchema = z.strictObject({
+  items: z.array(myPolicySchema),
+  outstanding: z.number().int().nonnegative(),
+});
+export type MyPolicies = z.infer<typeof myPoliciesSchema>;
+export const myPolicyDetailSchema = myPolicySchema.extend({ body: z.string() });
+export type MyPolicyDetail = z.infer<typeof myPolicyDetailSchema>;
+const policyCode = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z0-9][A-Z0-9-]{1,31}$/);
+const policyContent = {
+  title: z.string().trim().min(3).max(120),
+  summary: z.string().trim().min(10).max(300),
+  body: z.string().trim().min(20).max(20000),
+  effectiveOn: z.iso.date(),
+  requiresAcknowledgement: z.boolean().default(true),
+  audienceDepartmentId: z
+    .uuid()
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null),
+};
+export const policyCreateSchema = z.strictObject({
+  code: policyCode,
+  category: policyCategorySchema,
+  ...policyContent,
+});
+export const policyDraftSchema = z.strictObject({
+  ...policyContent,
+  version: z.number().int().positive(),
+});
+export const policyPublishSchema = z.strictObject({
+  version: z.number().int().positive(),
+});
+export const policyWithdrawSchema = z.strictObject({
+  version: z.number().int().positive(),
+  note: z.string().trim().min(3).max(300),
+});
+export const policyAcknowledgeSchema = z.strictObject({});
 export {
   activationReadiness,
   onboardingStarter,

@@ -20,6 +20,7 @@ export default [
     route("approvals", "routes/approvals.tsx"),
     route("documents", "routes/documents.tsx"),
     route("assets", "routes/assets.tsx"),
+    route("policies", "routes/policies.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

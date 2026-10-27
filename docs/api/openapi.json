@@ -888,7 +888,9 @@
                           "document.review",
                           "insights.read",
                           "asset.manage",
-                          "asset.self"
+                          "asset.self",
+                          "policy.manage",
+                          "policy.self"
                         ]
                       }
                     },

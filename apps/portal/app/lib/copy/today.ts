@@ -43,6 +43,21 @@ export const todayCopy = {
     when: (date: string, days: number) =>
       `${day(date)} · ${days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`}`,
   },
+  policies: {
+    label: "Policies",
+    waiting: (count: number) =>
+      `${count} ${count === 1 ? "policy needs" : "policies need"} your acknowledgement`,
+    hint: "Read each one and confirm you have understood it.",
+    upToDate: "You're up to date with every policy.",
+    open: "Open policies",
+  },
+  equipment: {
+    label: "Equipment",
+    waiting: (count: number) =>
+      `${count} ${count === 1 ? "item" : "items"} to confirm`,
+    hint: "HR issued equipment to you. Confirm that you have it.",
+    open: "Confirm equipment",
+  },
   decisions: {
     label: "Waiting for you",
     none: "You're all caught up.",

@@ -23,6 +23,7 @@ const ROUTES = [
   "/approvals",
   "/documents",
   "/assets",
+  "/policies",
   "/preferences",
   "/settings",
   "/tasks",

@@ -19,7 +19,7 @@ import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
-import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
+import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { Sun } from "@phosphor-icons/react/dist/csr/Sun";
@@ -220,6 +220,14 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("asset.manage"),
     },
     {
+      to: "/policies",
+      label: copy.nav.policies,
+      icon: Scroll,
+      visible:
+        me.permissions.includes("policy.self") ||
+        me.permissions.includes("policy.manage"),
+    },
+    {
       to: "/documents",
       label: copy.nav.documents,
       icon: FolderLock,
@@ -326,16 +334,15 @@ function Shell({ me }: { me: Me }) {
       </nav>
       <p className="sidebar-label roadmap-label">{copy.shell.roadmap}</p>
       <div className="planned-nav">
-        {[
-          { icon: Wallet, label: copy.shell.payroll },
-          { icon: Stack, label: copy.shell.assets },
-        ].map(({ icon: Icon, label }) => (
-          <div key={label} title={copy.shell.planned(label)}>
-            <Icon size={20} />
-            <span>{label}</span>
-            <span className="soon">{copy.shell.soon}</span>
-          </div>
-        ))}
+        {[{ icon: Wallet, label: copy.shell.payroll }].map(
+          ({ icon: Icon, label }) => (
+            <div key={label} title={copy.shell.planned(label)}>
+              <Icon size={20} />
+              <span>{label}</span>
+              <span className="soon">{copy.shell.soon}</span>
+            </div>
+          ),
+        )}
       </div>
       <div className="sidebar-bottom">
         <NavLink

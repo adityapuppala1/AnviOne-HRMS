@@ -37,7 +37,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.actor_id',$7,true), set_config('app.actor_label',$8,true),
     set_config('app.onboarding_task_scope',$9,true), set_config('app.leave_scope',$10,true),
     set_config('app.attendance_scope',$11,true), set_config('app.document_scope',$12,true),
-    set_config('app.asset_scope',$13,true)`,
+    set_config('app.asset_scope',$13,true),
+    set_config('app.policy_scope',$14,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -64,6 +65,9 @@ export async function setContext(client: PoolClient, actor: Principal) {
         "none",
       scopeFor(actor, "asset.manage") ??
         scopeFor(actor, "asset.self") ??
+        "none",
+      scopeFor(actor, "policy.manage") ??
+        scopeFor(actor, "policy.self") ??
         "none",
     ],
   );

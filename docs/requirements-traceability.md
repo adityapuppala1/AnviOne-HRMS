@@ -2,6 +2,7 @@
 | Reporting and analytics | Insights: scoped counts for people, joiners, leave and attendance; every chart has a table | Report builder, exports, domain reports, field authorization |
 | Shared workflow | Shared routing rules and one approvals inbox for leave, attendance, documents and readiness; maker-checker on every decision | Reusable definitions, delegation, escalation, administration |
 | Assets | Inventory, issue to employees, holder acknowledgement, returns with condition, lost and repair paths, immutable history (AST-01) | Recovery on exit, depreciation, barcode/QR labels, bulk import, maintenance schedules |
+| HR policies | Versioned policies, department audience, acknowledgement and compliance evidence (POL-01) | Legal-supplied wording, reminders (needs notification dispatch), quizzes, e-signature |
 | Leave | Ledger with business-day counting, balances, manager/HR approval, holiday and work-week calendar | Policies by type/grade, accrual and adjustment jobs, opening balances, carry-forward |
 | Attendance and LOP | Server-stamped punches, provisional LOP flags, corrections with manager/HR routing, team board | Rules/imports, appeals, shift and policy configuration, human LOP decisions |
 | Documents | Local verified uploads: byte-typed PDF/PNG/JPEG, immutable content, HR verification, audited downloads | Private object storage, quarantine/malware scanning, retention, categories beyond the basics |

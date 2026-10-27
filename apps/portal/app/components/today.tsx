@@ -6,9 +6,18 @@ import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { Fingerprint } from "@phosphor-icons/react/dist/csr/Fingerprint";
 import { Airplane } from "@phosphor-icons/react/dist/csr/Airplane";
 import { SealCheck } from "@phosphor-icons/react/dist/csr/SealCheck";
+import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
+import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { Button, NumberTicker } from "@anvi/ui";
 import type { Me } from "@anvi/contracts";
-import { mutate, useAttendance, useCalendar, useLeave } from "../lib/api";
+import {
+  mutate,
+  useAttendance,
+  useCalendar,
+  useLeave,
+  useMyAssets,
+  useMyPolicies,
+} from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { todayCopy as text } from "../lib/copy/today";
 import "./today.css";
@@ -44,6 +53,8 @@ export function TodayPanel({ me, waiting }: { me: Me; waiting: number }) {
         {canPunch && <AttendanceCard me={me} />}
         {canLeave && <LeaveCard />}
         <HolidayCard />
+        {me.permissions.includes("asset.self") && <EquipmentCard />}
+        {me.permissions.includes("policy.self") && <PolicyCard />}
         {approver && <DecisionsCard waiting={waiting} />}
       </div>
     </section>
@@ -211,6 +222,61 @@ function HolidayCard() {
       <div className="today-actions">
         <Link className="text-link" to="/calendar">
           {text.holiday.open} <ArrowUpRight size={15} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// Shown only while HR is waiting for the person to confirm issued equipment.
+function EquipmentCard() {
+  const { data } = useMyAssets(true);
+  const waiting = data?.current.filter((a) => !a.acknowledgedAt).length ?? 0;
+  if (!waiting) return null;
+  return (
+    <div className="today-card today-urgent" data-spot>
+      <span className="today-label">
+        <Laptop size={18} weight="duotone" aria-hidden="true" />
+        {text.equipment.label}
+      </span>
+      <strong className="today-headline">
+        {text.equipment.waiting(waiting)}
+      </strong>
+      <p>{text.equipment.hint}</p>
+      <div className="today-actions">
+        <Link className="text-link" to="/assets">
+          {text.equipment.open} <ArrowUpRight size={15} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function PolicyCard() {
+  const { data } = useMyPolicies(true);
+  if (!data) return <div className="today-card today-skeleton" aria-hidden />;
+  return (
+    <div
+      className={`today-card ${data.outstanding ? "today-urgent" : ""}`}
+      data-spot
+    >
+      <span className="today-label">
+        <Scroll size={18} weight="duotone" aria-hidden="true" />
+        {text.policies.label}
+      </span>
+      {data.outstanding > 0 ? (
+        <>
+          <strong className="today-headline">
+            {text.policies.waiting(data.outstanding)}
+          </strong>
+          <p>{text.policies.hint}</p>
+        </>
+      ) : (
+        <p>{text.policies.upToDate}</p>
+      )}
+      <div className="today-actions">
+        <Link className="text-link" to="/policies">
+          {text.policies.open} <ArrowUpRight size={15} />
         </Link>
       </div>
     </div>

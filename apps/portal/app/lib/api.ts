@@ -20,6 +20,9 @@ import {
   assetDetailSchema,
   assetListSchema,
   myAssetsSchema,
+  myPoliciesSchema,
+  policyDetailSchema,
+  policyListSchema,
   insightsSchema,
   updatesSchema,
   documentListSchema,
@@ -175,6 +178,26 @@ export const useInsights = (enabled: boolean) =>
     enabled,
     staleTime: 60000,
     queryFn: ({ signal }) => api("/insights", insightsSchema, { signal }),
+  });
+export const useMyPolicies = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["policies", "mine"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/policies/mine", myPoliciesSchema, { signal }),
+  });
+export const usePolicies = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["policies", "list"],
+    enabled,
+    queryFn: ({ signal }) => api("/policies", policyListSchema, { signal }),
+  });
+export const usePolicy = (id: string | null) =>
+  useQuery({
+    queryKey: ["policies", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/policies/${id}`, policyDetailSchema, { signal }),
   });
 export const useMyAssets = (enabled: boolean) =>
   useQuery({

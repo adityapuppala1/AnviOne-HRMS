@@ -20,6 +20,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "attendance.self": "self",
     "document.self": "self",
     "asset.self": "self",
+    "policy.self": "self",
   },
   manager: {
     "directory.read": "team",
@@ -30,6 +31,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "attendance.review": "team",
     "document.self": "self",
     "asset.self": "self",
+    "policy.self": "self",
     "insights.read": "team",
   },
   hr_admin: {
@@ -42,6 +44,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "onboarding.manage": "entity",
     "insights.read": "entity",
     "asset.manage": "entity",
+    "policy.manage": "entity",
   },
   platform_admin: { "branding.write": "entity" },
   auditor: { "audit.read": "entity" },

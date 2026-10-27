@@ -34,6 +34,8 @@ export const permissionSchema = z.enum([
   "asset.self",
   "policy.manage",
   "policy.self",
+  "exit.manage",
+  "exit.self",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -1143,6 +1145,140 @@ export const policyWithdrawSchema = z.strictObject({
   note: z.string().trim().min(3).max(300),
 });
 export const policyAcknowledgeSchema = z.strictObject({});
+// Exits: a resignation or HR-started exit, accepted with a last working day, cleared and completed.
+export const exitKindSchema = z.enum([
+  "resignation",
+  "termination",
+  "end_of_contract",
+  "retirement",
+  "other",
+]);
+export const exitStatusSchema = z.enum([
+  "submitted",
+  "accepted",
+  "completed",
+  "withdrawn",
+  "rejected",
+]);
+export const exitClearanceItemSchema = z.enum([
+  "assets",
+  "finance",
+  "it_access",
+  "manager_handover",
+  "hr_documents",
+]);
+export const exitClearanceStatusSchema = z.enum([
+  "pending",
+  "cleared",
+  "waived",
+]);
+export type ExitKind = z.infer<typeof exitKindSchema>;
+export type ExitStatus = z.infer<typeof exitStatusSchema>;
+export type ExitClearanceItem = z.infer<typeof exitClearanceItemSchema>;
+export type ExitClearanceStatus = z.infer<typeof exitClearanceStatusSchema>;
+export const exitCaseSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  employeeCode: z.string(),
+  department: z.string().nullable(),
+  kind: exitKindSchema,
+  reason: z.string(),
+  noticeGivenOn: z.string(),
+  lastWorkingDay: z.string().nullable(),
+  status: exitStatusSchema,
+  decisionNote: z.string().nullable(),
+  version: z.number().int().positive(),
+  submittedBy: z.string(),
+  createdAt: z.string(),
+  decidedAt: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  closedAt: z.string().nullable(),
+  closedBy: z.string().nullable(),
+});
+export type ExitCase = z.infer<typeof exitCaseSchema>;
+export const exitClearanceSchema = z.strictObject({
+  id: z.uuid(),
+  item: exitClearanceItemSchema,
+  status: exitClearanceStatusSchema,
+  note: z.string().nullable(),
+  clearedBy: z.string().nullable(),
+  clearedAt: z.string().nullable(),
+  version: z.number().int().positive(),
+});
+export type ExitClearance = z.infer<typeof exitClearanceSchema>;
+export const exitDetailSchema = z.strictObject({
+  case: exitCaseSchema,
+  clearances: z.array(exitClearanceSchema),
+  openAssets: z.number().int().nonnegative(),
+});
+export type ExitDetail = z.infer<typeof exitDetailSchema>;
+export const myExitSchema = z.strictObject({
+  current: exitDetailSchema.nullable(),
+  history: z.array(exitCaseSchema),
+});
+export type MyExit = z.infer<typeof myExitSchema>;
+export const exitListSchema = z.strictObject({
+  items: z.array(exitCaseSchema),
+  counts: z.strictObject({
+    submitted: z.number().int().nonnegative(),
+    accepted: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    withdrawn: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
+  }),
+});
+export type ExitList = z.infer<typeof exitListSchema>;
+export const exitQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  status: exitStatusSchema.optional(),
+});
+const exitReason = z.string().trim().min(3).max(500);
+const exitNote = z.string().trim().min(3).max(500);
+const exitVersion = z.number().int().positive();
+export const exitSubmitSchema = z.strictObject({ reason: exitReason });
+export const exitStartSchema = z.strictObject({
+  employeeId: z.uuid(),
+  kind: exitKindSchema,
+  reason: exitReason,
+  noticeGivenOn: z.iso.date(),
+});
+export const exitAcceptSchema = z.strictObject({
+  version: exitVersion,
+  lastWorkingDay: z.iso.date(),
+  note: exitNote.optional(),
+});
+export const exitRejectSchema = z.strictObject({
+  version: exitVersion,
+  note: exitNote,
+});
+export const exitWithdrawSchema = z.strictObject({
+  version: exitVersion,
+  note: exitNote.optional(),
+});
+// Completing before the last working day needs earlyRelease and a reason.
+export const exitCompleteSchema = z
+  .strictObject({
+    version: exitVersion,
+    earlyRelease: z.boolean().optional(),
+    note: exitNote.optional(),
+  })
+  .refine((value) => !value.earlyRelease || Boolean(value.note), {
+    message: "Give a reason for the early release",
+    path: ["note"],
+  });
+export const exitClearanceUpdateSchema = z.strictObject({
+  version: exitVersion,
+  status: exitClearanceStatusSchema,
+  note: z
+    .string()
+    .trim()
+    .min(3)
+    .max(300)
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null),
+});
 export {
   activationReadiness,
   onboardingStarter,

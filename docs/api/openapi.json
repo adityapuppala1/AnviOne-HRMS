@@ -890,7 +890,9 @@
                           "asset.manage",
                           "asset.self",
                           "policy.manage",
-                          "policy.self"
+                          "policy.self",
+                          "exit.manage",
+                          "exit.self"
                         ]
                       }
                     },

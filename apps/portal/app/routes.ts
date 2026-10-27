@@ -21,6 +21,7 @@ export default [
     route("documents", "routes/documents.tsx"),
     route("assets", "routes/assets.tsx"),
     route("policies", "routes/policies.tsx"),
+    route("exit", "routes/exit.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

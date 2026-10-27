@@ -21,6 +21,9 @@ import {
   assetListSchema,
   myAssetsSchema,
   myPoliciesSchema,
+  exitDetailSchema,
+  exitListSchema,
+  myExitSchema,
   policyDetailSchema,
   policyListSchema,
   insightsSchema,
@@ -249,4 +252,24 @@ export const mutate = (
     method,
     headers: { "X-CSRF-Token": csrfToken },
     body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+export const useMyExit = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["exits", "mine"],
+    enabled,
+    queryFn: ({ signal }) => api("/exits/mine", myExitSchema, { signal }),
+  });
+export const useExits = (enabled: boolean, query = "") =>
+  useQuery({
+    queryKey: ["exits", "list", query],
+    enabled,
+    queryFn: ({ signal }) =>
+      api(`/exits${query ? `?${query}` : ""}`, exitListSchema, { signal }),
+  });
+export const useExit = (id: string | null) =>
+  useQuery({
+    queryKey: ["exits", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) => api(`/exits/${id}`, exitDetailSchema, { signal }),
   });

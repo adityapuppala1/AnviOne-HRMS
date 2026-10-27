@@ -16,6 +16,7 @@ import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
+import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -121,6 +122,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/policies")}>
             <Scroll size={18} />
             {copy.nav.policies}
+          </Button>
+        )}
+        {(me.permissions.includes("exit.self") ||
+          me.permissions.includes("exit.manage")) && (
+          <Button variant="ghost" onPress={() => go("/exit")}>
+            <DoorOpen size={18} />
+            {copy.nav.exit}
           </Button>
         )}
         {(me.permissions.includes("asset.self") ||

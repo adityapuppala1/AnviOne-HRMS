@@ -26,6 +26,10 @@ import {
   expenseClaimSchema,
   expenseListSchema,
   myExpensesSchema,
+  myProfileSchema,
+  profileEmployeeSchema,
+  profileRequestListSchema,
+  profileChangeRequestSchema,
   exitListSchema,
   myExitSchema,
   policyDetailSchema,
@@ -304,4 +308,32 @@ export const useExpense = (id: string | null) =>
     enabled: Boolean(id),
     queryFn: ({ signal }) =>
       api(`/expenses/${id}`, expenseClaimSchema, { signal }),
+  });
+
+export const useMyProfile = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["profile", "mine"],
+    enabled,
+    queryFn: ({ signal }) => api("/profile/mine", myProfileSchema, { signal }),
+  });
+export const useProfileRequests = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["profile", "requests"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/profile/requests", profileRequestListSchema, { signal }),
+  });
+export const useProfileRequest = (id: string | null) =>
+  useQuery({
+    queryKey: ["profile", "request", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/profile/requests/${id}`, profileChangeRequestSchema, { signal }),
+  });
+export const useProfileEmployee = (id: string | null) =>
+  useQuery({
+    queryKey: ["profile", "employee", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/profile/employees/${id}`, profileEmployeeSchema, { signal }),
   });

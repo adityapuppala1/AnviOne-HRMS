@@ -39,6 +39,8 @@ export const permissionSchema = z.enum([
   "expense.self",
   "expense.approve",
   "expense.manage",
+  "profile.self",
+  "profile.review",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -1444,6 +1446,218 @@ export const expenseCategoryUpdateSchema = z.strictObject({
   version: expenseVersion,
   ...categoryFields,
 });
+// Profile edits: an employee asks to change personal contact details; HR decides; an
+// approved change applies on its effective date and leaves immutable history.
+export const profileFieldSchema = z.enum([
+  "personalPhone",
+  "personalEmail",
+  "emergencyName",
+  "emergencyPhone",
+  "emergencyRelationship",
+  "addressLine1",
+  "addressLine2",
+  "city",
+  "postalCode",
+]);
+export type ProfileField = z.infer<typeof profileFieldSchema>;
+export const profileChangeStatusSchema = z.enum([
+  "submitted",
+  "approved",
+  "rejected",
+  "withdrawn",
+  "applied",
+]);
+export type ProfileChangeStatus = z.infer<typeof profileChangeStatusSchema>;
+const profilePhone = z
+  .string()
+  .trim()
+  .regex(/^\+?[0-9][0-9 -]{5,18}[0-9]$/, "Use digits, spaces or dashes");
+// Formats are checked here: the database stores only sealed (encrypted) values.
+export const profileFieldFormats: Record<ProfileField, z.ZodType<string>> = {
+  personalPhone: profilePhone,
+  personalEmail: z.string().trim().max(254).pipe(z.email()),
+  emergencyName: z.string().trim().min(2).max(80),
+  emergencyPhone: profilePhone,
+  emergencyRelationship: z.string().trim().min(2).max(40),
+  addressLine1: z.string().trim().min(3).max(120),
+  addressLine2: z.string().trim().min(1).max(120),
+  city: z.string().trim().min(2).max(60),
+  postalCode: z
+    .string()
+    .trim()
+    .regex(
+      /^[A-Za-z0-9][A-Za-z0-9 -]{1,8}[A-Za-z0-9]$/,
+      "Use 3-10 letters or digits",
+    ),
+};
+const profileValue = z.string().nullable();
+export const profileDetailsSchema = z.strictObject({
+  employeeId: z.uuid(),
+  personalPhone: profileValue,
+  personalEmail: profileValue,
+  emergencyName: profileValue,
+  emergencyPhone: profileValue,
+  emergencyRelationship: profileValue,
+  addressLine1: profileValue,
+  addressLine2: profileValue,
+  city: profileValue,
+  postalCode: profileValue,
+  // Fields whose stored value could not be opened (shown as null); never the value itself.
+  unavailable: z.array(profileFieldSchema),
+  // 0 until the first approved change creates the record.
+  version: z.number().int().nonnegative(),
+  updatedAt: z.string().nullable(),
+  updatedBy: z.string().nullable(),
+});
+export type ProfileDetails = z.infer<typeof profileDetailsSchema>;
+export const profileChangeSchema = z.strictObject({
+  field: profileFieldSchema,
+  value: profileValue,
+  // true when the stored value could not be opened; value is then null.
+  unavailable: z.boolean(),
+});
+export type ProfileChange = z.infer<typeof profileChangeSchema>;
+export const profileChangeRequestSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  employeeCode: z.string(),
+  fields: z.array(profileFieldSchema),
+  // Values only for the owner and on HR's audited detail view; null in lists.
+  changes: z.array(profileChangeSchema).nullable(),
+  reason: z.string().nullable(),
+  effectiveOn: z.string(),
+  status: profileChangeStatusSchema,
+  decisionNote: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  appliedAt: z.string().nullable(),
+  withdrawnAt: z.string().nullable(),
+  withdrawnBy: z.string().nullable(),
+  submittedBy: z.string(),
+  createdAt: z.string(),
+  version: z.number().int().positive(),
+  canDecide: z.boolean(),
+  // Owner: while submitted, or approved and not yet due.
+  canWithdraw: z.boolean(),
+  // HR: an approved change that is not yet due (needs a note; never one's own).
+  canCancel: z.boolean(),
+});
+export type ProfileChangeRequest = z.infer<typeof profileChangeRequestSchema>;
+export const profileHistoryEntrySchema = z.strictObject({
+  id: z.uuid(),
+  requestId: z.uuid(),
+  field: profileFieldSchema,
+  oldValue: profileValue,
+  newValue: profileValue,
+  effectiveOn: z.string(),
+  appliedAt: z.string(),
+  approvedBy: z.string(),
+  // true when the old or new value could not be opened; that value is then null.
+  unavailable: z.boolean(),
+});
+export type ProfileHistoryEntry = z.infer<typeof profileHistoryEntrySchema>;
+export const profileHistorySchema = z.strictObject({
+  items: z.array(profileHistoryEntrySchema),
+});
+export type ProfileHistory = z.infer<typeof profileHistorySchema>;
+export const myProfileSchema = z.strictObject({
+  profile: profileDetailsSchema,
+  open: profileChangeRequestSchema.nullable(),
+  requests: z.array(profileChangeRequestSchema),
+  history: z.array(profileHistoryEntrySchema),
+});
+export type MyProfile = z.infer<typeof myProfileSchema>;
+export const profileEmployeeSchema = z.strictObject({
+  employee: z.strictObject({
+    id: z.uuid(),
+    name: z.string(),
+    code: z.string(),
+  }),
+  profile: profileDetailsSchema,
+  open: profileChangeRequestSchema.nullable(),
+  history: z.array(profileHistoryEntrySchema),
+});
+export type ProfileEmployee = z.infer<typeof profileEmployeeSchema>;
+export const profileRequestListSchema = z.strictObject({
+  items: z.array(profileChangeRequestSchema),
+  counts: z.strictObject({
+    submitted: z.number().int().nonnegative(),
+    approved: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
+    withdrawn: z.number().int().nonnegative(),
+    applied: z.number().int().nonnegative(),
+  }),
+});
+export type ProfileRequestList = z.infer<typeof profileRequestListSchema>;
+export const profileApplyDueResultSchema = z.strictObject({
+  applied: z.number().int().nonnegative(),
+});
+export type ProfileApplyDueResult = z.infer<typeof profileApplyDueResultSchema>;
+export const profileRequestQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  status: profileChangeStatusSchema.optional(),
+});
+const profileVersion = z.number().int().positive();
+const profileNote = z.string().trim().min(3).max(500);
+export const profileSubmitSchema = z
+  .strictObject({
+    changes: z
+      .array(
+        z.strictObject({
+          field: profileFieldSchema,
+          // null clears the field.
+          value: z.string().max(254).nullable(),
+        }),
+      )
+      .min(1)
+      .max(9),
+    reason: z.string().trim().min(3).max(500),
+    effectiveOn: z.iso.date(),
+  })
+  .superRefine((input, ctx) => {
+    const seen = new Set<string>();
+    input.changes.forEach((change, index) => {
+      if (seen.has(change.field))
+        ctx.addIssue({
+          code: "custom",
+          message: "Each field may change only once",
+          path: ["changes", index, "field"],
+        });
+      seen.add(change.field);
+      if (change.value === null) return;
+      const result = profileFieldFormats[change.field].safeParse(change.value);
+      if (!result.success)
+        ctx.addIssue({
+          code: "custom",
+          message: result.error.issues[0]?.message ?? "Invalid value",
+          path: ["changes", index, "value"],
+        });
+    });
+  })
+  .transform((input) => ({
+    ...input,
+    changes: input.changes.map((change) => ({
+      field: change.field,
+      value: change.value === null ? null : change.value.trim(),
+    })),
+  }));
+export const profileWithdrawSchema = z.strictObject({
+  version: profileVersion,
+});
+export const profileApproveSchema = z.strictObject({
+  version: profileVersion,
+  note: profileNote.optional(),
+});
+export const profileRejectSchema = z.strictObject({
+  version: profileVersion,
+  note: profileNote,
+});
+export const profileCancelSchema = z.strictObject({
+  version: profileVersion,
+  note: profileNote,
+});
+export const profileApplyDueSchema = z.strictObject({});
 export {
   activationReadiness,
   onboardingStarter,

@@ -108,7 +108,10 @@ test("an employee submits and cancels a claim; HR manages categories", async ({
     await page.getByRole("button", { name: "New claim" }).first().click();
     const claim = page.getByRole("dialog", { name: "New claim" });
     await claim.getByLabel("Title").fill(title);
-    await claim.getByLabel("Category").selectOption({ label: "Meals" });
+    await claim.getByRole("button", { name: /Category/ }).click();
+    await page.getByRole("option", { name: "Meals" }).click();
+    // Let the listbox finish closing so axe does not read it mid-fade.
+    await expect(page.getByRole("listbox")).toHaveCount(0);
     await claim.getByLabel("Amount (₹)").fill("450");
     await claim.getByLabel("Description").fill("Lunch with a client.");
     await accessible(page);

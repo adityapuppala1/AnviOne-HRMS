@@ -144,7 +144,8 @@ test("HR issues equipment, the holder confirms it, HR receives it back", async (
     await expect(again).toContainText("Acknowledged");
     await again.getByRole("button", { name: "Receive back" }).click();
     const back = page.getByRole("dialog", { name: "Receive asset back" });
-    await back.getByLabel("Condition on return").selectOption("good");
+    await back.getByRole("button", { name: /Condition on return/ }).click();
+    await page.getByRole("option", { name: "Good", exact: true }).click();
     await back.getByRole("button", { name: "Record return" }).click();
     await expect(
       page.getByRole("dialog", { name: "Asset details" }),

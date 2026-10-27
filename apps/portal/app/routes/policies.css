@@ -16,12 +16,12 @@
   flex-wrap: wrap;
   gap: 10px;
 }
-.policies-toolbar .search-box {
+.policies-toolbar .policies-search {
   flex: 1 1 240px;
+  width: auto;
   min-width: 0;
 }
-.policies-toolbar select {
-  min-height: 44px;
+.policies-toolbar .policies-filter {
   flex: 0 1 200px;
   min-width: 0;
 }
@@ -107,22 +107,6 @@
 }
 
 /* Dialog forms */
-.policies-field {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-}
-.policies-field > label {
-  font-size: 12px;
-  font-weight: 600;
-}
-.policies-field input,
-.policies-field select,
-.policies-field textarea {
-  min-height: 44px;
-  width: 100%;
-  min-width: 0;
-}
 .policies-summary-input {
   min-height: 80px;
 }
@@ -133,22 +117,12 @@
 .policies-code-input {
   text-transform: uppercase;
 }
-.policies-hint {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 0;
-}
 .policies-check {
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 44px;
   font-size: 14px;
-}
-.policies-check input {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
 }
 .policies-modal.modal {
   width: min(680px, calc(100vw - 32px));
@@ -309,12 +283,6 @@
   min-width: 0;
 }
 
-@media (pointer: coarse) {
-  .policies-check input {
-    width: 24px;
-    height: 24px;
-  }
-}
 @media (max-width: 1000px) {
   .policies-facts {
     grid-template-columns: minmax(0, 1fr);
@@ -327,7 +295,7 @@
     padding-left: 16px;
     padding-right: 16px;
   }
-  .policies-toolbar select {
+  .policies-toolbar .policies-filter {
     flex: 1 1 140px;
   }
   .policies-stats {

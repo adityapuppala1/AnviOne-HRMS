@@ -23,6 +23,7 @@ export default [
     route("policies", "routes/policies.tsx"),
     route("exit", "routes/exit.tsx"),
     route("expenses", "routes/expenses.tsx"),
+    route("details", "routes/details.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

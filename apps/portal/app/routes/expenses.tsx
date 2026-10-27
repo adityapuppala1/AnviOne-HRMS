@@ -22,14 +22,19 @@ import {
   DialogPanel,
   EmptyBlock,
   ErrorState,
+  Input,
   LoadingState,
   PageHeader,
+  RangeInput,
+  Select,
   StatCard,
   StatusBadge,
   Tab,
   TabList,
   TabPanel,
   Tabs,
+  TextArea,
+  Toggle,
 } from "@anvi/ui";
 import {
   expenseCategorySchema,
@@ -203,30 +208,6 @@ function savedMine(client: QueryClient, next: MyExpenses) {
   void client.invalidateQueries({ queryKey: ["expenses", "list"] });
   void client.invalidateQueries({ queryKey: ["expenses", "detail"] });
   void client.invalidateQueries({ queryKey: ["approvals"] });
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="expenses-field">
-      <label htmlFor={id}>{label}</label>
-      {children}
-      {hint !== undefined && (
-        <p className="expenses-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
-    </div>
-  );
 }
 
 function FormActions({
@@ -613,16 +594,15 @@ function ApprovalsView({
           </div>
         </div>
         <div className="directory-toolbar expenses-toolbar">
-          <label className="search-box">
-            <MagnifyingGlass size={18} />
-            <input
-              aria-label={text.approvals.searchLabel}
-              placeholder={text.approvals.searchPlaceholder}
-              maxLength={80}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
+          <Input
+            aria-label={text.approvals.searchLabel}
+            placeholder={text.approvals.searchPlaceholder}
+            maxLength={80}
+            icon={MagnifyingGlass}
+            value={search}
+            onChange={setSearch}
+            className="expenses-search"
+          />
           <div
             className="expenses-chips"
             role="group"
@@ -839,39 +819,28 @@ function PayDialog({
             claim.employeeName,
           )}
         </p>
-        <Field
-          id="expenses-pay-reference"
+        <Input
           label={text.pay.reference}
           hint={text.pay.referenceHint}
-        >
-          <input
-            id="expenses-pay-reference"
-            name="reference"
-            type="text"
-            required
-            minLength={2}
-            maxLength={80}
-            autoComplete="off"
-            aria-describedby="expenses-pay-reference-hint"
-            autoFocus
-          />
-        </Field>
-        <Field
-          id="expenses-pay-date"
+          name="reference"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={80}
+          autoComplete="off"
+          autoFocus
+        />
+        <RangeInput
           label={text.pay.paidOn}
           hint={text.pay.paidOnHint(day(min), day(today))}
-        >
-          <input
-            id="expenses-pay-date"
-            name="paidOn"
-            type="date"
-            required
-            defaultValue={today}
-            min={min}
-            max={today}
-            aria-describedby="expenses-pay-date-hint"
-          />
-        </Field>
+          name="paidOn"
+          type="date"
+          isRequired
+          hideRequiredIndicator
+          defaultValue={today}
+          min={min}
+          max={today}
+        />
         <FormError message={error} />
         <FormActions
           busy={busy}
@@ -1093,86 +1062,53 @@ function CategoryForm({
   }
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
-      <Field
-        id="expenses-cat-code"
+      <Input
         label={text.category.code}
         hint={category ? text.category.codeLocked : text.category.codeHint}
-      >
-        <input
-          id="expenses-cat-code"
-          type="text"
-          required
-          readOnly={Boolean(category)}
-          value={category ? category.code : code}
-          pattern="[A-Z][A-Z0-9_]{1,15}"
-          maxLength={16}
-          autoComplete="off"
-          aria-describedby="expenses-cat-code-hint"
-          autoFocus={!category}
-          onChange={(event) => setCode(event.target.value.toUpperCase())}
-        />
-      </Field>
-      <Field
-        id="expenses-cat-name"
+        isRequired
+        hideRequiredIndicator
+        isReadOnly={Boolean(category)}
+        value={category ? category.code : code}
+        pattern="[A-Z][A-Z0-9_]{1,15}"
+        maxLength={16}
+        autoComplete="off"
+        autoFocus={!category}
+        onChange={(value: string) => setCode(value.toUpperCase())}
+      />
+      <Input
         label={text.category.name}
         hint={text.category.nameHint}
-      >
-        <input
-          id="expenses-cat-name"
-          name="name"
-          type="text"
-          required
-          minLength={2}
-          maxLength={60}
-          defaultValue={category?.name ?? ""}
-          autoComplete="off"
-          aria-describedby="expenses-cat-name-hint"
-          autoFocus={Boolean(category)}
-        />
-      </Field>
-      <Field
-        id="expenses-cat-limit"
+        name="name"
+        isRequired
+        hideRequiredIndicator
+        minLength={2}
+        maxLength={60}
+        defaultValue={category?.name ?? ""}
+        autoComplete="off"
+        autoFocus={Boolean(category)}
+      />
+      <Input
         label={text.category.limit}
         hint={limitBad ? text.category.limitBad : text.category.limitHint}
-      >
-        <input
-          id="expenses-cat-limit"
-          type="text"
-          inputMode="decimal"
-          value={limit}
-          aria-invalid={limitBad}
-          aria-describedby="expenses-cat-limit-hint"
-          onChange={(event) => setLimit(event.target.value)}
-        />
-      </Field>
-      <Field
-        id="expenses-cat-receipt"
+        inputMode="decimal"
+        value={limit}
+        isInvalid={limitBad}
+        onChange={(value: string) => setLimit(value)}
+      />
+      <Input
         label={text.category.receipt}
         hint={receiptBad ? text.category.amountBad : text.category.receiptHint}
-      >
-        <input
-          id="expenses-cat-receipt"
-          type="text"
-          inputMode="decimal"
-          value={receipt}
-          aria-invalid={receiptBad}
-          aria-describedby="expenses-cat-receipt-hint"
-          onChange={(event) => setReceipt(event.target.value)}
-        />
-      </Field>
-      <label className="expenses-check">
-        <input
-          type="checkbox"
-          role="switch"
-          checked={active}
-          aria-describedby="expenses-cat-active-hint"
-          onChange={(event) => setActive(event.target.checked)}
-        />
-        <span>{text.category.active}</span>
-      </label>
-      <p className="expenses-hint" id="expenses-cat-active-hint">
-        {text.category.activeHint}
-      </p>
+        inputMode="decimal"
+        value={receipt}
+        isInvalid={receiptBad}
+        onChange={(value: string) => setReceipt(value)}
+      />
+      <Toggle
+        isSelected={active}
+        onChange={setActive}
+        label={text.category.active}
+        hint={text.category.activeHint}
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}
@@ -1302,38 +1238,27 @@ function ClaimForm({
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
       <p>{text.claim.intro}</p>
-      <Field id="expenses-kind" label={text.claim.kind}>
-        <select
-          id="expenses-kind"
-          value={kind}
-          onChange={(event) => pickKind(event.target.value as ExpenseKind)}
-        >
-          {kindKeys.map((key) => (
-            <option key={key} value={key}>
-              {text.kinds[key]}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field
-        id="expenses-title"
+      <Select
+        label={text.claim.kind}
+        selectedKey={kind}
+        onSelectionChange={(key) => pickKind(String(key) as ExpenseKind)}
+      >
+        {kindKeys.map((key) => (
+          <Select.Item key={key} id={key} label={text.kinds[key]} />
+        ))}
+      </Select>
+      <Input
         label={text.claim.titleLabel}
         hint={text.claim.titleHint}
-      >
-        <input
-          id="expenses-title"
-          name="title"
-          type="text"
-          required
-          minLength={3}
-          maxLength={120}
-          autoComplete="off"
-          aria-describedby="expenses-title-hint"
-          autoFocus
-        />
-      </Field>
-      <Field
-        id="expenses-category"
+        name="title"
+        isRequired
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={120}
+        autoComplete="off"
+        autoFocus
+      />
+      <Select
         label={text.claim.category}
         hint={
           categoriesFailed
@@ -1346,39 +1271,27 @@ function ClaimForm({
                 ? text.claim.noCategories
                 : ""
         }
+        placeholder={text.claim.categoryPlaceholder}
+        isRequired
+        hideRequiredIndicator
+        selectedKey={categoryId || null}
+        onSelectionChange={(key) => setCategoryId(key ? String(key) : "")}
       >
-        <select
-          id="expenses-category"
-          required
-          value={categoryId}
-          aria-describedby="expenses-category-hint"
-          onChange={(event) => setCategoryId(event.target.value)}
-        >
-          <option value="">{text.claim.categoryPlaceholder}</option>
-          {choices.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field
-        id="expenses-amount"
+        {choices.map((c) => (
+          <Select.Item key={c.id} id={c.id} label={c.name} />
+        ))}
+      </Select>
+      <Input
         label={text.claim.amount}
         hint={amountBad ? text.claim.amountBad : text.claim.amountHint}
-      >
-        <input
-          id="expenses-amount"
-          type="text"
-          inputMode="decimal"
-          required
-          autoComplete="off"
-          value={amount}
-          aria-invalid={amountBad || overLimit}
-          aria-describedby="expenses-amount-hint expenses-amount-warning"
-          onChange={(event) => setAmount(event.target.value)}
-        />
-      </Field>
+        inputMode="decimal"
+        isRequired
+        hideRequiredIndicator
+        autoComplete="off"
+        value={amount}
+        isInvalid={amountBad || overLimit}
+        onChange={(value: string) => setAmount(value)}
+      />
       <div id="expenses-amount-warning" aria-live="polite">
         {overLimit && category?.perClaimLimitMinor != null && (
           <p className="expenses-warning">
@@ -1389,73 +1302,50 @@ function ClaimForm({
           </p>
         )}
       </div>
-      <Field
-        id="expenses-date"
+      <RangeInput
         label={text.claim.date}
         hint={trip ? text.claim.dateHintTrip : text.claim.dateHint}
-      >
-        <input
-          id="expenses-date"
-          type="date"
-          required
-          value={date}
-          min={min}
-          max={max}
-          aria-describedby="expenses-date-hint"
-          onChange={(event) => setDate(event.target.value)}
-        />
-      </Field>
+        type="date"
+        isRequired
+        hideRequiredIndicator
+        value={date}
+        min={min}
+        max={max}
+        onChange={(value: string) => setDate(value)}
+      />
       {trip && (
-        <Field
-          id="expenses-destination"
+        <Input
           label={text.claim.destination}
           hint={text.claim.destinationHint}
-        >
-          <input
-            id="expenses-destination"
-            name="destination"
-            type="text"
-            required
-            minLength={2}
-            maxLength={120}
-            autoComplete="off"
-            aria-describedby="expenses-destination-hint"
-          />
-        </Field>
+          name="destination"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={120}
+          autoComplete="off"
+        />
       )}
-      <Field
-        id="expenses-receipt"
+      <Input
         label={text.claim.receipt}
         hint={
           needsReceipt && category?.requiresReceiptOverMinor != null
             ? text.claim.receiptNeeded(money(category.requiresReceiptOverMinor))
             : text.claim.receiptHint
         }
-      >
-        <input
-          id="expenses-receipt"
-          name="receipt"
-          type="text"
-          required={needsReceipt}
-          minLength={2}
-          maxLength={80}
-          autoComplete="off"
-          aria-describedby="expenses-receipt-hint"
-        />
-      </Field>
-      <Field
-        id="expenses-description"
+        name="receipt"
+        isRequired={needsReceipt}
+        hideRequiredIndicator
+        minLength={2}
+        maxLength={80}
+        autoComplete="off"
+      />
+      <TextArea
         label={text.claim.description}
         hint={text.claim.descriptionHint}
-      >
-        <textarea
-          id="expenses-description"
-          name="description"
-          className="expenses-note-input"
-          maxLength={1000}
-          aria-describedby="expenses-description-hint"
-        />
-      </Field>
+        name="description"
+        textAreaClassName="expenses-note-input"
+        maxLength={1000}
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}
@@ -1743,21 +1633,15 @@ function DetailBody({
               className="expenses-decide"
               onSubmit={(event) => void approve(event)}
             >
-              <Field
-                id="expenses-decide-note"
+              <TextArea
                 label={text.details.decideNote}
                 hint={`${text.details.decideNoteHint} ${text.form.count(note.length)}`}
-              >
-                <textarea
-                  id="expenses-decide-note"
-                  className="expenses-note-input"
-                  minLength={3}
-                  maxLength={500}
-                  value={note}
-                  aria-describedby="expenses-decide-note-hint"
-                  onChange={(event) => setNote(event.target.value)}
-                />
-              </Field>
+                textAreaClassName="expenses-note-input"
+                minLength={3}
+                maxLength={500}
+                value={note}
+                onChange={(value: string) => setNote(value)}
+              />
               <FormError message={error} />
               <div className="expenses-actions">
                 <Button type="submit" isDisabled={busy}>
@@ -1844,23 +1728,18 @@ function RejectDialog({
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
         <p>{text.reject.intro(claim.title)}</p>
-        <Field
-          id="expenses-reject-note"
+        <TextArea
           label={text.reject.note}
           hint={`${text.reject.noteHint} ${text.form.count(note.length)}`}
-        >
-          <textarea
-            id="expenses-reject-note"
-            className="expenses-note-input"
-            required
-            minLength={3}
-            maxLength={500}
-            value={note}
-            aria-describedby="expenses-reject-note-hint"
-            autoFocus
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </Field>
+          textAreaClassName="expenses-note-input"
+          isRequired
+          hideRequiredIndicator
+          minLength={3}
+          maxLength={500}
+          value={note}
+          autoFocus
+          onChange={(value: string) => setNote(value)}
+        />
         <FormError message={error} />
         <FormActions
           busy={busy}

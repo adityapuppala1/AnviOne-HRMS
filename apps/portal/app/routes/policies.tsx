@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -9,13 +9,17 @@ import { PencilSimple } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { Hourglass } from "@phosphor-icons/react/dist/csr/Hourglass";
 import {
   Button,
+  Checkbox,
   DialogPanel,
   EmptyBlock,
+  Input,
   ErrorState,
   LoadingState,
   PageHeader,
+  Select,
   StatCard,
   StatusBadge,
+  TextArea,
 } from "@anvi/ui";
 import {
   myPoliciesSchema,
@@ -101,30 +105,6 @@ function usePolicyRequest() {
     }
   }
   return { run, busy, error, setError, client };
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="policies-field">
-      <label htmlFor={id}>{label}</label>
-      {children}
-      {hint && (
-        <p className="policies-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
-    </div>
-  );
 }
 
 function FormActions({
@@ -255,28 +235,28 @@ function ManageView() {
           </div>
         </div>
         <div className="directory-toolbar policies-toolbar">
-          <label className="search-box">
-            <MagnifyingGlass size={18} />
-            <input
-              aria-label={text.toolbar.searchLabel}
-              placeholder={text.toolbar.searchPlaceholder}
-              maxLength={80}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
-          <select
+          <Input
+            aria-label={text.toolbar.searchLabel}
+            placeholder={text.toolbar.searchPlaceholder}
+            maxLength={80}
+            icon={MagnifyingGlass}
+            value={search}
+            onChange={setSearch}
+            className="policies-search"
+          />
+          <Select
             aria-label={text.toolbar.categoryLabel}
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            selectedKey={category || "all"}
+            onSelectionChange={(key) =>
+              setCategory(key === "all" ? "" : String(key))
+            }
+            className="policies-filter"
           >
-            <option value="">{text.toolbar.allCategories}</option>
+            <Select.Item id="all" label={text.toolbar.allCategories} />
             {categoryKeys.map((key) => (
-              <option key={key} value={key}>
-                {text.categories[key]}
-              </option>
+              <Select.Item key={key} id={key} label={text.categories[key]} />
             ))}
-          </select>
+          </Select>
         </div>
         {error ? (
           <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -403,16 +383,17 @@ function readContent(form: FormData) {
     body: String(form.get("body") ?? "").trim(),
     effectiveOn: String(form.get("effectiveOn") ?? ""),
     requiresAcknowledgement: form.get("requires") === "on",
-    audienceDepartmentId: String(form.get("audience") ?? "") || null,
+    audienceDepartmentId:
+      form.get("audience") && form.get("audience") !== "all"
+        ? String(form.get("audience"))
+        : null,
   };
 }
 
 function ContentFields({
-  prefix,
   departments,
   defaults,
 }: {
-  prefix: string;
   departments: Department[];
   defaults: {
     title: string;
@@ -431,81 +412,63 @@ function ContentFields({
       : departments;
   return (
     <>
-      <Field id={`${prefix}-title`} label={text.form.title}>
-        <input
-          id={`${prefix}-title`}
-          name="title"
-          defaultValue={defaults.title}
-          required
-          minLength={3}
-          maxLength={120}
-          autoComplete="off"
-        />
-      </Field>
-      <Field
-        id={`${prefix}-summary`}
+      <Input
+        name="title"
+        label={text.form.title}
+        defaultValue={defaults.title}
+        isRequired
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={120}
+        autoComplete="off"
+      />
+      <TextArea
+        name="summary"
         label={text.form.summary}
         hint={text.form.summaryHint}
-      >
-        <textarea
-          id={`${prefix}-summary`}
-          name="summary"
-          className="policies-summary-input"
-          defaultValue={defaults.summary}
-          required
-          minLength={10}
-          maxLength={300}
-          aria-describedby={`${prefix}-summary-hint`}
-        />
-      </Field>
-      <Field
-        id={`${prefix}-body`}
+        textAreaClassName="policies-summary-input"
+        defaultValue={defaults.summary}
+        isRequired
+        hideRequiredIndicator
+        minLength={10}
+        maxLength={300}
+      />
+      <TextArea
+        name="body"
         label={text.form.body}
         hint={`${text.form.bodyHint} ${text.form.count(length)}`}
+        textAreaClassName="policies-body-input"
+        defaultValue={defaults.body}
+        isRequired
+        hideRequiredIndicator
+        minLength={20}
+        maxLength={20000}
+        onChange={(value) => setLength(value.length)}
+      />
+      <Input
+        name="effectiveOn"
+        type="date"
+        label={text.form.effectiveOn}
+        defaultValue={defaults.effectiveOn}
+        isRequired
+        hideRequiredIndicator
+      />
+      <Select
+        name="audience"
+        label={text.form.audience}
+        defaultSelectedKey={defaults.audience?.id ?? "all"}
       >
-        <textarea
-          id={`${prefix}-body`}
-          name="body"
-          className="policies-body-input"
-          defaultValue={defaults.body}
-          required
-          minLength={20}
-          maxLength={20000}
-          aria-describedby={`${prefix}-body-hint`}
-          onChange={(event) => setLength(event.target.value.length)}
-        />
-      </Field>
-      <Field id={`${prefix}-effective`} label={text.form.effectiveOn}>
-        <input
-          id={`${prefix}-effective`}
-          name="effectiveOn"
-          type="date"
-          defaultValue={defaults.effectiveOn}
-          required
-        />
-      </Field>
-      <Field id={`${prefix}-audience`} label={text.form.audience}>
-        <select
-          id={`${prefix}-audience`}
-          name="audience"
-          defaultValue={defaults.audience?.id ?? ""}
-        >
-          <option value="">{text.form.everyone}</option>
-          {options.map((dept) => (
-            <option key={dept.id} value={dept.id}>
-              {dept.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <label className="policies-check">
-        <input
-          type="checkbox"
-          name="requires"
-          defaultChecked={defaults.requiresAcknowledgement}
-        />
-        <span>{text.form.requires}</span>
-      </label>
+        <Select.Item id="all" label={text.form.everyone} />
+        {options.map((dept) => (
+          <Select.Item key={dept.id} id={dept.id} label={dept.name} />
+        ))}
+      </Select>
+      <Checkbox
+        name="requires"
+        defaultSelected={defaults.requiresAcknowledgement}
+        label={text.form.requires}
+        className="policies-check"
+      />
     </>
   );
 }
@@ -561,43 +524,32 @@ function PolicyDialog({
       className="leave-modal policies-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
-        <Field
-          id="policy-code"
+        <Input
+          name="code"
           label={text.form.code}
           hint={text.form.codeHint}
+          inputClassName="policies-code-input"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={32}
+          pattern="[A-Za-z0-9][A-Za-z0-9\-]{1,31}"
+          autoComplete="off"
+          autoFocus
+        />
+        <Select
+          label={text.form.category}
+          selectedKey={category}
+          onSelectionChange={(key) =>
+            setCategory(String(key) as PolicyCategory)
+          }
         >
-          <input
-            id="policy-code"
-            name="code"
-            className="policies-code-input"
-            required
-            minLength={2}
-            maxLength={32}
-            pattern="[A-Za-z0-9][A-Za-z0-9\-]{1,31}"
-            autoCapitalize="characters"
-            autoComplete="off"
-            aria-describedby="policy-code-hint"
-            autoFocus
-          />
-        </Field>
-        <Field id="policy-category" label={text.form.category}>
-          <select
-            id="policy-category"
-            value={category}
-            onChange={(event) =>
-              setCategory(event.target.value as PolicyCategory)
-            }
-          >
-            {categoryKeys.map((key) => (
-              <option key={key} value={key}>
-                {text.categories[key]}
-              </option>
-            ))}
-          </select>
-        </Field>
+          {categoryKeys.map((key) => (
+            <Select.Item key={key} id={key} label={text.categories[key]} />
+          ))}
+        </Select>
         {open && (
           <ContentFields
-            prefix="policy-new"
             departments={departments}
             defaults={{
               title: "",
@@ -1014,7 +966,6 @@ function EditForm({
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
       <ContentFields
-        prefix="policy-edit"
         departments={departments}
         defaults={{
           title: draft.title,
@@ -1099,17 +1050,16 @@ function ReasonForm({
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
       <p>{copy.intro}</p>
-      <Field id="policy-reason" label={copy.reason} hint={copy.reasonHint}>
-        <textarea
-          id="policy-reason"
-          name="note"
-          required
-          minLength={3}
-          maxLength={300}
-          aria-describedby="policy-reason-hint"
-          autoFocus
-        />
-      </Field>
+      <TextArea
+        name="note"
+        label={copy.reason}
+        hint={copy.reasonHint}
+        isRequired
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={300}
+        autoFocus
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}

@@ -18,6 +18,7 @@ import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
+import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -123,6 +124,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/policies")}>
             <Scroll size={18} />
             {copy.nav.policies}
+          </Button>
+        )}
+        {(me.permissions.includes("profile.self") ||
+          me.permissions.includes("profile.review")) && (
+          <Button variant="ghost" onPress={() => go("/details")}>
+            <IdentificationCard size={18} />
+            {copy.nav.details}
           </Button>
         )}
         {(me.permissions.includes("expense.self") ||

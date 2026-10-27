@@ -40,7 +40,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.asset_scope',$13,true),
     set_config('app.policy_scope',$14,true),
     set_config('app.exit_scope',$15,true),
-    set_config('app.expense_scope',$16,true)`,
+    set_config('app.expense_scope',$16,true),
+    set_config('app.profile_scope',$17,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -75,6 +76,10 @@ export async function setContext(client: PoolClient, actor: Principal) {
       // Approval scope widens visibility (team or entity); claimants see only themselves.
       scopeFor(actor, "expense.approve") ??
         scopeFor(actor, "expense.self") ??
+        "none",
+      // HR reads and decides for the entity; everyone else only their own profile.
+      scopeFor(actor, "profile.review") ??
+        scopeFor(actor, "profile.self") ??
         "none",
     ],
   );

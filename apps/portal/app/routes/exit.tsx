@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
@@ -11,13 +11,19 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { SignOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import {
   Button,
+  Checkbox,
   DialogPanel,
   EmptyBlock,
   ErrorState,
+  Input,
   LoadingState,
   PageHeader,
+  RangeInput,
+  Select,
   StatCard,
   StatusBadge,
+  TextArea,
+  UAvatar,
 } from "@anvi/ui";
 import {
   exitDetailSchema,
@@ -139,28 +145,13 @@ function useExitRequest() {
   return { run, busy, error, setError, client };
 }
 
-function Field({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="exit-field">
-      <label htmlFor={id}>{label}</label>
-      {children}
-      {hint && (
-        <p className="exit-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
-    </div>
-  );
+function initialsOf(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 function FormActions({
@@ -198,7 +189,6 @@ function FormError({ message }: { message: string }) {
 
 /** A required or optional note, 3 to 500 characters, with a live count. */
 function NoteField({
-  id,
   label,
   hint,
   required,
@@ -212,20 +202,18 @@ function NoteField({
 }) {
   const [length, setLength] = useState(0);
   return (
-    <Field id={id} label={label} hint={`${hint} ${text.form.count(length)}`}>
-      <textarea
-        id={id}
-        name="note"
-        className="exit-note-input"
-        required={required}
-        // An optional note may be empty, but a typed one still needs 3 characters.
-        minLength={3}
-        maxLength={500}
-        aria-describedby={`${id}-hint`}
-        autoFocus={autoFocus}
-        onChange={(event) => setLength(event.target.value.length)}
-      />
-    </Field>
+    <TextArea
+      label={label}
+      hint={`${hint} ${text.form.count(length)}`}
+      name="note"
+      textAreaClassName="exit-note-input"
+      isRequired={required}
+      hideRequiredIndicator
+      minLength={3}
+      maxLength={500}
+      autoFocus={autoFocus}
+      onChange={(value: string) => setLength(value.length)}
+    />
   );
 }
 
@@ -622,7 +610,6 @@ function ResignDialog({
 }
 
 function ReasonField({
-  id,
   label,
   hint,
 }: {
@@ -632,19 +619,18 @@ function ReasonField({
 }) {
   const [length, setLength] = useState(0);
   return (
-    <Field id={id} label={label} hint={`${hint} ${text.form.count(length)}`}>
-      <textarea
-        id={id}
-        name="reason"
-        className="exit-note-input"
-        required
-        minLength={3}
-        maxLength={500}
-        aria-describedby={`${id}-hint`}
-        autoFocus
-        onChange={(event) => setLength(event.target.value.length)}
-      />
-    </Field>
+    <TextArea
+      label={label}
+      hint={`${hint} ${text.form.count(length)}`}
+      name="reason"
+      textAreaClassName="exit-note-input"
+      isRequired
+      hideRequiredIndicator
+      minLength={3}
+      maxLength={500}
+      autoFocus
+      onChange={(value: string) => setLength(value.length)}
+    />
   );
 }
 
@@ -778,16 +764,15 @@ function ManageView() {
           </div>
         </div>
         <div className="directory-toolbar exit-toolbar">
-          <label className="search-box">
-            <MagnifyingGlass size={18} />
-            <input
-              aria-label={text.toolbar.searchLabel}
-              placeholder={text.toolbar.searchPlaceholder}
-              maxLength={80}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
+          <Input
+            aria-label={text.toolbar.searchLabel}
+            placeholder={text.toolbar.searchPlaceholder}
+            maxLength={80}
+            icon={MagnifyingGlass}
+            value={search}
+            onChange={setSearch}
+            className="exit-search"
+          />
           <div
             className="exit-chips"
             role="group"
@@ -992,25 +977,18 @@ function StartDialog({
           </div>
         ) : (
           <>
-            <Field
-              id="exit-find"
+            <Input
               label={text.startDialog.find}
               hint={text.startDialog.findHint}
-            >
-              <input
-                id="exit-find"
-                type="text"
-                autoComplete="off"
-                maxLength={80}
-                value={term}
-                aria-describedby="exit-find-hint"
-                onChange={(event) => {
-                  setTerm(event.target.value);
-                  setMissing(false);
-                }}
-                autoFocus
-              />
-            </Field>
+              autoComplete="off"
+              maxLength={80}
+              value={term}
+              onChange={(value: string) => {
+                setTerm(value);
+                setMissing(false);
+              }}
+              autoFocus
+            />
             {search && people.data && (
               <ul className="exit-people" aria-label={text.startDialog.results}>
                 {people.data.items.length === 0 ? (
@@ -1028,10 +1006,17 @@ function StartDialog({
                           })
                         }
                       >
-                        <strong>{person.name}</strong>
-                        <small>
-                          {person.title} · {person.department}
-                        </small>
+                        <UAvatar
+                          size="sm"
+                          initials={initialsOf(person.name)}
+                          alt=""
+                        />
+                        <span className="exit-person-text">
+                          <strong>{person.name}</strong>
+                          <small>
+                            {person.title} · {person.department}
+                          </small>
+                        </span>
                       </button>
                     </li>
                   ))
@@ -1045,19 +1030,15 @@ function StartDialog({
             )}
           </>
         )}
-        <Field id="exit-kind" label={text.startDialog.kind}>
-          <select
-            id="exit-kind"
-            value={kind}
-            onChange={(event) => setKind(event.target.value as ExitKind)}
-          >
-            {kindKeys.map((key) => (
-              <option key={key} value={key}>
-                {text.kinds[key]}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <Select
+          label={text.startDialog.kind}
+          selectedKey={kind}
+          onSelectionChange={(key) => setKind(String(key) as ExitKind)}
+        >
+          {kindKeys.map((key) => (
+            <Select.Item key={key} id={key} label={text.kinds[key]} />
+          ))}
+        </Select>
         {open && (
           <>
             <ReasonField
@@ -1065,22 +1046,17 @@ function StartDialog({
               label={text.startDialog.reason}
               hint={text.startDialog.reasonHint}
             />
-            <Field
-              id="exit-notice"
+            <RangeInput
               label={text.startDialog.notice}
               hint={text.startDialog.noticeHint}
-            >
-              <input
-                id="exit-notice"
-                name="notice"
-                type="date"
-                required
-                defaultValue={today}
-                min={addDays(today, -90)}
-                max={today}
-                aria-describedby="exit-notice-hint"
-              />
-            </Field>
+              name="notice"
+              type="date"
+              isRequired
+              hideRequiredIndicator
+              defaultValue={today}
+              min={addDays(today, -90)}
+              max={today}
+            />
           </>
         )}
         <FormError message={error} />
@@ -1577,23 +1553,18 @@ function NoteForm({
   return (
     <form className="leave-form" onSubmit={(event) => void send(event)}>
       <p>{intro}</p>
-      <Field
-        id="exit-action-note"
+      <TextArea
         label={label}
         hint={`${hint} ${length} of ${maxLength} characters.`}
-      >
-        <textarea
-          id="exit-action-note"
-          name="note"
-          className="exit-note-input"
-          required={required}
-          minLength={3}
-          maxLength={maxLength}
-          aria-describedby="exit-action-note-hint"
-          autoFocus
-          onChange={(event) => setLength(event.target.value.length)}
-        />
-      </Field>
+        name="note"
+        textAreaClassName="exit-note-input"
+        isRequired={required}
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={maxLength}
+        autoFocus
+        onChange={(value: string) => setLength(value.length)}
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}
@@ -1633,23 +1604,18 @@ function AcceptForm({
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
       <p>{text.accept.intro(item.employeeName)}</p>
-      <Field
-        id="exit-last-day"
+      <RangeInput
         label={text.accept.lastDay}
         hint={text.accept.lastDayHint(day(min), day(max))}
-      >
-        <input
-          id="exit-last-day"
-          name="lastDay"
-          type="date"
-          required
-          defaultValue={suggested}
-          min={min}
-          max={max}
-          aria-describedby="exit-last-day-hint"
-          autoFocus
-        />
-      </Field>
+        name="lastDay"
+        type="date"
+        isRequired
+        hideRequiredIndicator
+        defaultValue={suggested}
+        min={min}
+        max={max}
+        autoFocus
+      />
       <NoteField
         id="exit-accept-note"
         label={text.accept.note}
@@ -1697,18 +1663,12 @@ function CompleteForm({
       <p className="exit-muted">{text.complete.external}</p>
       {before && item.lastWorkingDay && (
         <>
-          <label className="exit-check">
-            <input
-              type="checkbox"
-              checked={early}
-              aria-describedby="exit-early-hint"
-              onChange={(event) => setEarly(event.target.checked)}
-            />
-            <span>{text.complete.early}</span>
-          </label>
-          <p className="exit-hint" id="exit-early-hint">
-            {text.complete.earlyHint(day(item.lastWorkingDay))}
-          </p>
+          <Checkbox
+            isSelected={early}
+            onChange={setEarly}
+            label={text.complete.early}
+            hint={text.complete.earlyHint(day(item.lastWorkingDay))}
+          />
           {early && (
             <NoteField
               id="exit-early-note"

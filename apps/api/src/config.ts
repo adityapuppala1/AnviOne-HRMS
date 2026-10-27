@@ -13,6 +13,11 @@ const schema = z.object({
     .string()
     .regex(/^[a-f0-9]{64}$/)
     .optional(),
+  // Seals employees' personal contact details at rest (AES-256-GCM). Required in production.
+  PROFILE_DATA_KEY: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   CANDIDATE_ORIGIN: z.url().default("http://127.0.0.2:5174"),
   OIDC_ISSUER: z.url().optional(),
   OIDC_CLIENT_ID: z.string().optional(),
@@ -97,6 +102,10 @@ export function readConfig(env: Record<string, string | undefined>) {
     )
       throw new Error(
         "Production database connection must validate TLS certificates",
+      );
+    if (!config.PROFILE_DATA_KEY)
+      throw new Error(
+        "Production requires PROFILE_DATA_KEY to protect personal contact details",
       );
     if (!config.RATE_LIMIT_URL?.startsWith("rediss://"))
       throw new Error(

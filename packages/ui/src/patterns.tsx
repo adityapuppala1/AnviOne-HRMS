@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState, type FC, type ReactNode } from "react";
 import type { SortDescriptor } from "react-aria-components";
+import {
+  InputBase,
+  TextField,
+  type TextFieldProps,
+} from "./untitled/components/base/input/input";
+import { Label } from "./untitled/components/base/input/label";
+import { HintText } from "./untitled/components/base/input/hint-text";
 import { NumberTicker } from "./magicui/number-ticker";
 import {
   Table,
@@ -231,5 +238,41 @@ export function DataCard<T>({
         />
       )}
     </TableCard.Root>
+  );
+}
+
+// Untitled UI's Input does not pass native range attributes (min, max, step) to
+// the element, so dates and numbers with bounds compose the same primitives.
+export function RangeInput({
+  label,
+  hint,
+  min,
+  max,
+  step,
+  hideRequiredIndicator = true,
+  ...field
+}: Omit<TextFieldProps, "children"> & {
+  label: string;
+  hint?: ReactNode;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
+  hideRequiredIndicator?: boolean;
+}) {
+  return (
+    <TextField {...field}>
+      {({ isRequired, isInvalid }) => (
+        <>
+          <Label
+            isRequired={hideRequiredIndicator ? false : isRequired}
+            isInvalid={isInvalid}
+          >
+            {label}
+          </Label>
+          <InputBase min={min} max={max} step={step} type={field.type} />
+          {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}
+        </>
+      )}
+    </TextField>
   );
 }

@@ -895,7 +895,9 @@
                           "exit.self",
                           "expense.self",
                           "expense.approve",
-                          "expense.manage"
+                          "expense.manage",
+                          "profile.self",
+                          "profile.review"
                         ]
                       }
                     },

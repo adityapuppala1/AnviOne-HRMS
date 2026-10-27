@@ -45,19 +45,22 @@ export const Label = ({
     >
       {props.children}
 
-      <span
-        className={cx(
-          "hidden text-brand-tertiary",
-          isRequired && "block",
-          typeof isRequired === "undefined" && "group-required:block",
+      {/* Loom: render the asterisk only when it can show, so the label text stays exact for assistive tech and tests. */}
+      {isRequired !== false && (
+        <span
+          className={cx(
+            "hidden text-brand-tertiary",
+            isRequired && "block",
+            typeof isRequired === "undefined" && "group-required:block",
 
-          isInvalid && "text-error-primary",
-          typeof isInvalid === "undefined" &&
-            "group-invalid:text-error-primary",
-        )}
-      >
-        *
-      </span>
+            isInvalid && "text-error-primary",
+            typeof isInvalid === "undefined" &&
+              "group-invalid:text-error-primary",
+          )}
+        >
+          *
+        </span>
+      )}
 
       {tooltip && (
         <Tooltip

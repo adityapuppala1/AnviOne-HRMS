@@ -5,6 +5,7 @@
 | HR policies | Versioned policies, department audience, acknowledgement and compliance evidence (POL-01) | Legal-supplied wording, reminders (needs notification dispatch), quizzes, e-signature |
 | Employee exit | Resignation, HR-started exits, acceptance, five clearances, asset recovery check, completion ends sign-in (EXT-01) | Dues and final settlement (needs Payroll), scheduled access end on the last working day, external system revocation, exit interviews |
 | Expenses | Claims, travel and advances with limits and receipt rules, manager or HR approval, payment record (EXP-01) | Receipt file upload, advance settlement, multi-currency, payroll reimbursement, per-person caps |
+| Personal details changes | Contact-detail change requests, HR approval, effective dates, encrypted values, permanent history (PRF-01) | Name, job and bank-detail changes, proof documents, scheduled applying, key rotation |
 | Leave | Ledger with business-day counting, balances, manager/HR approval, holiday and work-week calendar | Policies by type/grade, accrual and adjustment jobs, opening balances, carry-forward |
 | Attendance and LOP | Server-stamped punches, provisional LOP flags, corrections with manager/HR routing, team board | Rules/imports, appeals, shift and policy configuration, human LOP decisions |
 | Documents | Local verified uploads: byte-typed PDF/PNG/JPEG, immutable content, HR verification, audited downloads | Private object storage, quarantine/malware scanning, retention, categories beyond the basics |

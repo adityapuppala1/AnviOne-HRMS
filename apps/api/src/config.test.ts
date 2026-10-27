@@ -57,6 +57,7 @@ describe("deployment boundaries", () => {
       OIDC_CLIENT_SECRET: "secret",
       OIDC_REDIRECT_URI: "https://hr.example.com/api/v1/auth/callback",
       OIDC_REQUIRED_ACR: "mfa",
+      PROFILE_DATA_KEY: "ab".repeat(32),
     };
     for (const value of [undefined, "redis://cache.example.com:6379"])
       expect(() =>
@@ -71,6 +72,26 @@ describe("deployment boundaries", () => {
     expect(() =>
       readConfig({ ...local, RATE_LIMIT_URL: "http://cache.example.com" }),
     ).toThrow("RATE_LIMIT_URL");
+  });
+  it("requires a profile data key in production", () => {
+    expect(() =>
+      readConfig({
+        NODE_ENV: "production",
+        AUTH_MODE: "oidc",
+        API_HOST: "0.0.0.0",
+        APP_ORIGIN: "https://hr.example.com",
+        DATABASE_URL: "postgresql://db.example.com/anvione?sslmode=verify-full",
+        OIDC_ISSUER: "https://login.example.com/tenant-id/v2.0",
+        OIDC_CLIENT_ID: "client",
+        OIDC_CLIENT_SECRET: "secret",
+        OIDC_REDIRECT_URI: "https://hr.example.com/api/v1/auth/callback",
+        OIDC_REQUIRED_ACR: "mfa",
+        RATE_LIMIT_URL: "rediss://cache.example.com:6380",
+      }),
+    ).toThrow("PROFILE_DATA_KEY");
+    expect(() => readConfig({ ...local, PROFILE_DATA_KEY: "not-hex" })).toThrow(
+      "PROFILE_DATA_KEY",
+    );
   });
   it("does not include secret configuration values in errors", () => {
     expect(() =>

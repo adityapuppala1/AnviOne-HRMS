@@ -939,3 +939,95 @@
   transition-duration: inherit;
   transition-timing-function: inherit;
 }
+
+/* Loom adjustments for the Untitled UI form kit (ADR 0008). */
+/* The portal's global input rules (theme.css) are unlayered, so they would stack
+   on the kit's own utilities. Hand those properties back to the kit. */
+input[data-rac]:not([type="checkbox"]):not([type="radio"]),
+textarea[data-rac] {
+  border: revert-layer;
+  border-radius: revert-layer;
+  background: revert-layer;
+  min-height: revert-layer;
+  padding: revert-layer;
+  width: revert-layer;
+  color: revert-layer;
+}
+input[data-rac][type="checkbox"],
+input[data-rac][type="radio"] {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+input[data-rac]:focus-visible,
+textarea[data-rac]:focus-visible {
+  outline: none;
+}
+
+[data-input-wrapper],
+[data-rac][data-input-wrapper] {
+  min-width: 0;
+}
+[data-rac] input,
+[data-rac] textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+[data-rac] textarea {
+  resize: vertical;
+}
+@media (pointer: coarse) {
+  /* 44px touch targets for the kit's controls. */
+  [data-input-wrapper] input,
+  button[data-rac][aria-haspopup="listbox"],
+  [role="radio"][data-rac],
+  label[data-rac]:has(input[type="checkbox"]),
+  label[data-rac]:has(input[role="switch"]) {
+    min-height: 44px;
+    align-items: center;
+  }
+  [role="menuitem"][data-rac] {
+    min-height: 44px;
+  }
+}
+/* Visible focus for kit buttons and menu items in both modes. */
+button[data-rac][data-focus-visible],
+[role="menuitem"][data-rac][data-focus-visible],
+[role="option"][data-rac][data-focus-visible] {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+[data-mode="dark"] button[data-rac][data-focus-visible],
+[data-mode="dark"] [role="menuitem"][data-rac][data-focus-visible],
+[data-mode="dark"] [role="option"][data-rac][data-focus-visible] {
+  outline-color: var(--color-brand-300);
+}
+
+/* The kit's checkbox, radio and toggle inputs are visually hidden by
+   react-aria. Stretch each over its own label, invisibly, so the whole row is
+   the click target (44px on touch) and automation can reach it. The portal's own
+   `.switch` (Reduce motion) keeps its own layout. */
+label[data-rac]:not(.switch)
+  > span:has(> input[type="checkbox"], > input[type="radio"]),
+label[data-rac]:not(.switch) > input[type="checkbox"],
+label[data-rac]:not(.switch) > input[type="radio"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  clip: auto !important;
+  clip-path: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer;
+}
+label[data-rac]:not(.switch) > span > input[type="checkbox"],
+label[data-rac]:not(.switch) > span > input[type="radio"] {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}

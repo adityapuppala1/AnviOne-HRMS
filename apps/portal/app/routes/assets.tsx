@@ -16,10 +16,13 @@ import {
   DialogPanel,
   EmptyBlock,
   ErrorState,
+  Input,
   LoadingState,
   PageHeader,
+  Select,
   StatCard,
   StatusBadge,
+  TextArea,
 } from "@anvi/ui";
 import {
   assetDetailSchema,
@@ -125,58 +128,29 @@ function useAssetRequest() {
   return { run, busy, error, setError, client };
 }
 
-function Field({
-  id,
+function OptionSelect<T extends string>({
   label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="assets-field">
-      <label htmlFor={id}>{label}</label>
-      {children}
-      {hint && (
-        <p className="assets-hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function Select<T extends string>({
-  id,
   value,
   onChange,
   options,
   labels,
-  describedBy,
 }: {
-  id: string;
+  label: string;
   value: T;
   onChange: (value: T) => void;
   options: T[];
   labels: Record<T, string>;
-  describedBy?: string;
 }) {
   return (
-    <select
-      id={id}
-      value={value}
-      aria-describedby={describedBy}
-      onChange={(event) => onChange(event.target.value as T)}
+    <Select
+      label={label}
+      selectedKey={value}
+      onSelectionChange={(key) => onChange(String(key) as T)}
     >
       {options.map((option) => (
-        <option key={option} value={option}>
-          {labels[option]}
-        </option>
+        <Select.Item key={option} id={option} label={labels[option]} />
       ))}
-    </select>
+    </Select>
   );
 }
 
@@ -295,40 +269,41 @@ function ManageView() {
           </div>
         </div>
         <div className="directory-toolbar assets-toolbar">
-          <label className="search-box">
-            <MagnifyingGlass size={18} />
-            <input
-              aria-label={text.toolbar.searchLabel}
-              placeholder={text.toolbar.searchPlaceholder}
-              maxLength={80}
-              value={params.get("q") ?? ""}
-              onChange={(event) => filter("q", event.target.value)}
-            />
-          </label>
-          <select
+          <Input
+            aria-label={text.toolbar.searchLabel}
+            placeholder={text.toolbar.searchPlaceholder}
+            maxLength={80}
+            icon={MagnifyingGlass}
+            value={params.get("q") ?? ""}
+            onChange={(value) => filter("q", value)}
+            className="assets-search"
+          />
+          <Select
             aria-label={text.toolbar.statusLabel}
-            value={params.get("status") ?? ""}
-            onChange={(event) => filter("status", event.target.value)}
+            selectedKey={params.get("status") || "all"}
+            onSelectionChange={(key) =>
+              filter("status", key === "all" ? "" : String(key))
+            }
+            className="assets-filter"
           >
-            <option value="">{text.toolbar.allStatuses}</option>
+            <Select.Item id="all" label={text.toolbar.allStatuses} />
             {statusKeys.map((key) => (
-              <option key={key} value={key}>
-                {text.status[key]}
-              </option>
+              <Select.Item key={key} id={key} label={text.status[key]} />
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             aria-label={text.toolbar.categoryLabel}
-            value={params.get("category") ?? ""}
-            onChange={(event) => filter("category", event.target.value)}
+            selectedKey={params.get("category") || "all"}
+            onSelectionChange={(key) =>
+              filter("category", key === "all" ? "" : String(key))
+            }
+            className="assets-filter"
           >
-            <option value="">{text.toolbar.allCategories}</option>
+            <Select.Item id="all" label={text.toolbar.allCategories} />
             {categoryKeys.map((key) => (
-              <option key={key} value={key}>
-                {text.categories[key]}
-              </option>
+              <Select.Item key={key} id={key} label={text.categories[key]} />
             ))}
-          </select>
+          </Select>
         </div>
         {error ? (
           <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -510,58 +485,49 @@ function AddDialog({
       className="leave-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
-        <Field id="asset-tag" label={text.add.tag} hint={text.add.tagHint}>
-          <input
-            id="asset-tag"
-            name="tag"
-            className="assets-tag-input"
-            required
-            minLength={2}
-            maxLength={24}
-            pattern="[A-Za-z0-9][A-Za-z0-9\-]{1,23}"
-            autoCapitalize="characters"
-            autoComplete="off"
-            aria-describedby="asset-tag-hint"
-            autoFocus
-          />
-        </Field>
-        <Field id="asset-category" label={text.add.category}>
-          <Select
-            id="asset-category"
-            value={category}
-            onChange={setCategory}
-            options={categoryKeys}
-            labels={text.categories}
-          />
-        </Field>
-        <Field id="asset-name" label={text.add.name}>
-          <input
-            id="asset-name"
-            name="name"
-            required
-            minLength={2}
-            maxLength={80}
-            autoComplete="off"
-          />
-        </Field>
-        <Field id="asset-serial" label={text.add.serial}>
-          <input
-            id="asset-serial"
-            name="serialNumber"
-            minLength={2}
-            maxLength={60}
-            autoComplete="off"
-          />
-        </Field>
-        <Field id="asset-condition" label={text.add.condition}>
-          <Select
-            id="asset-condition"
-            value={condition}
-            onChange={setCondition}
-            options={conditionKeys}
-            labels={text.conditions}
-          />
-        </Field>
+        <Input
+          label={text.add.tag}
+          hint={text.add.tagHint}
+          name="tag"
+          inputClassName="assets-tag-input"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={24}
+          pattern="[A-Za-z0-9][A-Za-z0-9\-]{1,23}"
+          autoComplete="off"
+          autoFocus
+        />
+        <OptionSelect
+          label={text.add.category}
+          value={category}
+          onChange={setCategory}
+          options={categoryKeys}
+          labels={text.categories}
+        />
+        <Input
+          label={text.add.name}
+          name="name"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={80}
+          autoComplete="off"
+        />
+        <Input
+          label={text.add.serial}
+          name="serialNumber"
+          minLength={2}
+          maxLength={60}
+          autoComplete="off"
+        />
+        <OptionSelect
+          label={text.add.condition}
+          value={condition}
+          onChange={setCondition}
+          options={conditionKeys}
+          labels={text.conditions}
+        />
         <FormError message={error} />
         <FormActions
           busy={busy}
@@ -860,17 +826,14 @@ function IssueForm({ detail, onSaved, onCancel }: FormProps) {
         </div>
       ) : (
         <>
-          <Field id="asset-find" label={text.issue.find}>
-            <input
-              id="asset-find"
-              type="text"
-              autoComplete="off"
-              maxLength={80}
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-              autoFocus
-            />
-          </Field>
+          <Input
+            label={text.issue.find}
+            autoComplete="off"
+            maxLength={80}
+            value={term}
+            onChange={(value: string) => setTerm(value)}
+            autoFocus
+          />
           {search && people.data && (
             <ul className="assets-people" aria-label={text.issue.results}>
               {people.data.items.length === 0 ? (
@@ -931,29 +894,22 @@ function ReceiveForm({ detail, onSaved, onCancel }: FormProps) {
   }
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
-      <Field id="return-condition" label={text.receive.condition}>
-        <Select
-          id="return-condition"
-          value={condition}
-          onChange={setCondition}
-          options={conditionKeys}
-          labels={text.conditions}
-        />
-      </Field>
-      <Field
-        id="return-note"
+      <OptionSelect
+        label={text.receive.condition}
+        value={condition}
+        onChange={setCondition}
+        options={conditionKeys}
+        labels={text.conditions}
+      />
+      <TextArea
         label={text.receive.notes}
         hint={text.receive.notesHint}
-      >
-        <textarea
-          id="return-note"
-          name="note"
-          maxLength={300}
-          required={condition === "damaged"}
-          minLength={condition === "damaged" ? 3 : undefined}
-          aria-describedby="return-note-hint"
-        />
-      </Field>
+        name="note"
+        maxLength={300}
+        isRequired={condition === "damaged"}
+        hideRequiredIndicator
+        minLength={condition === "damaged" ? 3 : undefined}
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}
@@ -991,46 +947,40 @@ function EditForm({ detail, onSaved, onCancel }: FormProps) {
   }
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
-      <Field id="edit-name" label={text.edit.name}>
-        <input
-          id="edit-name"
-          name="name"
-          defaultValue={asset.name}
-          required
-          minLength={2}
-          maxLength={80}
-          autoComplete="off"
-          autoFocus
-        />
-      </Field>
-      <Field id="edit-serial" label={text.edit.serial}>
-        <input
-          id="edit-serial"
-          name="serialNumber"
-          defaultValue={asset.serialNumber ?? ""}
-          minLength={2}
-          maxLength={60}
-          autoComplete="off"
-        />
-      </Field>
-      <Field id="edit-condition" label={text.edit.condition}>
-        <Select
-          id="edit-condition"
-          value={condition}
-          onChange={setCondition}
-          options={conditionKeys}
-          labels={text.conditions}
-        />
-      </Field>
-      <Field id="edit-reason" label={text.edit.reason}>
-        <textarea
-          id="edit-reason"
-          name="reason"
-          required
-          minLength={3}
-          maxLength={300}
-        />
-      </Field>
+      <Input
+        label={text.edit.name}
+        name="name"
+        defaultValue={asset.name}
+        isRequired
+        hideRequiredIndicator
+        minLength={2}
+        maxLength={80}
+        autoComplete="off"
+        autoFocus
+      />
+      <Input
+        label={text.edit.serial}
+        name="serialNumber"
+        defaultValue={asset.serialNumber ?? ""}
+        minLength={2}
+        maxLength={60}
+        autoComplete="off"
+      />
+      <OptionSelect
+        label={text.edit.condition}
+        value={condition}
+        onChange={setCondition}
+        options={conditionKeys}
+        labels={text.conditions}
+      />
+      <TextArea
+        label={text.edit.reason}
+        name="reason"
+        isRequired
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={300}
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}
@@ -1067,21 +1017,16 @@ function StatusForm({
   }
   return (
     <form className="leave-form" onSubmit={(event) => void submit(event)}>
-      <Field
-        id="status-note"
+      <TextArea
         label={text.change.reason}
         hint={text.change.reasonHint}
-      >
-        <textarea
-          id="status-note"
-          name="note"
-          required
-          minLength={3}
-          maxLength={300}
-          aria-describedby="status-note-hint"
-          autoFocus
-        />
-      </Field>
+        name="note"
+        isRequired
+        hideRequiredIndicator
+        minLength={3}
+        maxLength={300}
+        autoFocus
+      />
       <FormError message={error} />
       <FormActions
         busy={busy}

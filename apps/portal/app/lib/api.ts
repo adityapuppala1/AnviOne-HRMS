@@ -17,6 +17,9 @@ import {
   attendanceTeamSchema,
   calendarSchema,
   approvalInboxSchema,
+  assetDetailSchema,
+  assetListSchema,
+  myAssetsSchema,
   insightsSchema,
   updatesSchema,
   documentListSchema,
@@ -172,6 +175,26 @@ export const useInsights = (enabled: boolean) =>
     enabled,
     staleTime: 60000,
     queryFn: ({ signal }) => api("/insights", insightsSchema, { signal }),
+  });
+export const useMyAssets = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["assets", "mine"],
+    enabled,
+    queryFn: ({ signal }) => api("/assets/mine", myAssetsSchema, { signal }),
+  });
+export const useAssets = (query: string, enabled: boolean) =>
+  useQuery({
+    queryKey: ["assets", "list", query],
+    enabled,
+    queryFn: ({ signal }) =>
+      api(`/assets?${query}`, assetListSchema, { signal }),
+  });
+export const useAsset = (id: string | null) =>
+  useQuery({
+    queryKey: ["assets", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/assets/${id}`, assetDetailSchema, { signal }),
   });
 export const useApprovals = (enabled: boolean) =>
   useQuery({

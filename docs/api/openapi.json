@@ -886,7 +886,9 @@
                           "attendance.review",
                           "document.self",
                           "document.review",
-                          "insights.read"
+                          "insights.read",
+                          "asset.manage",
+                          "asset.self"
                         ]
                       }
                     },

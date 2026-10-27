@@ -17,6 +17,7 @@ import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
+import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { Stack } from "@phosphor-icons/react/dist/csr/Stack";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
@@ -209,6 +210,14 @@ function Shell({ me }: { me: Me }) {
       icon: Tray,
       visible: approver,
       count: waiting,
+    },
+    {
+      to: "/assets",
+      label: copy.nav.assets,
+      icon: Laptop,
+      visible:
+        me.permissions.includes("asset.self") ||
+        me.permissions.includes("asset.manage"),
     },
     {
       to: "/documents",

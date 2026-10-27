@@ -26,6 +26,7 @@ import { ApprovalsController } from "./approvals.controller";
 import { DocumentController } from "./document.controller";
 import { InsightsController } from "./insights.controller";
 import { UpdatesController } from "./updates.controller";
+import { AssetController } from "./asset.controller";
 import type { Config } from "./config";
 import { RateLimits, storeUnavailableHandler } from "./rate-limit";
 
@@ -71,6 +72,7 @@ export async function createApp(config: Config) {
       DocumentController,
       InsightsController,
       UpdatesController,
+      AssetController,
     ],
     providers: [
       { provide: PlatformStore, useValue: store },

@@ -36,6 +36,7 @@ export const copy = {
     attendance: "Attendance",
     approvals: "Approvals",
     documents: "Documents",
+    assets: "Assets",
     holidays: "Holidays",
     settings: "Workspace settings",
     activity: "Activity log",
@@ -82,6 +83,7 @@ export const copy = {
       "attendance.": "Attendance",
       "calendar.": "Holidays & work week",
       "document.": "Documents",
+      "asset.": "Assets",
     } as Record<string, string>,
     shown: (count: number | undefined) =>
       `${count ?? "…"} ${count === 1 ? "event" : "events"} shown`,
@@ -152,6 +154,12 @@ export const copy = {
       "document.withdrawn": "Withdrew a document",
       "document.downloaded": "Downloaded a document",
       "document.download_denied": "Was refused a document download",
+      "asset.registered": "Registered an asset",
+      "asset.updated": "Updated an asset",
+      "asset.issued": "Issued an asset",
+      "asset.acknowledged": "Acknowledged receiving an asset",
+      "asset.returned": "Received an asset back",
+      "asset.status_changed": "Changed an asset's status",
     } as Record<string, string>,
   },
   updates: {

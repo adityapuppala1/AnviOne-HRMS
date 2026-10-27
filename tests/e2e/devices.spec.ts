@@ -22,6 +22,7 @@ const ROUTES = [
   "/calendar",
   "/approvals",
   "/documents",
+  "/assets",
   "/preferences",
   "/settings",
   "/tasks",

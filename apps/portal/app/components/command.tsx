@@ -15,6 +15,7 @@ import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { CalendarStar } from "@phosphor-icons/react/dist/csr/CalendarStar";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
+import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { DialogPanel, Button, Avatar } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
@@ -112,6 +113,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/attendance")}>
             <CalendarDots size={18} />
             {copy.nav.attendance}
+          </Button>
+        )}
+        {(me.permissions.includes("asset.self") ||
+          me.permissions.includes("asset.manage")) && (
+          <Button variant="ghost" onPress={() => go("/assets")}>
+            <Laptop size={18} />
+            {copy.nav.assets}
           </Button>
         )}
         {(me.permissions.includes("document.self") ||

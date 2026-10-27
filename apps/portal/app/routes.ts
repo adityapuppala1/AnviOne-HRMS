@@ -19,6 +19,7 @@ export default [
     route("calendar", "routes/calendar.tsx"),
     route("approvals", "routes/approvals.tsx"),
     route("documents", "routes/documents.tsx"),
+    route("assets", "routes/assets.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

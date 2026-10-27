@@ -30,6 +30,8 @@ export const permissionSchema = z.enum([
   "document.self",
   "document.review",
   "insights.read",
+  "asset.manage",
+  "asset.self",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -844,6 +846,158 @@ export const updatesSchema = z.strictObject({
   items: z.array(updateItemSchema).max(30),
 });
 export type Updates = z.infer<typeof updatesSchema>;
+// Company assets: HR keeps the inventory and issues items; the holder acknowledges.
+export const assetCategorySchema = z.enum([
+  "laptop",
+  "phone",
+  "monitor",
+  "accessory",
+  "access_card",
+  "other",
+]);
+export const assetConditionSchema = z.enum(["new", "good", "fair", "damaged"]);
+export const assetStatusSchema = z.enum([
+  "available",
+  "assigned",
+  "in_repair",
+  "retired",
+  "lost",
+]);
+export type AssetCategory = z.infer<typeof assetCategorySchema>;
+export type AssetCondition = z.infer<typeof assetConditionSchema>;
+export type AssetStatus = z.infer<typeof assetStatusSchema>;
+export const assetSchema = z.strictObject({
+  id: z.uuid(),
+  tag: z.string(),
+  category: assetCategorySchema,
+  name: z.string(),
+  serialNumber: z.string().nullable(),
+  condition: assetConditionSchema,
+  status: assetStatusSchema,
+  version: z.number().int().positive(),
+  updatedAt: z.string(),
+  custodian: z
+    .strictObject({ id: z.uuid(), name: z.string(), initials: z.string() })
+    .nullable(),
+  issuedOn: z.string().nullable(),
+  acknowledgedAt: z.string().nullable(),
+});
+export type Asset = z.infer<typeof assetSchema>;
+export const assetListSchema = z.strictObject({
+  items: z.array(assetSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pages: z.number().int().positive(),
+  counts: z.strictObject({
+    available: z.number().int().nonnegative(),
+    assigned: z.number().int().nonnegative(),
+    in_repair: z.number().int().nonnegative(),
+    retired: z.number().int().nonnegative(),
+    lost: z.number().int().nonnegative(),
+  }),
+});
+export type AssetList = z.infer<typeof assetListSchema>;
+export const assetHistoryItemSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  issuedOn: z.string(),
+  issueCondition: assetConditionSchema,
+  issuedBy: z.string(),
+  acknowledgedAt: z.string().nullable(),
+  returnedOn: z.string().nullable(),
+  returnCondition: z
+    .enum(["new", "good", "fair", "damaged", "lost"])
+    .nullable(),
+  returnNote: z.string().nullable(),
+  receivedBy: z.string().nullable(),
+});
+export const assetDetailSchema = z.strictObject({
+  asset: assetSchema,
+  history: z.array(assetHistoryItemSchema),
+});
+export type AssetDetail = z.infer<typeof assetDetailSchema>;
+export const myAssetSchema = z.strictObject({
+  assignmentId: z.uuid(),
+  version: z.number().int().positive(),
+  tag: z.string(),
+  category: assetCategorySchema,
+  name: z.string(),
+  serialNumber: z.string().nullable(),
+  issuedOn: z.string(),
+  issueCondition: assetConditionSchema,
+  issuedBy: z.string(),
+  acknowledgedAt: z.string().nullable(),
+  returnedOn: z.string().nullable(),
+  returnCondition: z
+    .enum(["new", "good", "fair", "damaged", "lost"])
+    .nullable(),
+});
+export type MyAsset = z.infer<typeof myAssetSchema>;
+export const myAssetsSchema = z.strictObject({
+  current: z.array(myAssetSchema),
+  past: z.array(myAssetSchema),
+});
+export type MyAssets = z.infer<typeof myAssetsSchema>;
+const assetTag = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z0-9][A-Z0-9-]{1,23}$/);
+const assetName = z.string().trim().min(2).max(80);
+const assetSerial = z
+  .string()
+  .trim()
+  .min(2)
+  .max(60)
+  .nullable()
+  .optional()
+  .transform((value) => value ?? null);
+const assetNote = z.string().trim().min(3).max(300);
+export const assetQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  status: z.union([assetStatusSchema, z.literal("")]).default(""),
+  category: z.union([assetCategorySchema, z.literal("")]).default(""),
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
+});
+export const assetCreateSchema = z.strictObject({
+  tag: assetTag,
+  category: assetCategorySchema,
+  name: assetName,
+  serialNumber: assetSerial,
+  condition: assetConditionSchema,
+});
+export const assetUpdateSchema = z.strictObject({
+  name: assetName,
+  serialNumber: assetSerial,
+  condition: assetConditionSchema,
+  reason: assetNote,
+  version: z.number().int().positive(),
+});
+export const assetIssueSchema = z.strictObject({
+  employeeId: z.uuid(),
+  issuedOn: z.iso.date().optional(),
+  version: z.number().int().positive(),
+});
+export const assetReturnSchema = z
+  .strictObject({
+    condition: assetConditionSchema,
+    note: assetNote.optional(),
+    version: z.number().int().positive(),
+  })
+  .refine((value) => value.condition !== "damaged" || Boolean(value.note), {
+    message: "Describe the damage",
+    path: ["note"],
+  });
+export const assetStatusChangeSchema = z.strictObject({
+  status: z.enum(["available", "in_repair", "retired", "lost"]),
+  note: assetNote,
+  version: z.number().int().positive(),
+});
+export const assetAcknowledgeSchema = z.strictObject({
+  version: z.number().int().positive(),
+});
 export {
   activationReadiness,
   onboardingStarter,

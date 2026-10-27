@@ -3,6 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 // Every screen must adapt to phones, tablets and desktops: no sideways scroll,
 // no clipped content, and touch targets that meet WCAG 2.2 AA (24 CSS px).
 const SIZES = [
+  { name: "narrowest phone", width: 320, height: 640 },
   { name: "small phone", width: 360, height: 740 },
   { name: "phone", width: 390, height: 844 },
   { name: "tablet portrait", width: 768, height: 1024 },
@@ -23,6 +24,7 @@ const ROUTES = [
   "/documents",
   "/preferences",
   "/settings",
+  "/tasks",
   "/activity",
   "/insights",
   "/help",

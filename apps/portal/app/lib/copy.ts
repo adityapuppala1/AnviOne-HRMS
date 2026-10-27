@@ -154,4 +154,56 @@ export const copy = {
       "document.download_denied": "Was refused a document download",
     } as Record<string, string>,
   },
+  updates: {
+    title: "Updates",
+    intro: "Decisions on your own requests from the last 30 days.",
+    open: (unread: number) => (unread ? `Updates, ${unread} new` : "Updates"),
+    empty: {
+      title: "You're all caught up",
+      body: "When someone decides a leave request, attendance correction or document of yours, it appears here.",
+    },
+    new: "New",
+    view: "View",
+    headline: (kind: string, outcome: string) =>
+      ({
+        leave: { approved: "Leave approved", declined: "Leave declined" },
+        attendance: {
+          approved: "Correction approved",
+          declined: "Correction declined",
+        },
+        document: {
+          verified: "Document verified",
+          rejected: "Document rejected",
+        },
+      })[kind as "leave"]?.[outcome as "approved"] ?? "Request decided",
+    detail: (title: string, from: string | null, to: string | null) => {
+      const day = (iso: string) =>
+        new Intl.DateTimeFormat("en-IN", {
+          day: "numeric",
+          month: "short",
+          timeZone: "UTC",
+        }).format(new Date(`${iso}T00:00:00Z`));
+      if (from && to && from !== to)
+        return `${title} · ${day(from)} to ${day(to)}`;
+      return from ? `${title} · ${day(from)}` : title;
+    },
+    note: (by: string | null) => (by ? `${by} wrote:` : "Note:"),
+    by: (name: string) => `Decided by ${name}`,
+    openPage: (kind: string) =>
+      kind === "leave"
+        ? "Open Leave"
+        : kind === "attendance"
+          ? "Open Attendance"
+          : "Open Documents",
+    when: (iso: string) => {
+      const minutes = Math.round(
+        (new Date(iso).getTime() - Date.now()) / 60000,
+      );
+      const format = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+      if (Math.abs(minutes) < 60) return format.format(minutes, "minute");
+      if (Math.abs(minutes) < 1440)
+        return format.format(Math.round(minutes / 60), "hour");
+      return format.format(Math.round(minutes / 1440), "day");
+    },
+  },
 };

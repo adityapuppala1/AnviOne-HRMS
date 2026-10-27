@@ -826,6 +826,23 @@ export const insightsSchema = z.strictObject({
   }),
 });
 export type Insights = z.infer<typeof insightsSchema>;
+// A decision someone else made on the caller's own request, for the Updates feed.
+export const updateItemSchema = z.strictObject({
+  id: z.uuid(),
+  kind: z.enum(["leave", "attendance", "document"]),
+  outcome: z.enum(["approved", "declined", "verified", "rejected"]),
+  title: z.string().max(120),
+  from: z.string().nullable(),
+  to: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  note: z.string().nullable(),
+  at: z.string(),
+});
+export type UpdateItem = z.infer<typeof updateItemSchema>;
+export const updatesSchema = z.strictObject({
+  items: z.array(updateItemSchema).max(30),
+});
+export type Updates = z.infer<typeof updatesSchema>;
 export {
   activationReadiness,
   onboardingStarter,

@@ -17,6 +17,7 @@ import {
   calendarSchema,
   approvalInboxSchema,
   insightsSchema,
+  updatesSchema,
   documentListSchema,
   documentReviewSchema,
 } from "@anvi/contracts";
@@ -140,6 +141,12 @@ export const useCalendar = (year: number | null) =>
       api(`/calendar${year ? `?year=${year}` : ""}`, calendarSchema, {
         signal,
       }),
+  });
+export const useUpdates = () =>
+  useQuery({
+    queryKey: ["updates"],
+    refetchInterval: 60000,
+    queryFn: ({ signal }) => api("/updates", updatesSchema, { signal }),
   });
 export const useInsights = (enabled: boolean) =>
   useQuery({

@@ -25,6 +25,7 @@ import { CalendarController } from "./calendar.controller";
 import { ApprovalsController } from "./approvals.controller";
 import { DocumentController } from "./document.controller";
 import { InsightsController } from "./insights.controller";
+import { UpdatesController } from "./updates.controller";
 import type { Config } from "./config";
 import { RateLimits, storeUnavailableHandler } from "./rate-limit";
 
@@ -69,6 +70,7 @@ export async function createApp(config: Config) {
       ApprovalsController,
       DocumentController,
       InsightsController,
+      UpdatesController,
     ],
     providers: [
       { provide: PlatformStore, useValue: store },

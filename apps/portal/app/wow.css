@@ -567,3 +567,128 @@
     display: none;
   }
 }
+
+/* Updates bell and dialog ------------------------------------------------- */
+.updates-bell {
+  position: relative;
+}
+.updates-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--coral);
+  color: #fff;
+  font:
+    700 10px var(--display),
+    sans-serif;
+}
+.updates-intro {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.updates-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.update-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.update-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+.update-good .update-icon {
+  background: color-mix(in srgb, var(--success) 14%, var(--surface));
+  color: var(--success);
+}
+.update-bad .update-icon {
+  background: color-mix(in srgb, var(--coral) 14%, var(--surface));
+  color: #a73a25;
+}
+.update-row strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+.update-row p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.update-row blockquote {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--marigold);
+  border-radius: 0 10px 10px 0;
+  background: var(--surface-subtle);
+  font-size: 13px;
+}
+.update-row small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.update-new {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 11px;
+}
+.update-link {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--brand-ink);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+.updates-empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--muted);
+}
+.updates-empty h3 {
+  margin: 8px 0 0;
+  color: var(--ink);
+}
+.updates-empty p {
+  margin: 0;
+  max-width: 34ch;
+}
+@media (max-width: 480px) {
+  .update-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .update-link {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

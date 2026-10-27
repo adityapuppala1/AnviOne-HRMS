@@ -49,6 +49,7 @@ import { usePreferences } from "../lib/preferences";
 import { copy } from "../lib/copy";
 import { Brand } from "../components/brand";
 import { Command } from "../components/command";
+import { UpdatesBell } from "../components/updates";
 
 type Context = {
   me: Me;
@@ -444,6 +445,7 @@ function Shell({ me }: { me: Me }) {
               <span>{copy.shell.searchHint}</span>
               <kbd>⌘ K</kbd>
             </Button>
+            <UpdatesBell employeeId={me.employeeId} />
             <span className="toolbar-divider" />
             <Button
               variant="icon"

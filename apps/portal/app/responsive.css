@@ -175,3 +175,37 @@
 .data-card td time {
   white-space: nowrap;
 }
+
+/* Page headers: the action (a badge or button) wraps under the title on the
+   narrowest phones instead of pushing the page wider than the screen. */
+.page-heading {
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+.page-heading > div:first-child {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+.page-heading-actions {
+  max-width: 100%;
+}
+
+/* Top bar: the page name gives way (and truncates) before the buttons overflow. */
+.topbar-context {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.breadcrumbs {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.topbar-actions {
+  flex: 0 0 auto;
+}
+@media (max-width: 380px) {
+  .topbar-actions {
+    gap: 0;
+  }
+}

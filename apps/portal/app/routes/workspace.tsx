@@ -27,6 +27,7 @@ import { List } from "@phosphor-icons/react/dist/csr/List";
 import { SignOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { X } from "@phosphor-icons/react/dist/csr/X";
+import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
 import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
@@ -54,6 +55,16 @@ type Context = {
   switchRole: (role: Me["role"]) => Promise<void>;
 };
 export const useWorkspace = () => useOutletContext<Context>();
+// Destinations promoted to the phone's bottom bar, in priority order.
+const QUICK = [
+  "/",
+  "/leave",
+  "/attendance",
+  "/approvals",
+  "/people",
+  "/documents",
+];
+
 export default function Workspace() {
   const query = useMe();
   if (query.error instanceof ApiError && query.error.status === 401)
@@ -259,6 +270,7 @@ function Shell({ me }: { me: Me }) {
             <NavLink
               key={to}
               to={to}
+              prefetch="intent"
               end={to === "/"}
               title={label}
               className={({ isActive }) =>
@@ -347,6 +359,47 @@ function Shell({ me }: { me: Me }) {
       >
         <div className="mobile-nav-content">{sidebar}</div>
       </DialogPanel>
+      <nav className="bottom-bar" aria-label={copy.nav.quick}>
+        {QUICK.map((to) => links.find((link) => link.to === to))
+          .filter((link) => link?.visible)
+          .slice(0, 4)
+          .map((link) => {
+            const { to, label, icon: Icon, count } = link!;
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                prefetch="intent"
+                end={to === "/"}
+                className={({ isActive }) =>
+                  `bottom-bar-item ${isActive ? "active" : ""}`
+                }
+              >
+                <Icon
+                  size={23}
+                  weight={location.pathname === to ? "fill" : "regular"}
+                />
+                <span>{label}</span>
+                {count ? (
+                  <span
+                    className="nav-count"
+                    aria-label={copy.nav.waiting(count)}
+                  >
+                    {count}
+                  </span>
+                ) : null}
+              </NavLink>
+            );
+          })}
+        <button
+          type="button"
+          className="bottom-bar-item"
+          onClick={() => setDrawer(true)}
+        >
+          <DotsThree size={23} weight="bold" />
+          <span>{copy.nav.more}</span>
+        </button>
+      </nav>
       <div className="main-shell">
         <header className="topbar">
           <div className="topbar-context">

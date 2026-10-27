@@ -24,6 +24,8 @@ export const copy = {
   // App shell and navigation (UX-02).
   nav: {
     main: "Main navigation",
+    quick: "Quick navigation",
+    more: "More",
     overview: "Overview",
     people: "People directory",
     teams: "Team explorer",

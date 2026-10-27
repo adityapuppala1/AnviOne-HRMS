@@ -9,12 +9,16 @@ import "@anvi/ui/theme.css";
 import "./styles.css";
 import "./loom.css";
 import "./wow.css";
+import "./responsive.css";
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
         <meta name="color-scheme" content="light dark" />
         <title>AnviOne · Your people workspace</title>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

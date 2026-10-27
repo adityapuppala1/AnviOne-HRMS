@@ -1,0 +1,143 @@
+/* Adaptive layer: phones, tablets and desktops. Loaded last so it can refine
+   the earlier layers. Rules here change size and placement only. */
+
+/* Bottom bar: phones only ------------------------------------------------- */
+.bottom-bar {
+  display: none;
+}
+@media (max-width: 767px) {
+  .bottom-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 2px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(18px) saturate(1.4);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -12px 30px -22px var(--indigo-deep);
+  }
+  .bottom-bar-item {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    min-height: 52px;
+    padding: 4px 2px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--muted);
+    font:
+      600 11px var(--display),
+      sans-serif;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bottom-bar-item.active {
+    color: var(--brand-ink);
+    background: var(--brand-soft);
+  }
+  .bottom-bar-item .nav-count {
+    position: absolute;
+    top: 2px;
+    left: calc(50% + 6px);
+    margin: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+  /* Keep content clear of the bar, including the home-indicator inset. */
+  .main-shell {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Notches and rounded corners ---------------------------------------------- */
+.topbar {
+  padding-left: max(var(--topbar-pad, 0px), env(safe-area-inset-left));
+  padding-right: max(var(--topbar-pad, 0px), env(safe-area-inset-right));
+}
+
+/* Text links always get a target of at least 32px; touch screens get 44px. */
+.text-link,
+.panel-heading a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+/* Touch: comfortable targets, no hover-only effects -------------------------- */
+@media (pointer: coarse) {
+  .text-link,
+  .panel-heading a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .button,
+  button.button {
+    min-height: 44px;
+  }
+  .nav-link {
+    min-height: 48px;
+  }
+  .assist li a:hover {
+    transform: none;
+  }
+}
+@media (hover: none) {
+  .panel::before,
+  [data-spot]::before {
+    display: none;
+  }
+}
+
+/* Tablets: use the room instead of stretching one column ------------------- */
+@media (min-width: 801px) and (max-width: 1180px) {
+  .loom-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .loom-stat-featured {
+    grid-column: 1 / -1;
+  }
+  .main-content {
+    padding-inline: clamp(16px, 3vw, 28px);
+  }
+}
+
+/* Fluid type and spacing so one layout scales smoothly --------------------- */
+.page-heading h1,
+.loom-band h1 {
+  font-size: clamp(30px, 2.2rem + 1.2vw, 52px);
+}
+.main-content {
+  max-width: 1536px;
+  margin-inline: auto;
+}
+
+/* Speed: skip rendering work for panels far below the first screen --------- */
+.dashboard-bottom,
+.activity-list {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/* Phones get lighter effects so scrolling stays smooth ----------------------- */
+@media (max-width: 800px) {
+  .aurora i {
+    filter: blur(40px);
+  }
+  .float-card {
+    backdrop-filter: none;
+    background: #3c3a8c;
+  }
+  .ambient i:nth-child(2) {
+    display: none;
+  }
+}

@@ -20,6 +20,7 @@ import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
 import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
+import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -227,6 +228,15 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("policy.self") ||
         me.permissions.includes("policy.manage"),
+    },
+    {
+      to: "/expenses",
+      label: copy.nav.expenses,
+      icon: Receipt,
+      visible:
+        me.permissions.includes("expense.self") ||
+        me.permissions.includes("expense.approve") ||
+        me.permissions.includes("expense.manage"),
     },
     {
       to: "/exit",

@@ -29,6 +29,7 @@ import { UpdatesController } from "./updates.controller";
 import { AssetController } from "./asset.controller";
 import { PolicyController } from "./policy.controller";
 import { ExitController } from "./exit.controller";
+import { ExpenseController } from "./expense.controller";
 import type { Config } from "./config";
 import { RateLimits, storeUnavailableHandler } from "./rate-limit";
 
@@ -77,6 +78,7 @@ export async function createApp(config: Config) {
       AssetController,
       PolicyController,
       ExitController,
+      ExpenseController,
     ],
     providers: [
       { provide: PlatformStore, useValue: store },

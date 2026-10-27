@@ -36,6 +36,9 @@ export const permissionSchema = z.enum([
   "policy.self",
   "exit.manage",
   "exit.self",
+  "expense.self",
+  "expense.approve",
+  "expense.manage",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -1278,6 +1281,168 @@ export const exitClearanceUpdateSchema = z.strictObject({
     .nullable()
     .optional()
     .transform((value) => value ?? null),
+});
+// Expenses: INR claims in integer paise, decided by the manager or HR and paid by HR.
+export const expenseKindSchema = z.enum(["expense", "travel", "advance"]);
+export const expenseStatusSchema = z.enum([
+  "submitted",
+  "approved",
+  "rejected",
+  "paid",
+  "cancelled",
+]);
+export type ExpenseKind = z.infer<typeof expenseKindSchema>;
+export type ExpenseStatus = z.infer<typeof expenseStatusSchema>;
+const minor = z.number().int().nonnegative();
+export const expenseCategorySchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+  perClaimLimitMinor: minor.nullable(),
+  requiresReceiptOverMinor: minor.nullable(),
+  active: z.boolean(),
+  version: z.number().int().positive(),
+});
+export type ExpenseCategory = z.infer<typeof expenseCategorySchema>;
+export const expenseCategoryListSchema = z.strictObject({
+  items: z.array(expenseCategorySchema),
+});
+export type ExpenseCategoryList = z.infer<typeof expenseCategoryListSchema>;
+export const expenseClaimSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  employeeCode: z.string(),
+  department: z.string().nullable(),
+  kind: expenseKindSchema,
+  title: z.string(),
+  categoryId: z.uuid(),
+  categoryCode: z.string(),
+  categoryName: z.string(),
+  amountMinor: minor,
+  currency: z.literal("INR"),
+  expenseDate: z.string(),
+  tripDestination: z.string().nullable(),
+  description: z.string().nullable(),
+  receiptReference: z.string().nullable(),
+  status: expenseStatusSchema,
+  decisionNote: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  paidOn: z.string().nullable(),
+  paymentReference: z.string().nullable(),
+  paidAt: z.string().nullable(),
+  paidBy: z.string().nullable(),
+  cancelledAt: z.string().nullable(),
+  version: z.number().int().positive(),
+  submittedBy: z.string(),
+  createdAt: z.string(),
+  canDecide: z.boolean(),
+  canPay: z.boolean(),
+  canCancel: z.boolean(),
+});
+export type ExpenseClaim = z.infer<typeof expenseClaimSchema>;
+const expenseTotal = z.strictObject({
+  count: z.number().int().nonnegative(),
+  amountMinor: minor,
+});
+export const myExpensesSchema = z.strictObject({
+  items: z.array(expenseClaimSchema),
+  summary: z.strictObject({
+    submitted: expenseTotal,
+    approved: expenseTotal,
+    paid: expenseTotal,
+    rejected: expenseTotal,
+    cancelled: expenseTotal,
+  }),
+  // Last 12 months by expense date, oldest first; rejected and cancelled claims excluded.
+  months: z.array(
+    z.strictObject({
+      month: z.string(),
+      count: z.number().int().nonnegative(),
+      amountMinor: minor,
+    }),
+  ),
+});
+export type MyExpenses = z.infer<typeof myExpensesSchema>;
+export const expenseListSchema = z.strictObject({
+  items: z.array(expenseClaimSchema),
+  counts: z.strictObject({
+    submitted: z.number().int().nonnegative(),
+    approved: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
+    paid: z.number().int().nonnegative(),
+    cancelled: z.number().int().nonnegative(),
+  }),
+  awaitingDecisionMinor: minor,
+  awaitingPaymentMinor: minor,
+});
+export type ExpenseList = z.infer<typeof expenseListSchema>;
+export const expenseQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  status: expenseStatusSchema.optional(),
+});
+const expenseVersion = z.number().int().positive();
+const expenseNote = z.string().trim().min(3).max(500);
+const optionalText = (min: number, max: number) =>
+  z
+    .string()
+    .trim()
+    .min(min)
+    .max(max)
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null);
+export const expenseSubmitSchema = z
+  .strictObject({
+    kind: expenseKindSchema,
+    title: z.string().trim().min(3).max(120),
+    categoryId: z.uuid(),
+    amountMinor: z.number().int().positive().max(1_000_000_000),
+    expenseDate: z.iso.date(),
+    tripDestination: optionalText(2, 120),
+    description: optionalText(1, 1000),
+    receiptReference: optionalText(2, 80),
+  })
+  .refine(
+    (value) => (value.kind === "expense") === (value.tripDestination === null),
+    {
+      message: "Travel claims and advances need a destination",
+      path: ["tripDestination"],
+    },
+  );
+export const expenseCancelSchema = z.strictObject({ version: expenseVersion });
+export const expenseApproveSchema = z.strictObject({
+  version: expenseVersion,
+  note: expenseNote.optional(),
+});
+export const expenseRejectSchema = z.strictObject({
+  version: expenseVersion,
+  note: expenseNote,
+});
+export const expensePaySchema = z.strictObject({
+  version: expenseVersion,
+  paidOn: z.iso.date(),
+  paymentReference: z.string().trim().min(2).max(80),
+});
+const categoryFields = {
+  name: z.string().trim().min(2).max(60),
+  perClaimLimitMinor: z.number().int().min(1).max(1_000_000_000).nullable(),
+  requiresReceiptOverMinor: z
+    .number()
+    .int()
+    .min(0)
+    .max(1_000_000_000)
+    .nullable(),
+  active: z.boolean(),
+};
+export const expenseCategoryCreateSchema = z.strictObject({
+  code: z.string().regex(/^[A-Z][A-Z0-9_]{1,15}$/),
+  ...categoryFields,
+});
+export const expenseCategoryUpdateSchema = z.strictObject({
+  version: expenseVersion,
+  ...categoryFields,
 });
 export {
   activationReadiness,

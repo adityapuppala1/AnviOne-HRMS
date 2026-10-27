@@ -892,7 +892,10 @@
                           "policy.manage",
                           "policy.self",
                           "exit.manage",
-                          "exit.self"
+                          "exit.self",
+                          "expense.self",
+                          "expense.approve",
+                          "expense.manage"
                         ]
                       }
                     },

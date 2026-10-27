@@ -22,6 +22,10 @@ import {
   myAssetsSchema,
   myPoliciesSchema,
   exitDetailSchema,
+  expenseCategoryListSchema,
+  expenseClaimSchema,
+  expenseListSchema,
+  myExpensesSchema,
   exitListSchema,
   myExitSchema,
   policyDetailSchema,
@@ -272,4 +276,32 @@ export const useExit = (id: string | null) =>
     queryKey: ["exits", "detail", id],
     enabled: Boolean(id),
     queryFn: ({ signal }) => api(`/exits/${id}`, exitDetailSchema, { signal }),
+  });
+
+export const useMyExpenses = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["expenses", "mine"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/expenses/mine", myExpensesSchema, { signal }),
+  });
+export const useExpenseCategories = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["expenses", "categories"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/expenses/categories", expenseCategoryListSchema, { signal }),
+  });
+export const useExpenses = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["expenses", "list"],
+    enabled,
+    queryFn: ({ signal }) => api("/expenses", expenseListSchema, { signal }),
+  });
+export const useExpense = (id: string | null) =>
+  useQuery({
+    queryKey: ["expenses", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/expenses/${id}`, expenseClaimSchema, { signal }),
   });

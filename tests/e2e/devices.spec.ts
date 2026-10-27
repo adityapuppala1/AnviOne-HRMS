@@ -25,6 +25,7 @@ const ROUTES = [
   "/assets",
   "/policies",
   "/exit",
+  "/expenses",
   "/preferences",
   "/settings",
   "/tasks",

@@ -7,7 +7,7 @@ import { CursorClick } from "@phosphor-icons/react/dist/csr/CursorClick";
 import { ArrowsInLineVertical } from "@phosphor-icons/react/dist/csr/ArrowsInLineVertical";
 import { ArrowsOutLineVertical } from "@phosphor-icons/react/dist/csr/ArrowsOutLineVertical";
 import { motion } from "motion/react";
-import { Badge, Switch } from "@anvi/ui";
+import { Badge, PageHeader, Switch } from "@anvi/ui";
 import { usePreferences } from "../lib/preferences";
 import { preferencesCopy as text } from "../lib/copy/settings";
 
@@ -15,17 +15,17 @@ export default function Preferences() {
   const { preferences, update, reduceMotion } = usePreferences();
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.title}</h1>
-          <p>{text.subtitle}</p>
-        </div>
-        <Badge>
-          <Check size={15} />
-          {text.saved}
-        </Badge>
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.title}
+        description={text.subtitle}
+        actions={
+          <Badge>
+            <Check size={15} />
+            {text.saved}
+          </Badge>
+        }
+      ></PageHeader>
       <div className="preferences-layout">
         <section className="panel preferences-form">
           <fieldset>

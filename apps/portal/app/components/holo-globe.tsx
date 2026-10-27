@@ -158,7 +158,8 @@ function paint(
     const pulse =
       projected[
         Math.floor(
-          ((seconds * 0.3 + index * 0.19) % 1) * (projected.length - 1),
+          ((((seconds * 0.3 + index * 0.19) % 1) + 1) % 1) *
+            (projected.length - 1),
         )
       ]!;
     if (pulse.z > 0.04) {
@@ -270,7 +271,8 @@ export function HoloGlobe({
     const frame = (now: number) => {
       raf = 0;
       if (!visible || document.hidden) return;
-      const dt = Math.min((now - last) / 1000, 0.05);
+      // The frame timestamp can precede the time we started; never run backwards.
+      const dt = Math.min(Math.max((now - last) / 1000, 0), 0.05);
       last = now;
       seconds += dt;
       if (!state.dragging) {

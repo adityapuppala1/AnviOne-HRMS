@@ -5,9 +5,11 @@ import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
 import {
-  Badge,
+  EmptyBlock,
   ErrorState,
   LoadingState,
+  PageHeader,
+  StatusBadge,
   Tabs,
   TabList,
   Tab,
@@ -37,21 +39,19 @@ function Explorer() {
   if (!data) return <LoadingState />;
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.title}</h1>
-          <p>
-            {me.role === "employee"
-              ? text.subtitleEmployee
-              : text.subtitleOther}
-          </p>
-        </div>
-        <Badge>
-          <UsersThree size={16} />
-          {text.inScope(data.total)}
-        </Badge>
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.title}
+        description={
+          me.role === "employee" ? text.subtitleEmployee : text.subtitleOther
+        }
+        actions={
+          <StatusBadge color="brand" size="lg">
+            <UsersThree size={16} />
+            {text.inScope(data.total)}
+          </StatusBadge>
+        }
+      ></PageHeader>
       <div className="team-explorer-layout">
         <section className="panel team-explorer">
           <Tabs
@@ -119,10 +119,11 @@ function Explorer() {
                       </Link>
                     ))
                   ) : (
-                    <div className="state-card">
-                      <h2>{text.empty.title(kind)}</h2>
-                      <p>{text.empty.detail}</p>
-                    </div>
+                    <EmptyBlock
+                      icon={kind === "departments" ? Buildings : MapPin}
+                      title={text.empty.title(kind)}
+                      description={text.empty.detail}
+                    />
                   )}
                 </div>
               </TabPanel>

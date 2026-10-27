@@ -16,9 +16,12 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Badge,
   Button,
+  DataCard,
   DialogPanel,
+  EmptyBlock,
   ErrorState,
   LoadingState,
+  PageHeader,
   Tabs,
   TabList,
   Tab,
@@ -98,19 +101,19 @@ function OrganizationRecords() {
 
   return (
     <div className="page-enter organization-page">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.heading}</h1>
-          <p>{text.intro}</p>
-        </div>
-        {writable && (
-          <Button onPress={() => setEditing("create")}>
-            <Plus size={18} />
-            {text.add(label.singular)}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.heading}
+        description={text.intro}
+        actions={
+          writable && (
+            <Button onPress={() => setEditing("create")}>
+              <Plus size={18} />
+              {text.add(label.singular)}
+            </Button>
+          )
+        }
+      ></PageHeader>
       <div className="organization-scope">
         <span className="organization-scope-icon">
           <Buildings size={24} weight="duotone" />
@@ -186,75 +189,118 @@ function OrganizationRecords() {
               ) : isPending ? (
                 <LoadingState />
               ) : !data?.items.length ? (
-                <div className="organization-empty">
-                  <Icon size={32} weight="duotone" />
-                  <h2>
-                    {search ? text.noMatches : text.emptyTitle(label.plural)}
-                  </h2>
-                  <p>
-                    {search
-                      ? text.noMatchesBody
-                      : text.emptyBody(label.singular)}
-                  </p>
-                  {search ? (
-                    <Button variant="secondary" onPress={() => filter("q", "")}>
-                      {text.clearSearch}
-                    </Button>
-                  ) : (
-                    writable && (
+                <EmptyBlock
+                  icon={Icon}
+                  title={
+                    search ? text.noMatches : text.emptyTitle(label.plural)
+                  }
+                  description={
+                    search ? text.noMatchesBody : text.emptyBody(label.singular)
+                  }
+                  action={
+                    search ? (
                       <Button
                         variant="secondary"
-                        onPress={() => setEditing("create")}
+                        onPress={() => filter("q", "")}
                       >
-                        <Plus size={16} />
-                        {text.add(label.singular)}
+                        {text.clearSearch}
                       </Button>
+                    ) : (
+                      writable && (
+                        <Button
+                          variant="secondary"
+                          onPress={() => setEditing("create")}
+                        >
+                          <Plus size={16} />
+                          {text.add(label.singular)}
+                        </Button>
+                      )
                     )
-                  )}
-                </div>
+                  }
+                />
               ) : (
                 <>
-                  <div
-                    className="organization-column-labels"
-                    aria-hidden="true"
-                  >
-                    <span>{text.columns[kind]}</span>
-                    <span>{text.columns.assigned}</span>
-                    <span>{text.columns.availability}</span>
-                    <span />
-                  </div>
-                  <div className="organization-list">
-                    {data.items.map((unit) => (
-                      <article
-                        className={`organization-row ${unit.active ? "" : "is-inactive"}`}
-                        key={unit.id}
-                      >
-                        <div className="organization-record-name">
-                          <span className="organization-unit-icon">
+                  <DataCard
+                    title={text.recordsLabel}
+                    label={text.recordsTable}
+                    rows={data.items}
+                    getKey={(unit) => unit.id}
+                    pageSize={20}
+                    empty={null}
+                    columns={[
+                      {
+                        id: "name",
+                        label: text.columns[kind],
+                        isRowHeader: true,
+                        render: (unit) => (
+                          <div className="flex items-center gap-3">
                             <Icon size={22} weight="duotone" />
-                          </span>
-                          <div>
-                            <h2>{unit.name}</h2>
-                            <span className="organization-code">
-                              {unit.code}
-                            </span>
+                            <div>
+                              <h2 className="text-sm font-medium text-primary">
+                                {unit.name}
+                              </h2>
+                              <span className="organization-code">
+                                {unit.code}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="organization-assigned">
-                          <small>{text.columns.assigned}</small>
-                          <strong>{unit.employeeCount}</strong>
-                          <span>
+                        ),
+                      },
+                      {
+                        id: "assigned",
+                        label: text.columns.assigned,
+                        render: (unit) => (
+                          <span className="text-sm">
+                            <strong>{unit.employeeCount}</strong>{" "}
                             {unit.employeeCount === 1
                               ? text.person
                               : text.people}
                           </span>
-                        </div>
-                        <div className="organization-availability">
+                        ),
+                      },
+                      {
+                        id: "availability",
+                        label: text.columns.availability,
+                        render: (unit) => (
+                          <Badge tone={unit.active ? "green" : "amber"}>
+                            {unit.active ? text.active : text.inactive}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        id: "actions",
+                        label: "",
+                        render: (unit) =>
+                          writable ? (
+                            <Button
+                              variant="icon"
+                              aria-label={text.edit(unit.name)}
+                              onPress={() => setEditing(unit)}
+                            >
+                              <PencilSimple size={19} />
+                            </Button>
+                          ) : null,
+                      },
+                    ]}
+                    mobileRow={(unit) => (
+                      <div className="flex items-start gap-3">
+                        <Icon size={22} weight="duotone" />
+                        <div className="min-w-0 flex-1">
+                          <h2 className="text-sm font-medium text-primary">
+                            {unit.name}
+                          </h2>
+                          <span className="organization-code">{unit.code}</span>
+                          <p className="text-sm text-tertiary">
+                            <strong>{unit.employeeCount}</strong>{" "}
+                            {unit.employeeCount === 1
+                              ? text.person
+                              : text.people}
+                          </p>
                           <Badge tone={unit.active ? "green" : "amber"}>
                             {unit.active ? text.active : text.inactive}
                           </Badge>
                         </div>
-                        {writable ? (
+                        {writable && (
                           <Button
                             variant="icon"
                             aria-label={text.edit(unit.name)}
@@ -262,12 +308,10 @@ function OrganizationRecords() {
                           >
                             <PencilSimple size={19} />
                           </Button>
-                        ) : (
-                          <span />
                         )}
-                      </article>
-                    ))}
-                  </div>
+                      </div>
+                    )}
+                  />
                   <div className="organization-pagination">
                     <span>{text.page(data.page, Math.max(data.pages, 1))}</span>
                     <div>

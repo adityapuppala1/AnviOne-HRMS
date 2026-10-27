@@ -7,12 +7,15 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
-  Badge,
   Button,
   DialogPanel,
+  EmptyBlock,
   ErrorState,
   LoadingState,
   NumberTicker,
+  PageHeader,
+  StatCard,
+  BadgeWithDot,
   Tab,
   TabList,
   TabPanel,
@@ -65,6 +68,7 @@ export default function Leave() {
   const mine = useLeave(canRequest);
   const approvals = useLeaveApprovals(canApprove);
   const client = useQueryClient();
+  const { reduceMotion } = usePreferences();
   const [composing, setComposing] = useState(false);
   if (!canRequest && !canApprove)
     return <ErrorState message={text.unavailable} />;
@@ -76,22 +80,75 @@ export default function Leave() {
       body: JSON.stringify(body),
     });
   const waiting = approvals.data?.pending.filter((r) => r.canDecide).length;
+  const stats =
+    canRequest && mine.data
+      ? {
+          available: mine.data.balances.reduce(
+            (sum, b) => sum + (b.available ?? 0),
+            0,
+          ),
+          pending: mine.data.requests.filter((r) => r.state === "pending")
+            .length,
+          upcoming: mine.data.requests.filter(
+            (r) => r.state === "approved" && r.endDate >= mine.data.today,
+          ).length,
+        }
+      : null;
   return (
     <div className="page-enter leave-page">
-      <header className="leave-hero">
-        <div>
-          <h1>{text.hero.title}</h1>
-          <p>
-            {canRequest ? text.hero.requesterIntro : text.hero.approverIntro}
-          </p>
+      <PageHeader
+        title={text.hero.title}
+        description={
+          canRequest ? text.hero.requesterIntro : text.hero.approverIntro
+        }
+        actions={
+          canRequest && (
+            <Button onPress={() => setComposing(true)}>
+              <Plus size={18} weight="bold" />
+              {text.hero.requestLeave}
+            </Button>
+          )
+        }
+      />
+      {(stats || waiting !== undefined) && (
+        <div className="leave-stats">
+          {stats && (
+            <>
+              <StatCard
+                label={text.stats.available}
+                value={stats.available}
+                suffix={text.stats.daysUnit}
+                hint={text.stats.availableHint}
+                icon={AirplaneTilt}
+                animate={!reduceMotion}
+              />
+              <StatCard
+                label={text.stats.pending}
+                value={stats.pending}
+                hint={text.stats.pendingHint}
+                icon={CalendarCheck}
+                animate={!reduceMotion}
+              />
+              <StatCard
+                label={text.stats.upcoming}
+                value={stats.upcoming}
+                hint={text.stats.upcomingHint}
+                icon={Check}
+                animate={!reduceMotion}
+              />
+            </>
+          )}
+          {!stats && waiting !== undefined && (
+            <StatCard
+              label={text.stats.waiting}
+              value={waiting}
+              hint={text.stats.waitingHint}
+              icon={CalendarCheck}
+              animate={!reduceMotion}
+            />
+          )}
         </div>
-        {canRequest && (
-          <Button onPress={() => setComposing(true)}>
-            <Plus size={18} weight="bold" />
-            {text.hero.requestLeave}
-          </Button>
-        )}
-      </header>
+      )}
       {canRequest && canApprove ? (
         <Tabs className="leave-tabs">
           <TabList aria-label={text.tabs.label} className="tabs-list">
@@ -202,11 +259,11 @@ function MyLeave({
           </div>
         </div>
         {requests.length === 0 ? (
-          <div className="leave-empty">
-            <AirplaneTilt size={34} weight="duotone" />
-            <h3>{text.mine.emptyTitle}</h3>
-            <p>{text.mine.emptyBody}</p>
-          </div>
+          <EmptyBlock
+            icon={AirplaneTilt}
+            title={text.mine.emptyTitle}
+            description={text.mine.emptyBody}
+          />
         ) : (
           <>
             {upcoming.length > 0 && (
@@ -395,9 +452,19 @@ function DateBlock({ request }: { request: LeaveRequest }) {
 }
 
 function StateBadge({ state }: { state: LeaveState }) {
-  const tone =
-    state === "approved" ? "green" : state === "pending" ? "amber" : "neutral";
-  return <Badge tone={tone}>{text.states[state]}</Badge>;
+  const color =
+    state === "approved"
+      ? "success"
+      : state === "pending"
+        ? "warning"
+        : state === "rejected"
+          ? "error"
+          : "gray";
+  return (
+    <BadgeWithDot color={color} size="sm">
+      {text.states[state]}
+    </BadgeWithDot>
+  );
 }
 
 function Approvals({
@@ -456,10 +523,12 @@ function Approvals({
           {text.approvals.awaitingTitle}
         </h2>
         {pending.length === 0 ? (
-          <div className="panel leave-empty">
-            <CalendarCheck size={34} weight="duotone" />
-            <h3>{text.approvals.caughtUpTitle}</h3>
-            <p>{text.approvals.caughtUpBody}</p>
+          <div className="panel">
+            <EmptyBlock
+              icon={CalendarCheck}
+              title={text.approvals.caughtUpTitle}
+              description={text.approvals.caughtUpBody}
+            />
           </div>
         ) : (
           <ul className="leave-cards">

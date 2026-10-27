@@ -22,6 +22,8 @@ export default [
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),
+    route("insights", "routes/insights.tsx"),
+    route("help", "routes/help.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

@@ -20,6 +20,17 @@ export const leaveCopy = {
       "Decide the requests routed to you and keep an eye on what is coming up.",
     requestLeave: "Request leave",
   },
+  stats: {
+    available: "Days available",
+    daysUnit: "days",
+    availableHint: "Across leave types with a yearly limit",
+    pending: "Pending requests",
+    pendingHint: "Waiting for a decision",
+    upcoming: "Upcoming approved",
+    upcomingHint: "Approved leave still ahead",
+    waiting: "Waiting for you",
+    waitingHint: "Requests you can decide now",
+  },
   tabs: {
     label: "Leave views",
     mine: "Your leave",

@@ -5,7 +5,20 @@ import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { PaperPlaneTilt } from "@phosphor-icons/react/dist/csr/PaperPlaneTilt";
 import { ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
-import { Badge, Button, DialogPanel, ErrorState, LoadingState } from "@anvi/ui";
+import {
+  Button,
+  DialogPanel,
+  EmptyBlock,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  StatCard,
+  StatusBadge,
+} from "@anvi/ui";
+import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
+import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { WarningCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
 import {
   candidateListSchema,
   candidateOptionsSchema,
@@ -17,6 +30,7 @@ import {
 } from "@anvi/contracts";
 import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { usePreferences } from "../lib/preferences";
 import "./onboarding.css";
 import {
   ActivationReadiness,
@@ -26,6 +40,16 @@ import {
 import { LocalReadinessReview } from "../components/local-readiness-review";
 import { candidatesCopy as text } from "../lib/copy/onboarding";
 const labels: Record<Candidate["state"], string> = text.states;
+const stateColor = (state: Candidate["state"]) =>
+  state === "approved"
+    ? "success"
+    : state === "submitted"
+      ? "brand"
+      : state === "changes_requested"
+        ? "warning"
+        : state === "cancelled"
+          ? "error"
+          : "gray";
 export default function Candidates() {
   const { me } = useWorkspace();
   return me.permissions.includes("onboarding.manage") ? (
@@ -38,6 +62,7 @@ function Intake() {
   const { me } = useWorkspace(),
     client = useQueryClient();
   const [params, setParams] = useSearchParams();
+  const { reduceMotion } = usePreferences();
   const [creating, setCreating] = useState(false),
     [error, setError] = useState("");
   const q = params.get("q") ?? "",
@@ -55,6 +80,8 @@ function Intake() {
     queryFn: ({ signal }) =>
       api(`/candidates/${selected}`, candidateDetailSchema, { signal }),
   });
+  const count = (state: Candidate["state"]) =>
+    list.data?.items.filter((c) => c.state === state).length ?? 0;
   async function refresh(id?: string) {
     await client.invalidateQueries({ queryKey: ["candidates"] });
     await client.invalidateQueries({ queryKey: ["candidate"] });
@@ -66,16 +93,46 @@ function Intake() {
   }
   return (
     <div className="page-enter intake-page">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.heading}</h1>
-          <p>{text.intro}</p>
-        </div>
-        <Button onPress={() => setCreating(true)}>
-          <UserPlus size={19} />
-          {text.newIntake}
-        </Button>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.heading}
+        description={text.intro}
+        actions={
+          <Button onPress={() => setCreating(true)}>
+            <UserPlus size={19} />
+            {text.newIntake}
+          </Button>
+        }
+      ></PageHeader>
+      <div className="intake-stats">
+        <StatCard
+          label={text.stats.total}
+          value={list.data?.items.length ?? 0}
+          hint={text.stats.totalHint}
+          icon={Users}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.review}
+          value={count("submitted")}
+          hint={text.stats.reviewHint}
+          icon={ClipboardText}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.changes}
+          value={count("changes_requested")}
+          hint={text.stats.changesHint}
+          icon={WarningCircle}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.approved}
+          value={count("approved")}
+          hint={text.stats.approvedHint}
+          icon={CheckCircle}
+          animate={!reduceMotion}
+        />
       </div>
       <div className="intake-notice">
         <ShieldCheck size={22} />
@@ -96,7 +153,9 @@ function Intake() {
               <h2>{text.ledgerTitle}</h2>
               <p>{text.ledgerSubtitle}</p>
             </div>
-            <Badge>{text.shown(list.data?.items.length ?? "…")}</Badge>
+            <StatusBadge color="gray" size="sm" type="pill-color">
+              {text.shown(list.data?.items.length ?? "…")}
+            </StatusBadge>
           </div>
           <label className="intake-search">
             <span className="sr-only">{text.searchLabel}</span>
@@ -119,11 +178,11 @@ function Intake() {
           ) : !list.data ? (
             <LoadingState />
           ) : !list.data.items.length ? (
-            <div className="state-card">
-              <UserPlus size={32} />
-              <h2>{text.emptyTitle}</h2>
-              <p>{text.emptyBody}</p>
-            </div>
+            <EmptyBlock
+              icon={UserPlus}
+              title={text.emptyTitle}
+              description={text.emptyBody}
+            />
           ) : (
             <div className="intake-rows">
               {list.data.items.map((c) => (
@@ -389,7 +448,9 @@ function CaseReview({
         <p className="eyebrow">{text.review.eyebrow}</p>
         <h2>{c.name}</h2>
         <p>{c.title}</p>
-        <Badge>{labels[c.state]}</Badge>
+        <StatusBadge color={stateColor(c.state)} size="sm" type="pill-color">
+          {labels[c.state]}
+        </StatusBadge>
       </div>
       <dl className="intake-facts">
         <div>
@@ -518,7 +579,9 @@ function CaseReview({
         title={text.delivery.title}
       >
         <div className="intake-delivery">
-          <Badge>{text.delivery.badge}</Badge>
+          <StatusBadge color="warning" size="sm" type="pill-color">
+            {text.delivery.badge}
+          </StatusBadge>
           <p>{text.delivery.note}</p>
           {delivery?.invitationUrl && (
             <p>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { MagnifyingGlass as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { Users } from "@phosphor-icons/react/dist/csr/Users";
+import { ChartLineUp } from "@phosphor-icons/react/dist/csr/ChartLineUp";
+import { Question } from "@phosphor-icons/react/dist/csr/Question";
 import { GearSix as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { SquaresFour as LayoutDashboard } from "@phosphor-icons/react/dist/csr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
@@ -129,6 +131,16 @@ export function Command({
             {copy.nav.organization}
           </Button>
         )}
+        {me.permissions.includes("insights.read") && (
+          <Button variant="ghost" onPress={() => go("/insights")}>
+            <ChartLineUp size={18} />
+            {copy.nav.insights}
+          </Button>
+        )}
+        <Button variant="ghost" onPress={() => go("/help")}>
+          <Question size={18} />
+          {copy.nav.help}
+        </Button>
         <Button variant="ghost" onPress={() => go("/preferences")}>
           <SlidersHorizontal size={18} />
           {copy.shell.preferences}

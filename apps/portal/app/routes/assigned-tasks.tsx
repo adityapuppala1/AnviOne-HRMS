@@ -1,12 +1,24 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { z } from "zod";
-import { Badge, Button, DialogPanel, ErrorState, LoadingState } from "@anvi/ui";
+import {
+  Button,
+  DialogPanel,
+  EmptyBlock,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  StatCard,
+  StatusBadge,
+} from "@anvi/ui";
+import { Prohibit } from "@phosphor-icons/react/dist/csr/Prohibit";
+import { ListChecks } from "@phosphor-icons/react/dist/csr/ListChecks";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { assignedTaskSchema } from "@anvi/contracts";
 import { api, useAssignedTasks } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { usePreferences } from "../lib/preferences";
 import { assignedTasksCopy as text } from "../lib/copy/onboarding";
 import "./assigned-tasks.css";
 
@@ -24,6 +36,7 @@ export default function AssignedTasks() {
 
 function TaskDocket({ csrf }: { csrf: string }) {
   const query = useAssignedTasks();
+  const { reduceMotion } = usePreferences();
   const [filter, setFilter] = useState("open");
   const [selected, setSelected] = useState<AssignedTask | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,6 +52,7 @@ function TaskDocket({ csrf }: { csrf: string }) {
       ),
     [filter, query.data],
   );
+  const all = query.data?.items ?? [];
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
@@ -69,21 +83,44 @@ function TaskDocket({ csrf }: { csrf: string }) {
   }
   return (
     <div className="page-enter task-workspace">
-      <header className="task-hero">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.heading}</h1>
-          <p>{text.intro}</p>
-        </div>
-        <div className="task-seal" aria-hidden="true">
-          <ClipboardText size={30} weight="duotone" />
-          <span>
-            {text.sealMy}
-            <br />
-            {text.sealWork}
-          </span>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.heading}
+        description={text.intro}
+        actions={
+          <div className="task-seal" aria-hidden="true">
+            <ClipboardText size={30} weight="duotone" />
+            <span>
+              {text.sealMy}
+              <br />
+              {text.sealWork}
+            </span>
+          </div>
+        }
+      ></PageHeader>
+      <div className="task-stats">
+        <StatCard
+          label={text.stats.open}
+          value={all.filter((t) => t.state !== "completed").length}
+          hint={text.stats.openHint}
+          icon={ListChecks}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.blocked}
+          value={all.filter((t) => t.state === "blocked").length}
+          hint={text.stats.blockedHint}
+          icon={Prohibit}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.completed}
+          value={all.filter((t) => t.state === "completed").length}
+          hint={text.stats.completedHint}
+          icon={CheckCircle}
+          animate={!reduceMotion}
+        />
+      </div>
       <section className="task-docket" aria-label={text.docketLabel}>
         <div className="task-docket-toolbar">
           <div>
@@ -111,11 +148,11 @@ function TaskDocket({ csrf }: { csrf: string }) {
         ) : !query.data ? (
           <LoadingState />
         ) : !items?.length ? (
-          <div className="task-empty">
-            <CheckCircle size={34} weight="duotone" />
-            <h2>{text.emptyTitle}</h2>
-            <p>{text.emptyBody}</p>
-          </div>
+          <EmptyBlock
+            icon={CheckCircle}
+            title={text.emptyTitle}
+            description={text.emptyBody}
+          />
         ) : (
           <ol className="docket-list">
             {items.map((task, index) => (
@@ -146,7 +183,19 @@ function TaskDocket({ csrf }: { csrf: string }) {
                 </span>
                 <article>
                   <div className="docket-entry-head">
-                    <Badge>{statusNames[task.state]}</Badge>
+                    <StatusBadge
+                      color={
+                        task.state === "completed"
+                          ? "success"
+                          : task.state === "blocked"
+                            ? "error"
+                            : "gray"
+                      }
+                      size="sm"
+                      type="pill-color"
+                    >
+                      {statusNames[task.state]}
+                    </StatusBadge>
                     <span>
                       {task.required ? text.required : text.optional} ·{" "}
                       {task.owner}

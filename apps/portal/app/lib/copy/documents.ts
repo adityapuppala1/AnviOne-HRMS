@@ -39,6 +39,18 @@ export const documentsCopy = {
     download: "Download",
     downloadLabel: (title: string) => `Download ${title}`,
   },
+  stats: {
+    pending: "Pending",
+    pendingHint: "With HR now",
+    verified: "Verified",
+    verifiedHint: "Checked and filed",
+    rejected: "Rejected",
+    rejectedHint: "Needs a replacement",
+    waiting: "Waiting to verify",
+    waitingHint: "Open and decide",
+    recent: "Recently reviewed",
+    recentHint: "Latest decisions",
+  },
   mine: {
     heading: "Your documents",
     hint: "Newest first. Withdraw a file while HR has not reviewed it.",

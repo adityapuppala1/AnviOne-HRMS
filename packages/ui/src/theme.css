@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source './';
+@import "./untitled/untitled.css";
 
 /* Anvi Loom: indigo-dyed structure, a single marigold signal, lilac-mist canvas. */
 :root {

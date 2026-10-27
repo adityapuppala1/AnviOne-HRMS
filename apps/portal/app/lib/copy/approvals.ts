@@ -20,6 +20,12 @@ export const approvalsCopy = {
     title: "Decisions, in one place.",
     body: "Leave, attendance corrections, documents to verify and onboarding readiness reviews routed to you, oldest first. Each decision is recorded with your name.",
   },
+  stats: {
+    waiting: "Waiting for you",
+    waitingHint: "Decisions you can make now",
+    others: "Routed elsewhere",
+    othersHint: "Waiting on someone else",
+  },
   sections: {
     yours: "Needs your decision",
     others: "Routed to someone else",

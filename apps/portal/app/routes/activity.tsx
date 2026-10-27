@@ -5,7 +5,16 @@ import { Funnel } from "@phosphor-icons/react/dist/csr/Funnel";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { Fingerprint } from "@phosphor-icons/react/dist/csr/Fingerprint";
 import { X } from "@phosphor-icons/react/dist/csr/X";
-import { Badge, Button, DialogPanel, ErrorState, LoadingState } from "@anvi/ui";
+import {
+  Badge,
+  Button,
+  DataCard,
+  DialogPanel,
+  EmptyBlock,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+} from "@anvi/ui";
 import { useAudit } from "../lib/api";
 import { copy } from "../lib/copy";
 import { useWorkspace } from "./workspace";
@@ -40,17 +49,17 @@ function ActivityLog() {
   const event = data?.find((item) => item.id === selected);
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.title}</h1>
-          <p>{text.subtitle}</p>
-        </div>
-        <Badge>
-          <Fingerprint size={15} />
-          {text.readOnly}
-        </Badge>
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.title}
+        description={text.subtitle}
+        actions={
+          <Badge>
+            <Fingerprint size={15} />
+            {text.readOnly}
+          </Badge>
+        }
+      ></PageHeader>
       <section className="panel audit-panel">
         <div className="directory-toolbar">
           <label className="search-box">
@@ -99,31 +108,87 @@ function ActivityLog() {
         ) : !data ? (
           <LoadingState />
         ) : !events?.length ? (
-          <div className="state-card">
-            <ClockCounterClockwise size={30} />
-            <h2>{data.length ? text.noMatch : text.empty}</h2>
-            <p>{data.length ? text.noMatchDetail : text.emptyDetail}</p>
-          </div>
+          <EmptyBlock
+            icon={ClockCounterClockwise}
+            title={data.length ? text.noMatch : text.empty}
+            description={data.length ? text.noMatchDetail : text.emptyDetail}
+          />
         ) : (
-          <div className="activity-list">
-            {events.map((item) => (
-              <article className="activity-event" key={item.id}>
-                <span
-                  className={`activity-icon ${item.action.startsWith("branding.") ? "event-brand" : ""}`}
-                >
-                  <ClockCounterClockwise size={20} weight="duotone" />
-                </span>
-                <div className="activity-info">
-                  <h2>{actionNames[item.action] ?? item.action}</h2>
-                  <p>
-                    {item.actor}
-                    <span> · {item.role.replaceAll("_", " ")}</span>
+          <DataCard
+            title={text.tableTitle}
+            label={text.tableLabel}
+            rows={events}
+            getKey={(item) => item.id}
+            pageSize={10}
+            empty={null}
+            columns={[
+              {
+                id: "action",
+                label: text.columns.action,
+                isRowHeader: true,
+                sortValue: (item) => actionNames[item.action] ?? item.action,
+                render: (item) => (
+                  <h2 className="text-sm font-medium text-primary">
+                    {actionNames[item.action] ?? item.action}
+                  </h2>
+                ),
+              },
+              {
+                id: "actor",
+                label: text.columns.actor,
+                render: (item) => (
+                  <span className="text-sm text-tertiary">
+                    {item.actor} · {item.role.replaceAll("_", " ")}
+                  </span>
+                ),
+              },
+              {
+                id: "record",
+                label: text.columns.record,
+                render: (item) => (
+                  <span className="text-sm text-tertiary">{item.target}</span>
+                ),
+              },
+              {
+                id: "when",
+                label: text.columns.when,
+                sortValue: (item) => item.occurredAt,
+                render: (item) => (
+                  <time dateTime={item.occurredAt} className="text-sm">
+                    {formatDate(item.occurredAt)}
+                  </time>
+                ),
+              },
+              {
+                id: "view",
+                label: "",
+                render: (item) => (
+                  <Button
+                    variant="icon"
+                    aria-label={text.viewEvent(item.id)}
+                    onPress={() => setSelected(item.id)}
+                  >
+                    <ArrowUpRight size={18} />
+                  </Button>
+                ),
+              },
+            ]}
+            mobileRow={(item) => (
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-medium text-primary">
+                    {actionNames[item.action] ?? item.action}
+                  </h2>
+                  <p className="text-sm text-tertiary">
+                    {item.actor} · {item.role.replaceAll("_", " ")}
                   </p>
-                  <small>{item.target}</small>
+                  <small className="block break-words text-tertiary">
+                    {item.target}
+                  </small>
+                  <time dateTime={item.occurredAt} className="text-xs">
+                    {formatDate(item.occurredAt)}
+                  </time>
                 </div>
-                <time dateTime={item.occurredAt}>
-                  {formatDate(item.occurredAt)}
-                </time>
                 <Button
                   variant="icon"
                   aria-label={text.viewEvent(item.id)}
@@ -131,9 +196,9 @@ function ActivityLog() {
                 >
                   <ArrowUpRight size={18} />
                 </Button>
-              </article>
-            ))}
-          </div>
+              </div>
+            )}
+          />
         )}
       </section>
       <DialogPanel

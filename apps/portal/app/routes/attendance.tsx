@@ -9,11 +9,14 @@ import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
-  Badge,
+  BadgeWithDot,
   Button,
   DialogPanel,
+  EmptyBlock,
   ErrorState,
   LoadingState,
+  PageHeader,
+  StatCard,
   Tab,
   TabList,
   TabPanel,
@@ -28,6 +31,7 @@ import type {
 } from "@anvi/contracts";
 import { api, useAttendance, useAttendanceTeam } from "../lib/api";
 import { attendanceCopy as text } from "../lib/copy/attendance";
+import { usePreferences } from "../lib/preferences";
 import { useWorkspace } from "./workspace";
 // Shared form, card and list styles come from the leave screen.
 import "./leave.css";
@@ -70,6 +74,7 @@ export default function Attendance() {
   const mine = useAttendance(canSelf);
   const team = useAttendanceTeam(canReview);
   const client = useQueryClient();
+  const { reduceMotion } = usePreferences();
   if (!canSelf && !canReview) return <ErrorState message={text.noAccess} />;
   const refresh = () => client.invalidateQueries({ queryKey: ["attendance"] });
   const send: Send = (path, body) =>
@@ -79,14 +84,59 @@ export default function Attendance() {
       body: JSON.stringify(body),
     });
   const waiting = team.data?.pending.filter((c) => c.canDecide).length;
+  const stats =
+    canSelf && mine.data
+      ? {
+          present: mine.data.days.filter((d) => d.status === "present").length,
+          missing: mine.data.days.filter((d) => d.status === "incomplete")
+            .length,
+          pending: mine.data.corrections.filter((c) => c.state === "pending")
+            .length,
+        }
+      : null;
   return (
     <div className="page-enter attendance-page">
-      <header className="leave-hero">
-        <div>
-          <h1>{text.hero.title}</h1>
-          <p>{canSelf ? text.hero.selfIntro : text.hero.reviewerIntro}</p>
+      <PageHeader
+        title={text.hero.title}
+        description={canSelf ? text.hero.selfIntro : text.hero.reviewerIntro}
+      />
+      {(stats || waiting !== undefined) && (
+        <div className="leave-stats">
+          {stats ? (
+            <>
+              <StatCard
+                label={text.stats.present}
+                value={stats.present}
+                hint={text.stats.presentHint}
+                icon={Check}
+                animate={!reduceMotion}
+              />
+              <StatCard
+                label={text.stats.missing}
+                value={stats.missing}
+                hint={text.stats.missingHint}
+                icon={Clock}
+                animate={!reduceMotion}
+              />
+              <StatCard
+                label={text.stats.pending}
+                value={stats.pending}
+                hint={text.stats.pendingHint}
+                icon={UsersThree}
+                animate={!reduceMotion}
+              />
+            </>
+          ) : (
+            <StatCard
+              label={text.stats.waiting}
+              value={waiting ?? 0}
+              hint={text.stats.waitingHint}
+              icon={UsersThree}
+              animate={!reduceMotion}
+            />
+          )}
         </div>
-      </header>
+      )}
       {canSelf && canReview ? (
         <Tabs className="leave-tabs">
           <TabList aria-label={text.tabs.label} className="tabs-list">
@@ -232,11 +282,11 @@ function MyAttendance({
           </div>
         </div>
         {data.corrections.length === 0 ? (
-          <div className="leave-empty">
-            <Check size={34} weight="duotone" />
-            <h3>{text.corrections.emptyTitle}</h3>
-            <p>{text.corrections.emptyHint}</p>
-          </div>
+          <EmptyBlock
+            icon={Check}
+            title={text.corrections.emptyTitle}
+            description={text.corrections.emptyHint}
+          />
         ) : (
           <ol className="leave-list attendance-corrections">
             {data.corrections.map((c) => (
@@ -412,17 +462,20 @@ function CorrectionItem({
               ? c.employeeName
               : text.item.range(c.checkIn, c.checkOut)}
           </strong>
-          <Badge
-            tone={
+          <BadgeWithDot
+            size="sm"
+            color={
               c.state === "approved"
-                ? "green"
+                ? "success"
                 : c.state === "pending"
-                  ? "amber"
-                  : "neutral"
+                  ? "warning"
+                  : c.state === "rejected"
+                    ? "error"
+                    : "gray"
             }
           >
             {correctionLabels[c.state]}
-          </Badge>
+          </BadgeWithDot>
         </div>
         <p>
           {text.item.meta(
@@ -624,7 +677,7 @@ function TeamToday({
           </div>
         </div>
         {people.length === 0 ? (
-          <p className="leave-empty">{text.team.nobody}</p>
+          <EmptyBlock icon={UsersThree} title={text.team.nobody} />
         ) : (
           <ul className="attendance-people">
             {people.map((p) => (
@@ -649,10 +702,12 @@ function TeamToday({
           {text.team.awaitingTitle}
         </h2>
         {pending.length === 0 ? (
-          <div className="panel leave-empty">
-            <Check size={34} weight="duotone" />
-            <h3>{text.team.noneTitle}</h3>
-            <p>{text.team.noneHint}</p>
+          <div className="panel">
+            <EmptyBlock
+              icon={Check}
+              title={text.team.noneTitle}
+              description={text.team.noneHint}
+            />
           </div>
         ) : (
           <ul className="leave-cards">

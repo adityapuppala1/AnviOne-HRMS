@@ -224,3 +224,14 @@ button.calendar-weekday:hover {
     font-size: 12px;
   }
 }
+
+.calendar-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .calendar-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -31,6 +31,17 @@ export const calendarCopy = {
     empty:
       "HR adds holidays here; they show up in leave and attendance automatically.",
   },
+  stats: {
+    observed: "Observed holidays",
+    observedHint: (year: number) => `Days off in ${year}`,
+    next: "Next holiday",
+    nextHint: (name: string) => name,
+    nextNone: "None scheduled",
+    days: "days",
+    workingDays: "Working days",
+    workingDaysSuffix: "per week",
+    workingDaysHint: "Leave counts only these days",
+  },
   week: {
     title: "Working week",
     manageHint:

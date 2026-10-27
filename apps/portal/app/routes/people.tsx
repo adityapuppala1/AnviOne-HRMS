@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { MagnifyingGlass as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { SquaresFour as LayoutGrid } from "@phosphor-icons/react/dist/csr/SquaresFour";
 import { List } from "@phosphor-icons/react/dist/csr/List";
@@ -7,12 +7,68 @@ import { CaretLeft as ChevronLeft } from "@phosphor-icons/react/dist/csr/CaretLe
 import { CaretRight as ChevronRight } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { Users } from "@phosphor-icons/react/dist/csr/Users";
 import { X } from "@phosphor-icons/react/dist/csr/X";
-import { Button, ErrorState, LoadingState } from "@anvi/ui";
+import {
+  Button,
+  DataCard,
+  EmptyBlock,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+  type Column,
+} from "@anvi/ui";
+import type { Employee } from "@anvi/contracts";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
-import { peopleCopy as text } from "../lib/copy/screens";
-import { PersonCard, PersonRow } from "../components/people";
+import { peopleCopy as text, profileCopy } from "../lib/copy/screens";
+import { PersonCard } from "../components/people";
 import { useWorkspace } from "./workspace";
+const columns: Column<Employee>[] = [
+  {
+    id: "name",
+    label: text.list.name,
+    isRowHeader: true,
+    render: (p) => (
+      <Link className="text-link" to={`/people/${p.id}`}>
+        {p.name}
+      </Link>
+    ),
+  },
+  {
+    id: "title",
+    label: text.list.role,
+    render: (p) => p.title,
+  },
+  {
+    id: "department",
+    label: text.list.team,
+    render: (p) => (
+      <StatusBadge color="gray" size="sm">
+        {p.department}
+      </StatusBadge>
+    ),
+  },
+  {
+    id: "location",
+    label: text.list.location,
+    render: (p) => p.location,
+  },
+  {
+    id: "status",
+    label: text.list.status,
+    render: (p) => (
+      <StatusBadge
+        color={p.status === "active" ? "success" : "warning"}
+        size="sm"
+      >
+        {p.status === "active"
+          ? profileCopy.status.active
+          : profileCopy.status.notice}
+      </StatusBadge>
+    ),
+  },
+];
+
 export default function People() {
   const { me } = useWorkspace();
   if (!me.permissions.includes("directory.read"))
@@ -47,16 +103,16 @@ function Directory() {
     params.has("q") || params.has("department") || params.has("location");
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{copy.peopleTitle}</h1>
-          <p>{copy.peopleSubtitle}</p>
-        </div>
-        <div className="directory-emblem" aria-hidden="true">
-          <Users size={28} />
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={copy.peopleTitle}
+        description={copy.peopleSubtitle}
+        actions={
+          <div className="directory-emblem" aria-hidden="true">
+            <Users size={28} />
+          </div>
+        }
+      ></PageHeader>
       <section className="directory-panel">
         <div className="directory-toolbar">
           <label className="search-box">
@@ -133,24 +189,43 @@ function Directory() {
         ) : isPending ? (
           <LoadingState />
         ) : !data?.items.length ? (
-          <div className="state-card">
-            <Users size={28} />
-            <h2>{copy.noPeople}</h2>
-            <p>{copy.noPeopleDetail}</p>
-            <Button variant="secondary" onPress={() => void setParams({})}>
-              {text.clearFilters}
-            </Button>
+          <EmptyBlock
+            icon={Users}
+            title={copy.noPeople}
+            description={copy.noPeopleDetail}
+            action={
+              <Button variant="secondary" onPress={() => void setParams({})}>
+                {text.clearFilters}
+              </Button>
+            }
+          />
+        ) : view === "grid" ? (
+          <div className="people-grid">
+            {data.items.map((person) => (
+              <PersonCard key={person.id} person={person} />
+            ))}
           </div>
         ) : (
-          <div className={view === "grid" ? "people-grid" : "directory-list"}>
-            {data.items.map((person) =>
-              view === "grid" ? (
-                <PersonCard key={person.id} person={person} />
-              ) : (
-                <PersonRow key={person.id} person={person} />
-              ),
+          <DataCard
+            title={text.list.title}
+            label={text.list.label}
+            columns={columns}
+            rows={data.items}
+            getKey={(person) => person.id}
+            pageSize={8}
+            empty={null}
+            mobileRow={(person) => (
+              <Link className="person-row" to={`/people/${person.id}`}>
+                <span className="person-info">
+                  <strong>{person.name}</strong>
+                  <span>{person.title}</span>
+                </span>
+                <StatusBadge color="gray" size="sm">
+                  {person.department}
+                </StatusBadge>
+              </Link>
             )}
-          </div>
+          />
         )}
         <div className="pagination">
           <p>{text.page(data?.page ?? 1, data?.pages ?? 1)}</p>

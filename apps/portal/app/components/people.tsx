@@ -1,7 +1,8 @@
 import { Link } from "react-router";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
-import { Avatar, Badge } from "@anvi/ui";
+import { Avatar, Badge, StatusBadge } from "@anvi/ui";
+import { profileCopy } from "../lib/copy/screens";
 import type { Employee } from "@anvi/contracts";
 export function PersonRow({ person }: { person: Employee }) {
   return (
@@ -37,9 +38,14 @@ export function PersonCard({ person }: { person: Employee }) {
           <MapPin size={14} />
           {person.location}
         </span>
-        <Badge tone={person.status === "active" ? "green" : "amber"}>
-          {person.status === "active" ? "Active" : "Notice period"}
-        </Badge>
+        <StatusBadge
+          color={person.status === "active" ? "success" : "warning"}
+          size="sm"
+        >
+          {person.status === "active"
+            ? profileCopy.status.active
+            : profileCopy.status.notice}
+        </StatusBadge>
       </div>
     </Link>
   );

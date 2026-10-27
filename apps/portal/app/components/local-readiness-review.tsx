@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
-import { Badge, Button, DialogPanel } from "@anvi/ui";
+import { Button, DialogPanel, StatusBadge } from "@anvi/ui";
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
@@ -142,9 +142,13 @@ export function LocalReadinessReview({
           <p className="eyebrow">Two people, one accountable handoff</p>
           <h3 id="local-review-title">Independent readiness review</h3>
         </div>
-        <Badge>
+        <StatusBadge
+          color={pending ? "warning" : eligible ? "success" : "gray"}
+          size="sm"
+          type="pill-color"
+        >
           {pending ? "Decision pending" : eligible ? "Ready" : "Gated"}
-        </Badge>
+        </StatusBadge>
       </div>
 
       <div className="local-review-baton">

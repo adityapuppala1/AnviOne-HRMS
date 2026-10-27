@@ -15,6 +15,7 @@ export const organizationCopy = {
     `${name} ${created ? "created" : "saved"}.`,
   dismissSaved: "Dismiss saved message",
   recordsLabel: "Organization records",
+  recordsTable: "Organization records list",
   typeLabel: "Organization record type",
   departments: "Departments",
   locations: "Locations",

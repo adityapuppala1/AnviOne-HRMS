@@ -1,0 +1,97 @@
+/* Help centre: answers on the left, shortcuts beside them; one column on phones. */
+.help-search {
+  margin-bottom: 20px;
+}
+.help-search .search-box {
+  max-width: 560px;
+}
+.help-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+.help-topics {
+  display: grid;
+  gap: 16px;
+}
+.help-topic {
+  padding: 20px 22px 8px;
+}
+.help-topic h2,
+.help-shortcuts h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.help-topic details {
+  border-top: 1px solid var(--line);
+}
+.help-topic summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  padding: 10px 0;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.help-topic summary::-webkit-details-marker {
+  display: none;
+}
+.help-topic summary svg {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.help-topic details[open] summary svg {
+  transform: rotate(180deg);
+}
+.help-topic details p {
+  margin: 0 0 16px;
+  max-width: 68ch;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.help-shortcuts {
+  position: sticky;
+  top: 96px;
+  padding: 20px 22px;
+}
+.help-shortcuts h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.help-shortcuts dl {
+  display: grid;
+  gap: 14px;
+  margin: 12px 0 0;
+}
+.help-shortcuts dt {
+  margin: 0;
+}
+.help-shortcuts dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.help-shortcuts kbd {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font:
+    600 13px var(--display),
+    sans-serif;
+}
+@media (max-width: 1000px) {
+  .help-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .help-shortcuts {
+    position: static;
+  }
+}

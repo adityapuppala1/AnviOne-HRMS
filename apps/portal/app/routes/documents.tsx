@@ -5,14 +5,20 @@ import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
 import { FileImage } from "@phosphor-icons/react/dist/csr/FileImage";
 import { FilePdf } from "@phosphor-icons/react/dist/csr/FilePdf";
 import { FolderLock } from "@phosphor-icons/react/dist/csr/FolderLock";
+import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { Hourglass } from "@phosphor-icons/react/dist/csr/Hourglass";
+import { XCircle } from "@phosphor-icons/react/dist/csr/XCircle";
 import { UploadSimple } from "@phosphor-icons/react/dist/csr/UploadSimple";
 import {
   Avatar,
-  Badge,
   Button,
   DialogPanel,
+  EmptyBlock,
   ErrorState,
   LoadingState,
+  PageHeader,
+  StatCard,
+  StatusBadge,
   Tab,
   TabList,
   TabPanel,
@@ -21,6 +27,7 @@ import {
 import type { DocumentCategory, EmployeeDocument } from "@anvi/contracts";
 import { api, ApiError, useDocumentReview, useDocuments } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { usePreferences } from "../lib/preferences";
 import { documentsCopy as text } from "../lib/copy/documents";
 // Shared card, form and list styles come from the leave screen.
 import "./leave.css";
@@ -64,18 +71,18 @@ export default function Documents() {
     });
   return (
     <div className="page-enter documents-page">
-      <header className="leave-hero">
-        <div>
-          <h1>{text.title}</h1>
-          <p>{canOwn ? text.subtitleOwner : text.subtitleReviewer}</p>
-        </div>
-        {canOwn && (
-          <Button onPress={() => setUploading(true)}>
-            <UploadSimple size={18} weight="bold" />
-            {text.uploadButton}
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        title={text.title}
+        description={canOwn ? text.subtitleOwner : text.subtitleReviewer}
+        actions={
+          canOwn && (
+            <Button onPress={() => setUploading(true)}>
+              <UploadSimple size={18} weight="bold" />
+              {text.uploadButton}
+            </Button>
+          )
+        }
+      />
       {canOwn && canReview ? (
         <Tabs className="leave-tabs">
           <TabList aria-label={text.tabs.label} className="tabs-list">
@@ -119,12 +126,14 @@ function DocumentRow({
   actions?: ReactNode;
   showOwner?: boolean;
 }) {
-  const tone =
+  const color =
     d.status === "verified"
-      ? "green"
+      ? "success"
       : d.status === "pending"
-        ? "amber"
-        : "neutral";
+        ? "warning"
+        : d.status === "rejected"
+          ? "error"
+          : "gray";
   return (
     <li className={`document-row document-${d.status}`}>
       <span className="document-icon" aria-hidden="true">
@@ -137,7 +146,9 @@ function DocumentRow({
       <div className="document-body">
         <div className="leave-item-head">
           <strong>{showOwner ? d.employeeName : d.title}</strong>
-          <Badge tone={tone}>{statusLabels[d.status]}</Badge>
+          <StatusBadge color={color} size="sm" type="pill-color">
+            {statusLabels[d.status]}
+          </StatusBadge>
         </div>
         <p>
           {showOwner ? text.row.titleWithComma(d.title) : ""}
@@ -185,6 +196,7 @@ function Mine({
   send: Send;
   refresh: () => Promise<unknown>;
 }) {
+  const { reduceMotion } = usePreferences();
   const [error, setError] = useState("");
   if (query.error)
     return (
@@ -205,47 +217,78 @@ function Mine({
       );
     }
   }
+  const items = query.data.items;
+  const count = (status: EmployeeDocument["status"]) =>
+    items.filter((d) => d.status === status).length;
   return (
-    <section className="panel documents-list" aria-labelledby="your-documents">
-      <div className="panel-heading">
-        <div>
-          <h2 id="your-documents">{text.mine.heading}</h2>
-          <p>{text.mine.hint}</p>
-        </div>
+    <>
+      <div className="documents-stats">
+        <StatCard
+          label={text.stats.pending}
+          value={count("pending")}
+          hint={text.stats.pendingHint}
+          icon={Hourglass}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.verified}
+          value={count("verified")}
+          hint={text.stats.verifiedHint}
+          icon={CheckCircle}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.rejected}
+          value={count("rejected")}
+          hint={text.stats.rejectedHint}
+          icon={XCircle}
+          animate={!reduceMotion}
+        />
       </div>
-      {error && (
-        <p role="alert" className="inline-error documents-error">
-          {error}
-        </p>
-      )}
-      {query.data.items.length === 0 ? (
-        <div className="leave-empty">
-          <FolderLock size={34} weight="duotone" />
-          <h3>{text.mine.emptyTitle}</h3>
-          <p>{text.mine.emptyBody}</p>
+      <section
+        className="panel documents-list"
+        aria-labelledby="your-documents"
+      >
+        <div className="panel-heading">
+          <div>
+            <h2 id="your-documents">{text.mine.heading}</h2>
+            <p>{text.mine.hint}</p>
+          </div>
         </div>
-      ) : (
-        <ul className="documents">
-          {query.data.items.map((d) => (
-            <DocumentRow
-              key={d.id}
-              document={d}
-              actions={
-                d.canWithdraw && (
-                  <Button
-                    variant="secondary"
-                    onPress={() => void withdraw(d)}
-                    aria-label={text.mine.withdrawLabel(d.title)}
-                  >
-                    {text.mine.withdraw}
-                  </Button>
-                )
-              }
-            />
-          ))}
-        </ul>
-      )}
-    </section>
+        {error && (
+          <p role="alert" className="inline-error documents-error">
+            {error}
+          </p>
+        )}
+        {query.data.items.length === 0 ? (
+          <EmptyBlock
+            icon={FolderLock}
+            title={text.mine.emptyTitle}
+            description={text.mine.emptyBody}
+          />
+        ) : (
+          <ul className="documents">
+            {query.data.items.map((d) => (
+              <DocumentRow
+                key={d.id}
+                document={d}
+                actions={
+                  d.canWithdraw && (
+                    <Button
+                      variant="secondary"
+                      onPress={() => void withdraw(d)}
+                      aria-label={text.mine.withdrawLabel(d.title)}
+                    >
+                      {text.mine.withdraw}
+                    </Button>
+                  )
+                }
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+    </>
   );
 }
 
@@ -258,6 +301,7 @@ function Review({
   send: Send;
   refresh: () => Promise<unknown>;
 }) {
+  const { reduceMotion } = usePreferences();
   const [rejecting, setRejecting] = useState<EmployeeDocument | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -293,6 +337,22 @@ function Review({
   const { pending, recent } = query.data;
   return (
     <div className="leave-approvals">
+      <div className="documents-stats documents-stats-two">
+        <StatCard
+          label={text.stats.waiting}
+          value={pending.length}
+          hint={text.stats.waitingHint}
+          icon={Hourglass}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.recent}
+          value={recent.length}
+          hint={text.stats.recentHint}
+          icon={CheckCircle}
+          animate={!reduceMotion}
+        />
+      </div>
       {error && !rejecting && (
         <p role="alert" className="inline-error">
           {error}
@@ -306,11 +366,11 @@ function Review({
           </div>
         </div>
         {pending.length === 0 ? (
-          <div className="leave-empty">
-            <FolderLock size={34} weight="duotone" />
-            <h3>{text.review.emptyTitle}</h3>
-            <p>{text.review.emptyBody}</p>
-          </div>
+          <EmptyBlock
+            icon={FolderLock}
+            title={text.review.emptyTitle}
+            description={text.review.emptyBody}
+          />
         ) : (
           <ul className="documents">
             {pending.map((d) => (
@@ -368,9 +428,13 @@ function Review({
                 <span>
                   <strong>{d.employeeName}</strong>, {d.title}
                 </span>
-                <Badge tone={d.status === "verified" ? "green" : "neutral"}>
+                <StatusBadge
+                  color={d.status === "verified" ? "success" : "gray"}
+                  size="sm"
+                  type="pill-color"
+                >
                   {statusLabels[d.status]}
-                </Badge>
+                </StatusBadge>
               </li>
             ))}
           </ul>

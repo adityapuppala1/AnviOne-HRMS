@@ -7,7 +7,7 @@ import { Desktop } from "@phosphor-icons/react/dist/csr/Desktop";
 import { DeviceMobile } from "@phosphor-icons/react/dist/csr/DeviceMobile";
 import { Users } from "@phosphor-icons/react/dist/csr/Users";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
-import { Button, ErrorState, Badge, MagicCard } from "@anvi/ui";
+import { Button, ErrorState, Badge, MagicCard, PageHeader } from "@anvi/ui";
 import { brandingSchema, type Theme } from "@anvi/contracts";
 import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
@@ -60,14 +60,12 @@ export default function Settings() {
   }
   return (
     <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.title}</h1>
-          <p>{text.subtitle}</p>
-        </div>
-        <Badge>{text.version(branding.version)}</Badge>
-      </div>
+      <PageHeader
+        eyebrow={text.eyebrow}
+        title={text.title}
+        description={text.subtitle}
+        actions={<Badge>{text.version(branding.version)}</Badge>}
+      ></PageHeader>
       <form
         onSubmit={(event) => void submit(event)}
         className="settings-layout"

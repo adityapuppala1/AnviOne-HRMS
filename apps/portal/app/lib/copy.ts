@@ -39,6 +39,8 @@ export const copy = {
     holidays: "Holidays",
     settings: "Workspace settings",
     activity: "Activity log",
+    insights: "Insights",
+    help: "Help centre",
     waiting: (count: number) => `${count} waiting`,
   },
   shell: {
@@ -90,6 +92,14 @@ export const copy = {
     empty: "A fresh start",
     emptyDetail: "Recorded actions will appear as your workspace is used.",
     viewEvent: (id: string) => `View event ${id}`,
+    tableTitle: "Recorded actions",
+    columns: {
+      action: "Action",
+      actor: "Actor and role",
+      record: "Record",
+      when: "Time",
+    },
+    tableLabel: "Activity events",
     details: "Activity details",
     fields: {
       actor: "Actor",

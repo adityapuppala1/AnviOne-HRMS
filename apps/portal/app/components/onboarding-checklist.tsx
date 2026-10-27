@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Badge, Button, DialogPanel } from "@anvi/ui";
+import { Button, DialogPanel, StatusBadge } from "@anvi/ui";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
@@ -40,7 +40,13 @@ export function ActivationReadiness({ value }: { value: Detail }) {
           <p className="eyebrow">Evidence before access</p>
           <h3 id="activation-readiness-title">Activation readiness</h3>
         </div>
-        <Badge>{passed}/6 controls</Badge>
+        <StatusBadge
+          color={passed === 6 ? "success" : "gray"}
+          size="sm"
+          type="pill-color"
+        >
+          {passed}/6 controls
+        </StatusBadge>
       </div>
       <div className="readiness-summary" role="status">
         <strong>Activation remains blocked</strong>
@@ -202,9 +208,13 @@ export function OnboardingChecklist({
           <p className="eyebrow">A welcome, shared</p>
           <h3>Onboarding checklist</h3>
         </div>
-        <Badge>
+        <StatusBadge
+          color={complete === required.length ? "success" : "gray"}
+          size="sm"
+          type="pill-color"
+        >
           {complete}/{required.length} required
-        </Badge>
+        </StatusBadge>
       </div>
       {tasks.length > 0 && (
         <>

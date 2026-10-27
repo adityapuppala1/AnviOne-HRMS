@@ -49,6 +49,19 @@ describe("deny-by-default role contexts", () => {
       scopeFor({ ...actor, roles: ["employee"] }, "organization.write"),
     ).toBeUndefined();
   });
+  it("shows workforce insights to managers (team) and HR (organization) only", () => {
+    expect(scopeFor(actor, "insights.read")).toBe("entity");
+    expect(
+      scopeFor(
+        { ...actor, role: "manager", roles: ["manager"] },
+        "insights.read",
+      ),
+    ).toBe("team");
+    for (const role of ["employee", "platform_admin", "auditor"] as const)
+      expect(
+        scopeFor({ ...actor, role, roles: [role] }, "insights.read"),
+      ).toBeUndefined();
+  });
   it("grants only self-scoped onboarding work to employee contexts", () => {
     for (const role of ["employee", "manager"] as const)
       expect(

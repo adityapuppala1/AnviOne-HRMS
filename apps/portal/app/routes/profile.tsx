@@ -15,10 +15,10 @@ import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import {
   Avatar,
-  Badge,
   Button,
   ErrorState,
   LoadingState,
+  StatusBadge,
   Tabs,
   TabList,
   Tab,
@@ -72,11 +72,14 @@ export default function Profile() {
           <div className="profile-title-block">
             <div>
               <h1>{data.name}</h1>
-              <Badge tone={data.status === "active" ? "green" : "amber"}>
+              <StatusBadge
+                color={data.status === "active" ? "success" : "warning"}
+                size="md"
+              >
                 {data.status === "active"
                   ? text.status.activeEmployee
                   : text.status.notice}
-              </Badge>
+              </StatusBadge>
             </div>
             <p>{data.title}</p>
             <div className="profile-meta">

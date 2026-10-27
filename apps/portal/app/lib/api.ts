@@ -16,6 +16,7 @@ import {
   attendanceTeamSchema,
   calendarSchema,
   approvalInboxSchema,
+  insightsSchema,
   documentListSchema,
   documentReviewSchema,
 } from "@anvi/contracts";
@@ -139,6 +140,13 @@ export const useCalendar = (year: number | null) =>
       api(`/calendar${year ? `?year=${year}` : ""}`, calendarSchema, {
         signal,
       }),
+  });
+export const useInsights = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["insights"],
+    enabled,
+    staleTime: 60000,
+    queryFn: ({ signal }) => api("/insights", insightsSchema, { signal }),
   });
 export const useApprovals = (enabled: boolean) =>
   useQuery({

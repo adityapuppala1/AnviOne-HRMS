@@ -27,6 +27,16 @@ export const attendanceCopy = {
   },
   noAccess:
     "Attendance is available in employee, manager and HR workspaces. Switch role to continue.",
+  stats: {
+    present: "Days present",
+    presentHint: "In the last 30 days",
+    missing: "Missing check-outs",
+    missingHint: "Days that need a correction",
+    pending: "Pending corrections",
+    pendingHint: "Waiting for a decision",
+    waiting: "Corrections to decide",
+    waitingHint: "Requests you can decide now",
+  },
   hero: {
     title: "Your day, on the record.",
     selfIntro:

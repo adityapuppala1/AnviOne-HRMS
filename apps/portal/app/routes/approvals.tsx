@@ -10,15 +10,19 @@ import { Tray } from "@phosphor-icons/react/dist/csr/Tray";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
-  Badge,
   Button,
   DialogPanel,
+  EmptyBlock,
   ErrorState,
   LoadingState,
+  PageHeader,
+  StatCard,
+  StatusBadge,
 } from "@anvi/ui";
 import type { ApprovalItem } from "@anvi/contracts";
 import { api, useApprovals } from "../lib/api";
 import { approvalsCopy as text } from "../lib/copy/approvals";
+import { usePreferences } from "../lib/preferences";
 import { useWorkspace } from "./workspace";
 // Shared card, form and list styles come from the leave screen.
 import "./leave.css";
@@ -90,6 +94,7 @@ export default function Approvals() {
   ].some((p) => me.permissions.includes(p as (typeof me.permissions)[number]));
   const query = useApprovals(allowed);
   const client = useQueryClient();
+  const { reduceMotion } = usePreferences();
   // A note dialog: always for declines, and for readiness approvals (which need a reason).
   const [noting, setNoting] = useState<{
     item: ApprovalItem;
@@ -144,18 +149,27 @@ export default function Approvals() {
   const minimum = noting?.item.kind === "readiness_review" ? 10 : 3;
   return (
     <div className="page-enter approvals-page">
-      <header className="approvals-hero">
-        <div>
-          <p className="loom-date">
-            <Tray size={16} />
-            {mine.length === 0
-              ? text.hero.none
-              : text.hero.waiting(mine.length)}
-          </p>
-          <h1>{text.hero.title}</h1>
-          <p>{text.hero.body}</p>
-        </div>
-      </header>
+      <PageHeader title={text.hero.title} description={text.hero.body} />
+      <p className="loom-date">
+        <Tray size={16} />
+        {mine.length === 0 ? text.hero.none : text.hero.waiting(mine.length)}
+      </p>
+      <div className="leave-stats">
+        <StatCard
+          label={text.stats.waiting}
+          value={mine.length}
+          hint={text.stats.waitingHint}
+          icon={Tray}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.others}
+          value={others.length}
+          hint={text.stats.othersHint}
+          icon={SealCheck}
+          animate={!reduceMotion}
+        />
+      </div>
       {error && !noting && (
         <p role="alert" className="inline-error">
           {error}
@@ -166,10 +180,12 @@ export default function Approvals() {
           {text.sections.yours}
         </h2>
         {mine.length === 0 ? (
-          <div className="panel leave-empty">
-            <Check size={34} weight="duotone" />
-            <h3>{text.empty.title}</h3>
-            <p>{text.empty.body}</p>
+          <div className="panel">
+            <EmptyBlock
+              icon={Check}
+              title={text.empty.title}
+              description={text.empty.body}
+            />
           </div>
         ) : (
           <ul className="leave-cards">
@@ -395,13 +411,13 @@ function ApprovalCard({
           </Button>
         </div>
       ) : (
-        <Badge>
+        <StatusBadge color="gray" size="sm">
           {item.kind === "readiness_review"
             ? text.card.proposedByYou
             : item.approver === "manager"
               ? text.card.managerDecides
               : text.card.hrDecides}
-        </Badge>
+        </StatusBadge>
       )}
     </li>
   );

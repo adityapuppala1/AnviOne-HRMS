@@ -27,6 +27,7 @@ import { List } from "@phosphor-icons/react/dist/csr/List";
 import { SignOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { X } from "@phosphor-icons/react/dist/csr/X";
+import { ChartLineUp } from "@phosphor-icons/react/dist/csr/ChartLineUp";
 import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
 import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
@@ -217,6 +218,12 @@ function Shell({ me }: { me: Me }) {
       visible: me.permissions.includes("branding.write"),
     },
     {
+      to: "/insights",
+      label: copy.nav.insights,
+      icon: ChartLineUp,
+      visible: me.permissions.includes("insights.read"),
+    },
+    {
       to: "/activity",
       label: copy.nav.activity,
       icon: ClockCounterClockwise,
@@ -309,6 +316,15 @@ function Shell({ me }: { me: Me }) {
         ))}
       </div>
       <div className="sidebar-bottom">
+        <NavLink
+          title={copy.nav.help}
+          to="/help"
+          prefetch="intent"
+          className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+        >
+          <Question size={20} />
+          <span>{copy.nav.help}</span>
+        </NavLink>
         <NavLink
           title="Display preferences"
           to="/preferences"

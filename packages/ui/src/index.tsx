@@ -132,3 +132,31 @@ export function LoadingState() {
 export { MagicCard } from "./magicui/magic-card";
 export { NumberTicker } from "./magicui/number-ticker";
 export { Tabs, TabList, Tab, TabPanel, Switch } from "react-aria-components";
+
+// Untitled UI (MIT) components, bridged to Loom tokens in ./untitled/untitled.css.
+export {
+  Table,
+  TableCard,
+} from "./untitled/components/application/table/table";
+export {
+  PaginationCardMinimal,
+  PaginationButtonGroup,
+} from "./untitled/components/application/pagination/pagination";
+export { FeaturedIcon } from "./untitled/components/foundations/featured-icon/featured-icon";
+export {
+  Badge as StatusBadge,
+  BadgeWithDot,
+  BadgeWithIcon,
+} from "./untitled/components/base/badges/badges";
+export {
+  Tooltip,
+  TooltipTrigger,
+} from "./untitled/components/base/tooltip/tooltip";
+export {
+  PageHeader,
+  StatCard,
+  EmptyBlock,
+  DataCard,
+  useNarrow,
+  type Column,
+} from "./patterns";

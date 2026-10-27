@@ -29,6 +29,7 @@ export const permissionSchema = z.enum([
   "attendance.review",
   "document.self",
   "document.review",
+  "insights.read",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -779,6 +780,52 @@ export const approvalInboxSchema = z.strictObject({
   items: z.array(approvalItemSchema),
 });
 export type ApprovalInbox = z.infer<typeof approvalInboxSchema>;
+const countByName = z.strictObject({
+  name: z.string(),
+  count: z.number().int().nonnegative(),
+});
+const byMonth = z.strictObject({
+  month: z.string().regex(/^\d{4}-\d{2}$/),
+  value: z.number().nonnegative(),
+});
+// Workforce insights: counts only, never names or records. Row-level security
+// narrows every figure to what the caller may already see.
+export const insightsSchema = z.strictObject({
+  scope: z.enum(["team", "entity"]),
+  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  people: z.strictObject({
+    total: z.number().int().nonnegative(),
+    joinedLast90Days: z.number().int().nonnegative(),
+    onNotice: z.number().int().nonnegative(),
+    byDepartment: z.array(countByName).max(20),
+    byLocation: z.array(countByName).max(20),
+    joinersByMonth: z.array(byMonth).max(12),
+  }),
+  leave: z.strictObject({
+    year: z.number().int(),
+    daysApproved: z.number().nonnegative(),
+    pendingRequests: z.number().int().nonnegative(),
+    onLeaveToday: z.number().int().nonnegative(),
+    byType: z
+      .array(
+        z.strictObject({ name: z.string(), days: z.number().nonnegative() }),
+      )
+      .max(10),
+    byMonth: z.array(byMonth).max(12),
+  }),
+  attendance: z.strictObject({
+    headcount: z.number().int().nonnegative(),
+    days: z
+      .array(
+        z.strictObject({
+          date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          present: z.number().int().nonnegative(),
+        }),
+      )
+      .max(31),
+  }),
+});
+export type Insights = z.infer<typeof insightsSchema>;
 export {
   activationReadiness,
   onboardingStarter,

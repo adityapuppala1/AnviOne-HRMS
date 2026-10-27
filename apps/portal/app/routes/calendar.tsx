@@ -5,11 +5,23 @@ import { CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
 import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { PencilSimple } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
-import { Badge, Button, DialogPanel, ErrorState, LoadingState } from "@anvi/ui";
+import { CalendarCheck } from "@phosphor-icons/react/dist/csr/CalendarCheck";
+import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
+import {
+  Badge,
+  Button,
+  DialogPanel,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  StatCard,
+} from "@anvi/ui";
 import type { Calendar as CalendarData, Holiday } from "@anvi/contracts";
 import { api, useCalendar } from "../lib/api";
 import { calendarCopy as text } from "../lib/copy/calendar";
 import { useWorkspace } from "./workspace";
+import { usePreferences } from "../lib/preferences";
 // Shared form styles come from the leave screen.
 import "./leave.css";
 import "./calendar.css";
@@ -28,6 +40,7 @@ export default function CalendarPage() {
   const query = useCalendar(year);
   const client = useQueryClient();
   const [editing, setEditing] = useState<Editing>(null);
+  const { reduceMotion } = usePreferences();
   if (query.error)
     return (
       <ErrorState
@@ -47,6 +60,31 @@ export default function CalendarPage() {
   return (
     <div className="page-enter calendar-page">
       <NextHoliday data={data} />
+      <div className="calendar-stats">
+        <StatCard
+          label={text.stats.observed}
+          value={data.holidays.filter((h) => h.active).length}
+          hint={text.stats.observedHint(data.year)}
+          icon={CalendarCheck}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.next}
+          value={data.next ? daysBetween(data.today, data.next.date) : 0}
+          suffix={data.next ? text.stats.days : undefined}
+          hint={data.next ? data.next.name : text.stats.nextNone}
+          icon={CalendarDots}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.workingDays}
+          value={data.workWeek.days.length}
+          suffix={text.stats.workingDaysSuffix}
+          hint={text.stats.workingDaysHint}
+          icon={Briefcase}
+          animate={!reduceMotion}
+        />
+      </div>
       <WorkWeek data={data} send={send} refresh={refresh} />
       <section className="panel calendar-year" aria-labelledby="year">
         <div className="panel-heading">
@@ -171,31 +209,24 @@ function NextHoliday({ data }: { data: CalendarData }) {
     else when = text.hero.inDays(wait);
   }
   return (
-    <section className="calendar-hero" aria-labelledby="next">
-      <div>
-        <p className="loom-date">{next ? when : text.hero.nothing}</p>
-        <h1 id="next">{next ? next.name : text.hero.noneAhead}</h1>
-        <p>
-          {next
-            ? text.hero.detail(
-                fmt(next.date, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }),
-                next.locationName,
-              )
-            : text.hero.empty}
-        </p>
-      </div>
-      {next && (
-        <div className="calendar-hero-date" aria-hidden="true">
-          <strong>{at(next.date).getUTCDate()}</strong>
-          <span>{fmt(next.date, { month: "short" })}</span>
-        </div>
-      )}
-    </section>
+    <PageHeader
+      title={next ? next.name : text.hero.noneAhead}
+      description={
+        next
+          ? text.hero.detail(
+              fmt(next.date, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }),
+              next.locationName,
+            )
+          : text.hero.empty
+      }
+    >
+      <p className="loom-date">{next ? when : text.hero.nothing}</p>
+    </PageHeader>
   );
 }
 

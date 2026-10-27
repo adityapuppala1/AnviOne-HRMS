@@ -24,6 +24,8 @@ const ROUTES = [
   "/preferences",
   "/settings",
   "/activity",
+  "/insights",
+  "/help",
 ];
 
 async function problems(page: Page, touch: boolean) {

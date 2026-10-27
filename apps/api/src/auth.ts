@@ -62,7 +62,17 @@ export class SessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest<AppRequest>();
     if (publicPaths.has(req.path)) return true;
-    req.actor = await this.store.session(req.cookies?.[cookieName(this.store)]);
+    // The portal marks its own background polls so they do not extend the idle
+    // clock. Sending the header only ever shortens a session, never lengthens it.
+    req.actor = await this.store.session(
+      req.cookies?.[cookieName(this.store)],
+      {
+        // A write is activity by definition, whatever the header says.
+        touch:
+          !["GET", "HEAD"].includes(req.method) ||
+          req.headers["x-anvi-idle"] !== "1",
+      },
+    );
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       assertOrigin(this.store, req);
       if (!csrfMatches(req.actor.csrfToken, req.headers["x-csrf-token"]))

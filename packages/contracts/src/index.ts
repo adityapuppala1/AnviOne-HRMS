@@ -82,6 +82,7 @@ export const meSchema = z.object({
   entityName: z.string(),
   demo: z.boolean(),
   permissions: z.array(permissionSchema),
+  idleLimitSeconds: z.number().int().positive(),
 });
 export type Me = z.infer<typeof meSchema>;
 export const dashboardSchema = z.object({

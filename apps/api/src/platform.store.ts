@@ -91,7 +91,17 @@ export class PlatformStore {
     });
     return token;
   }
-  async session(token: unknown): Promise<SessionActor> {
+  // Idle limits per role. These mirror resolve_session() in the database, which
+  // enforces them; the portal only needs the number to warn before sign-out.
+  idleLimitSeconds(role: SessionActor["role"]) {
+    return role === "employee" || role === "manager" ? 1800 : 900;
+  }
+  // Background polling validates the session but must not count as activity,
+  // otherwise a forgotten open tab would never reach its idle limit.
+  async session(
+    token: unknown,
+    options: { touch?: boolean } = {},
+  ): Promise<SessionActor> {
     if (typeof token !== "string" || token.length !== 43)
       throw new UnauthorizedException("Sign in to continue.");
     const { rows } = await this.pool.query<{ actor: SessionActor | null }>(
@@ -101,10 +111,11 @@ export class PlatformStore {
     const actor = rows[0]?.actor;
     if (!actor)
       throw new UnauthorizedException("Your session has ended. Sign in again.");
-    await this.pool.query(
-      "UPDATE app_session SET last_seen_at = now() WHERE token_hash = $1",
-      [hash(token)],
-    );
+    if (options.touch !== false)
+      await this.pool.query(
+        "UPDATE app_session SET last_seen_at = now() WHERE token_hash = $1",
+        [hash(token)],
+      );
     return actor;
   }
   me(actor: SessionActor): Me {
@@ -118,6 +129,7 @@ export class PlatformStore {
       entityName: actor.entityName,
       demo: this.config.AUTH_MODE === "demo",
       permissions: permissionsFor(actor),
+      idleLimitSeconds: this.idleLimitSeconds(actor.role),
     };
   }
   require(actor: Principal, permission: Permission) {

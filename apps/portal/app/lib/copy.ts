@@ -206,4 +206,10 @@ export const copy = {
       return format.format(Math.round(minutes / 1440), "day");
     },
   },
+  session: {
+    title: "Still there?",
+    body: "For your security you will be signed out soon because there has been no activity. Stay signed in to keep working.",
+    stay: "Stay signed in",
+    signOut: "Sign out now",
+  },
 };

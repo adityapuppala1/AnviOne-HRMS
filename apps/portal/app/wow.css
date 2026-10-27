@@ -692,3 +692,26 @@
     justify-self: start;
   }
 }
+
+/* Idle warning and sign-in notice ----------------------------------------- */
+.idle-count {
+  margin: 8px 0 18px;
+  font:
+    600 44px/1 var(--display),
+    sans-serif;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.idle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.inline-notice {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 14px;
+}

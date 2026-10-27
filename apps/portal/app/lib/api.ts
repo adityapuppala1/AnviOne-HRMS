@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { isIdle, markTouched } from "./activity";
 import {
   brandingSchema,
   meSchema,
@@ -34,14 +35,20 @@ export async function api<T>(
   schema: z.ZodType<T>,
   options?: RequestInit,
 ): Promise<T> {
+  // Reads made while nobody is touching the screen are background polling.
+  // The server still checks the session but does not count them as activity.
+  const background =
+    (options?.method ?? "GET").toUpperCase() === "GET" && isIdle();
   const response = await fetch(`/api/v1${path}`, {
     credentials: "same-origin",
     ...options,
     headers: {
       ...(options?.body ? { "Content-Type": "application/json" } : {}),
+      ...(background ? { "X-Anvi-Idle": "1" } : {}),
       ...options?.headers,
     },
   });
+  if (response.ok && !background) markTouched();
   if (!response.ok) {
     const error = (await response.json().catch(() => null)) as {
       title?: string;
@@ -52,6 +59,17 @@ export async function api<T>(
     );
   }
   return schema.parse(await response.json());
+}
+// Tells the server the person is still here. False means the session has ended.
+export async function heartbeat() {
+  try {
+    const response = await fetch("/api/v1/me", { credentials: "same-origin" });
+    if (response.ok) markTouched();
+    return response.ok;
+  } catch {
+    // Offline is not a sign-out; the next attempt will find out.
+    return true;
+  }
 }
 export const useMe = () =>
   useQuery({

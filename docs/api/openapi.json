@@ -889,6 +889,11 @@
                           "insights.read"
                         ]
                       }
+                    },
+                    "idleLimitSeconds": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
@@ -900,7 +905,8 @@
                     "csrfToken",
                     "entityName",
                     "demo",
-                    "permissions"
+                    "permissions",
+                    "idleLimitSeconds"
                   ],
                   "additionalProperties": false
                 }

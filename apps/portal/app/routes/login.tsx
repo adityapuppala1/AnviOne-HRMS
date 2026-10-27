@@ -155,6 +155,13 @@ export default function Login() {
               </div>
             </div>
           )}
+          {params.get("reason") === "idle" &&
+            !error &&
+            !params.has("error") && (
+              <p className="inline-notice" role="status">
+                {text.idleSignedOut}
+              </p>
+            )}
           {(error || params.has("error")) && (
             <p className="inline-error" role="alert">
               {error || text.verifyFailed}

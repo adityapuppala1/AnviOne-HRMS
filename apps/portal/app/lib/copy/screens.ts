@@ -187,6 +187,8 @@ export const loginCopy = {
     title: "A workspace to explore",
     body: "Meet a synthetic team, switch roles and try the experience. No real employee data.",
   },
+  idleSignedOut:
+    "You were signed out after a period of inactivity. Sign in to continue.",
   verifyFailed:
     "We could not verify your access. Try again or contact your HR team.",
   tooManyRequests: "Too many sign-in requests. Wait a minute, then try again.",

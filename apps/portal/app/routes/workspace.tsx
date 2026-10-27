@@ -50,6 +50,7 @@ import { copy } from "../lib/copy";
 import { Brand } from "../components/brand";
 import { Command } from "../components/command";
 import { UpdatesBell } from "../components/updates";
+import { IdleGuard } from "../components/idle-guard";
 
 type Context = {
   me: Me;
@@ -135,6 +136,17 @@ function Shell({ me }: { me: Me }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Sign-out failed. Try again.");
     }
+  }
+  // The server ended or will end this session for inactivity: leave quietly and say why.
+  async function expire() {
+    try {
+      await mutate("/auth/logout", me.csrfToken);
+    } catch {
+      /* The session is already gone; nothing left to end. */
+    }
+    await client.cancelQueries();
+    client.clear();
+    void navigate("/login?reason=idle");
   }
   const brand = brandingQuery.data;
   const approver =
@@ -376,6 +388,11 @@ function Shell({ me }: { me: Me }) {
       >
         <div className="mobile-nav-content">{sidebar}</div>
       </DialogPanel>
+      <IdleGuard
+        limitSeconds={me.idleLimitSeconds}
+        onExpire={() => void expire()}
+        onSignOut={() => void logout()}
+      />
       <nav className="bottom-bar" aria-label={copy.nav.quick}>
         {QUICK.map((to) => links.find((link) => link.to === to))
           .filter((link) => link?.visible)

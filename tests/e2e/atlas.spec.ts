@@ -47,7 +47,7 @@ test("team exploration, profile tabs, directory display and personal preferences
   await page
     .getByRole("link", { name: "Explore Engineering", exact: true })
     .click();
-  await expect(page.getByLabel("Department", { exact: true })).toHaveValue(
+  await expect(page.getByRole("button", { name: /Department/ })).toContainText(
     "Engineering",
   );
   await expect(page.getByText("4 people", { exact: true })).toBeVisible();
@@ -75,7 +75,7 @@ test("team exploration, profile tabs, directory display and personal preferences
   await page.getByRole("tab", { name: /Locations/ }).click();
   await expect(page).toHaveURL(/view=locations/);
   await page.getByRole("link", { name: /Bengaluru 4 people/ }).click();
-  await expect(page.getByLabel("Location", { exact: true })).toHaveValue(
+  await expect(page.getByRole("button", { name: /Location/ })).toContainText(
     "Bengaluru",
   );
   await page
@@ -143,9 +143,9 @@ test("branding previews and audit search, filters, details and empty states", as
     page.getByRole("heading", { name: "No matching activity" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Clear filters" }).click();
-  await page
-    .getByRole("combobox", { name: "Activity type" })
-    .selectOption("session.");
+  await page.getByRole("button", { name: /Activity type/ }).click();
+  await page.getByRole("option", { name: "Access & sessions" }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "Published workspace settings" }),
   ).toHaveCount(0);

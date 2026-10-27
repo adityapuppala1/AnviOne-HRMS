@@ -26,6 +26,8 @@ import {
   expenseClaimSchema,
   expenseListSchema,
   myExpensesSchema,
+  organizationChartSchema,
+  organizationDetailSchema,
   myProfileSchema,
   profileEmployeeSchema,
   profileRequestListSchema,
@@ -336,4 +338,22 @@ export const useProfileEmployee = (id: string | null) =>
     enabled: Boolean(id),
     queryFn: ({ signal }) =>
       api(`/profile/employees/${id}`, profileEmployeeSchema, { signal }),
+  });
+
+export const useOrgChart = (rootId: string | null = null, depth = 20) =>
+  useQuery({
+    queryKey: ["organization", "chart", rootId, depth],
+    queryFn: ({ signal }) =>
+      api(
+        `/organization/chart?depth=${depth}${rootId ? `&rootId=${rootId}` : ""}`,
+        organizationChartSchema,
+        { signal },
+      ),
+  });
+export const useOrganizationDetail = (id: string | null) =>
+  useQuery({
+    queryKey: ["organization", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/organization/${id}`, organizationDetailSchema, { signal }),
   });

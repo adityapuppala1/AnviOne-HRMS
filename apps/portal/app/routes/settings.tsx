@@ -7,7 +7,14 @@ import { Desktop } from "@phosphor-icons/react/dist/csr/Desktop";
 import { DeviceMobile } from "@phosphor-icons/react/dist/csr/DeviceMobile";
 import { Users } from "@phosphor-icons/react/dist/csr/Users";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
-import { Button, ErrorState, Badge, MagicCard, PageHeader } from "@anvi/ui";
+import {
+  Button,
+  ErrorState,
+  Badge,
+  MagicCard,
+  PageHeader,
+  Input,
+} from "@anvi/ui";
 import { brandingSchema, type Theme } from "@anvi/contracts";
 import { api } from "../lib/api";
 import { useWorkspace } from "./workspace";
@@ -98,20 +105,20 @@ export default function Settings() {
                 },
               ] as const
             ).map(({ key, label, help, max }) => (
-              <label key={key}>
-                <strong>{label}</strong>
-                <input
-                  required
-                  minLength={2}
-                  maxLength={max}
-                  value={form[key]}
-                  onChange={(e) => {
-                    setForm({ ...form, [key]: e.target.value });
-                    setSaved(false);
-                  }}
-                />
-                <small>{help}</small>
-              </label>
+              <Input
+                key={key}
+                label={label}
+                hint={help}
+                isRequired
+                hideRequiredIndicator
+                minLength={2}
+                maxLength={max}
+                value={form[key]}
+                onChange={(value) => {
+                  setForm({ ...form, [key]: value });
+                  setSaved(false);
+                }}
+              />
             ))}
             <fieldset className="theme-options">
               <legend>{text.palette.legend}</legend>

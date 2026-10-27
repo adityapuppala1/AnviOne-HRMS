@@ -17,10 +17,9 @@ import {
   LoadingState,
   PageHeader,
   StatCard,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
+  Input,
+  TextArea,
+  UTabs,
 } from "@anvi/ui";
 import type {
   AttendanceCorrection,
@@ -138,25 +137,25 @@ export default function Attendance() {
         </div>
       )}
       {canSelf && canReview ? (
-        <Tabs className="leave-tabs">
-          <TabList aria-label={text.tabs.label} className="tabs-list">
-            <Tab id="mine" className="tab">
+        <UTabs className="leave-tabs" keyboardActivation="automatic">
+          <UTabs.List type="underline" aria-label={text.tabs.label}>
+            <UTabs.Item id="mine">
               <Clock size={18} />
               {text.tabs.mine}
-            </Tab>
-            <Tab id="team" className="tab">
+            </UTabs.Item>
+            <UTabs.Item id="team">
               <UsersThree size={18} />
               {text.tabs.team}
               {Boolean(waiting) && <span className="tab-count">{waiting}</span>}
-            </Tab>
-          </TabList>
-          <TabPanel id="mine" className="tab-panel">
+            </UTabs.Item>
+          </UTabs.List>
+          <UTabs.Panel id="mine" className="tab-panel">
             <MyAttendance query={mine} send={send} refresh={refresh} />
-          </TabPanel>
-          <TabPanel id="team" className="tab-panel">
+          </UTabs.Panel>
+          <UTabs.Panel id="team" className="tab-panel">
             <TeamToday query={team} send={send} refresh={refresh} />
-          </TabPanel>
-        </Tabs>
+          </UTabs.Panel>
+        </UTabs>
       ) : canSelf ? (
         <MyAttendance query={mine} send={send} refresh={refresh} />
       ) : (
@@ -565,30 +564,32 @@ function CorrectionDialog({
         <form className="leave-form" onSubmit={(event) => void submit(event)}>
           <p>{text.dialog.intro(longDate(day.date))}</p>
           <div className="leave-dates">
-            <label>
-              {text.dialog.checkedIn}
-              <input
-                type="time"
-                name="checkIn"
-                required
-                defaultValue={day.checkIn ?? "09:30"}
-                autoFocus
-              />
-            </label>
-            <label>
-              {text.dialog.checkedOut}
-              <input
-                type="time"
-                name="checkOut"
-                required
-                defaultValue={day.checkOut ?? "18:00"}
-              />
-            </label>
+            <Input
+              type="time"
+              name="checkIn"
+              label={text.dialog.checkedIn}
+              isRequired
+              hideRequiredIndicator
+              defaultValue={day.checkIn ?? "09:30"}
+              autoFocus
+            />
+            <Input
+              type="time"
+              name="checkOut"
+              label={text.dialog.checkedOut}
+              isRequired
+              hideRequiredIndicator
+              defaultValue={day.checkOut ?? "18:00"}
+            />
           </div>
-          <label>
-            {text.dialog.reason}
-            <textarea name="reason" required minLength={3} maxLength={300} />
-          </label>
+          <TextArea
+            label={text.dialog.reason}
+            name="reason"
+            isRequired
+            hideRequiredIndicator
+            minLength={3}
+            maxLength={300}
+          />
           {error && (
             <p role="alert" className="inline-error">
               {error}
@@ -803,16 +804,15 @@ function TeamToday({
                 longDate(declining.workDate),
               )}
             </p>
-            <label>
-              {text.team.declineWhy}
-              <textarea
-                name="note"
-                required
-                minLength={3}
-                maxLength={300}
-                autoFocus
-              />
-            </label>
+            <TextArea
+              label={text.team.declineWhy}
+              name="note"
+              isRequired
+              hideRequiredIndicator
+              minLength={3}
+              maxLength={300}
+              autoFocus
+            />
             {error && (
               <p role="alert" className="inline-error">
                 {error}

@@ -52,9 +52,12 @@ test("request, cancel and review leave across employee and manager workspaces", 
   const day = futureWeekday();
   await page.getByRole("button", { name: "Request leave" }).click();
   const dialog = page.getByRole("dialog", { name: "Request leave" });
-  await dialog
-    .getByRole("combobox", { name: "Leave type" })
-    .selectOption({ label: "Leave without pay (no limit)" });
+  await dialog.getByRole("button", { name: /Leave type/ }).click();
+  await page
+    .getByRole("option", { name: "Leave without pay (no limit)" })
+    .click();
+  // Let the listbox finish closing so axe does not read it mid-fade.
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   // A random weekday can land on a holiday; step forward until it counts.
   let chosen = day;
   for (let attempt = 0; attempt < 7; attempt += 1) {

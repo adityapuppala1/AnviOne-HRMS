@@ -219,9 +219,9 @@ test("organization records stay scoped, audited, responsive and safe under concu
   }
   await selectRole(page, "Auditor");
   await page.goto("/activity");
-  await page
-    .getByRole("combobox", { name: "Activity type" })
-    .selectOption("organization.");
+  await page.getByRole("button", { name: /Activity type/ }).click();
+  await page.getByRole("option", { name: "Organization records" }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await expect(
     page
       .getByRole("heading", { name: "Created an organization record" })

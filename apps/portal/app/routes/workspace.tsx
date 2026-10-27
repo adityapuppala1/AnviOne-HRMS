@@ -22,6 +22,7 @@ import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -34,7 +35,6 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import { ChartLineUp } from "@phosphor-icons/react/dist/csr/ChartLineUp";
 import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
 import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
-import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
@@ -229,6 +229,12 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("policy.self") ||
         me.permissions.includes("policy.manage"),
+    },
+    {
+      to: "/chart",
+      label: copy.nav.chart,
+      icon: TreeStructure,
+      visible: me.permissions.includes("directory.read"),
     },
     {
       to: "/details",

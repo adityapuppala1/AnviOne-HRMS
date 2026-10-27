@@ -884,6 +884,13 @@ kbd {
   font-size: 12px;
   max-width: 165px;
 }
+.directory-filters {
+  flex-wrap: wrap;
+}
+.directory-filters .kit-filter {
+  flex: 1 1 150px;
+  min-width: 0;
+}
 .directory-meta {
   display: flex;
   justify-content: space-between;
@@ -1181,7 +1188,7 @@ kbd {
 .profile-main {
   padding: 0 26px 24px;
 }
-.profile-main .tabs-list {
+.profile-main [role="tablist"] {
   margin: 0 -26px;
   padding: 0 14px;
 }
@@ -1302,7 +1309,7 @@ kbd {
 .team-explorer {
   padding: 0 22px 22px;
 }
-.team-explorer .tabs-list {
+.team-explorer [role="tablist"] {
   margin: 0 -22px;
   padding: 0 10px;
 }
@@ -1397,6 +1404,9 @@ kbd {
 }
 .form-fields {
   padding: 24px;
+}
+.form-fields > [data-rac] {
+  margin-bottom: 22px;
 }
 .form-fields > label {
   display: block;
@@ -3038,7 +3048,7 @@ kbd {
   .profile-main {
     padding: 0 20px 22px;
   }
-  .profile-main .tabs-list {
+  .profile-main [role="tablist"] {
     margin-inline: -20px;
     padding-inline: 8px;
   }
@@ -3059,7 +3069,7 @@ kbd {
   .team-explorer {
     padding: 0 16px 16px;
   }
-  .team-explorer .tabs-list {
+  .team-explorer [role="tablist"] {
     margin-inline: -16px;
     padding-inline: 4px;
   }
@@ -3261,5 +3271,21 @@ kbd {
   }
   .mode-illustration {
     height: 75px;
+  }
+}
+
+/* Untitled UI fields placed in toolbars. */
+.kit-search {
+  flex: 1;
+  min-width: 160px;
+}
+.kit-filter {
+  flex: 0 1 220px;
+  min-width: 160px;
+}
+@media (pointer: coarse) {
+  [role="tab"][data-rac] {
+    min-height: 44px;
+    align-items: center;
   }
 }

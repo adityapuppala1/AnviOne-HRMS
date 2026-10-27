@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { PaperPlaneTilt } from "@phosphor-icons/react/dist/csr/PaperPlaneTilt";
 import { ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
@@ -14,6 +15,9 @@ import {
   PageHeader,
   StatCard,
   StatusBadge,
+  Input,
+  Select,
+  TextArea,
 } from "@anvi/ui";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
@@ -157,19 +161,19 @@ function Intake() {
               {text.shown(list.data?.items.length ?? "…")}
             </StatusBadge>
           </div>
-          <label className="intake-search">
-            <span className="sr-only">{text.searchLabel}</span>
-            <input
-              placeholder={text.searchPlaceholder}
-              maxLength={80}
-              value={q}
-              onChange={(e) => {
-                const next = new URLSearchParams(params);
-                next.set("q", e.target.value);
-                setParams(next, { replace: true });
-              }}
-            />
-          </label>
+          <Input
+            aria-label={text.searchLabel}
+            placeholder={text.searchPlaceholder}
+            maxLength={80}
+            icon={MagnifyingGlass}
+            value={q}
+            onChange={(value) => {
+              const next = new URLSearchParams(params);
+              next.set("q", value);
+              setParams(next, { replace: true });
+            }}
+            className="intake-search"
+          />
           {list.error ? (
             <ErrorState
               message={list.error.message}
@@ -301,27 +305,37 @@ function CreateIntake({
     >
       <form className="intake-form" onSubmit={(e) => void submit(e)}>
         <p>{text.create.intro}</p>
-        <label>
-          {text.create.fullName}
-          <input name="name" required minLength={2} maxLength={120} />
-        </label>
-        <label>
-          {text.create.email}
-          <input
-            name="email"
-            type="email"
-            required
-            placeholder={text.create.emailPlaceholder}
-          />
-        </label>
-        <label>
-          {text.create.role}
-          <input name="title" required minLength={2} maxLength={80} />
-        </label>
-        <label>
-          {text.create.joiningDate}
-          <input name="joinedOn" type="date" required />
-        </label>
+        <Input
+          label={text.create.fullName}
+          name="name"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={120}
+        />
+        <Input
+          label={text.create.email}
+          name="email"
+          type="email"
+          isRequired
+          hideRequiredIndicator
+          placeholder={text.create.emailPlaceholder}
+        />
+        <Input
+          label={text.create.role}
+          name="title"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={80}
+        />
+        <Input
+          label={text.create.joiningDate}
+          name="joinedOn"
+          type="date"
+          isRequired
+          hideRequiredIndicator
+        />
         {options.error ? (
           <ErrorState message={options.error.message} />
         ) : !options.data ? (
@@ -345,19 +359,17 @@ function CreateIntake({
                 items: options.data.managers,
               },
             ].map((field) => (
-              <label key={field.name}>
-                {field.label}
-                <select name={field.name} required defaultValue="">
-                  <option value="" disabled>
-                    {text.create.select}
-                  </option>
-                  {field.items.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                key={field.name}
+                label={field.label}
+                name={field.name}
+                isRequired
+                placeholder={text.create.select}
+              >
+                {field.items.map((o) => (
+                  <Select.Item key={o.id} id={o.id} label={o.name} />
+                ))}
+              </Select>
             ))}
           </div>
         )}
@@ -519,13 +531,12 @@ function CaseReview({
       )}
       {c.state !== "cancelled" && (
         <div className="intake-review-actions">
-          <label htmlFor="intake-reason">{text.review.reasonLabel}</label>
-          <textarea
-            id="intake-reason"
+          <TextArea
+            label={text.review.reasonLabel}
             rows={3}
             maxLength={300}
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={setReason}
             placeholder={text.review.reasonPlaceholder}
           />
           <div className="intake-actions">

@@ -10,10 +10,7 @@ import {
   LoadingState,
   PageHeader,
   StatusBadge,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
+  UTabs,
 } from "@anvi/ui";
 import { useDashboard } from "../lib/api";
 import { useWorkspace } from "./workspace";
@@ -54,7 +51,8 @@ function Explorer() {
       ></PageHeader>
       <div className="team-explorer-layout">
         <section className="panel team-explorer">
-          <Tabs
+          <UTabs
+            keyboardActivation="automatic"
             selectedKey={
               params.get("view") === "locations" ? "locations" : "departments"
             }
@@ -64,20 +62,20 @@ function Explorer() {
               })
             }
           >
-            <TabList aria-label={text.exploreLabel} className="tabs-list">
-              <Tab id="departments" className="tab">
+            <UTabs.List type="underline" aria-label={text.exploreLabel}>
+              <UTabs.Item id="departments">
                 <TreeStructure size={18} />
                 {text.tabs.departments}{" "}
                 <span className="tab-count">{data.departments.length}</span>
-              </Tab>
-              <Tab id="locations" className="tab">
+              </UTabs.Item>
+              <UTabs.Item id="locations">
                 <MapPin size={18} />
                 {text.tabs.locations}{" "}
                 <span className="tab-count">{data.locations.length}</span>
-              </Tab>
-            </TabList>
+              </UTabs.Item>
+            </UTabs.List>
             {(["departments", "locations"] as const).map((kind) => (
-              <TabPanel id={kind} key={kind} className="tab-panel">
+              <UTabs.Panel id={kind} key={kind} className="tab-panel">
                 <div className="team-grid">
                   {data[kind].length ? (
                     data[kind].map((group, index) => (
@@ -126,9 +124,9 @@ function Explorer() {
                     />
                   )}
                 </div>
-              </TabPanel>
+              </UTabs.Panel>
             ))}
-          </Tabs>
+          </UTabs>
         </section>
         <aside className="panel team-breakdown">
           <div className="panel-heading">

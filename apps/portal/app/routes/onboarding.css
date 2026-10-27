@@ -156,19 +156,6 @@
   font-size: 12px;
   font-weight: 600;
 }
-.intake-review-actions textarea,
-.intake-form textarea {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  color: var(--ink);
-  padding: 12px;
-  font: inherit;
-  font-size: 13px;
-  margin-top: 9px;
-  resize: vertical;
-}
 .intake-actions {
   display: flex;
   gap: 10px;
@@ -186,14 +173,14 @@
   color: var(--muted);
   margin-bottom: 20px;
 }
-.intake-form label {
+.intake-form label:not([data-rac]) {
   display: block;
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 17px;
 }
-.intake-form input,
-.intake-form select {
+.intake-form input:not([data-rac]),
+.intake-form select:not([data-rac]) {
   display: block;
   margin-top: 8px;
   width: 100%;
@@ -204,7 +191,11 @@
   grid-template-columns: 1fr 1fr;
   gap: 0 15px;
 }
-.intake-form-grid > label:last-child {
+.intake-form > [data-rac],
+.intake-form-grid > [data-rac] {
+  margin-bottom: 17px;
+}
+.intake-form-grid > :last-child {
   grid-column: 1/-1;
 }
 .intake-delivery p {

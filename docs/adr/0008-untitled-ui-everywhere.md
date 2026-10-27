@@ -28,10 +28,26 @@ Only the open-source, MIT-licensed Untitled UI React components are used. They c
 
 - `application/tabs` was copied from the MIT starter kit and is exported as `UTabs`; the My details screen uses it for its views. The "My details" screen is built on the kit from the start.
 
+## Organization and chart
+
+`organization` was rebuilt on the kit with the ORG-02 features (tabs for five kinds, effective dates, merge dialog, row menus) and the new `chart` screen is built on it too.
+
 ## Not done yet
 
 `Dropdown` row-action menus, `ComboBox` for the exit picker, `ButtonGroup`, and the extra free components available in the starter kit but not yet vendored (`tags`, `slider`, `progress-indicators`, `file-upload`, `modals`, `slideout-menus`, `date-picker`, `loading-indicator`, `charts`).
 
-## Screens not yet migrated to the form kit
+## Migrated in the second slice (form controls on the older routes)
 
-Hand-rolled inputs, selects or switches remain on every other route under `apps/portal/app/routes`: activity, approvals, assigned-tasks, attendance, calendar, candidates, documents, help, home, insights, leave, login, not-found, organization, people, preferences, profile, settings, teams, workspace (shell and command bar). Later slices should migrate each, keeping accessible names, and tick them off here.
+- Leave, Attendance, Calendar, Documents, Approvals, Assigned tasks, Candidates, Activity, People, Help, Settings and the command bar: text, date, time and search fields use `Input`/`RangeInput`; reason and note boxes use `TextArea`; selects and filters use `Select` (with `Select.Item`, `disabledKeys` for the task status); the holiday "Observed this year" box uses `Checkbox`.
+- Tabs on Leave, Attendance, Documents, Profile and Team explorer use `UTabs` (underline). 44 px tab targets on coarse pointers are in `styles.css`.
+- Empty states on all of these already render through Untitled `EmptyState` (via `EmptyBlock`).
+- Playwright specs changed minimally: native `selectOption` became click-button-then-option for leave type, document category, activity type (atlas and organization specs), the onboarding intake pickers and the assigned-task status.
+
+## Deliberately not migrated yet (honest list)
+
+- `home`, `not-found`, `login` (no form fields; its one control is a link-styled button) and `workspace` (shell: no form fields besides the command bar, which is done).
+- Preferences and Settings theme/density/mode pickers: these are card-style radios with illustrations and swatches, not plain radio rows, and the kit `RadioGroup` cannot draw them without re-drawing the cards. The Preferences "Reduce motion" switch keeps the portal's own `.switch` (animated thumb, verified by `atlas.spec.ts`) so the kit's checkbox/radio CSS cannot disturb it.
+- Documents file picker stays a native `input type="file"` (the kit file-upload component is not vendored yet).
+- `components/onboarding-checklist.tsx` and `components/local-readiness-review.tsx`: large, heavily specified native selects/textareas (`onboarding.spec.ts` drives them with `selectOption`); to be migrated with the onboarding slice.
+- Our own `Avatar` (Loom colours, used on nearly every screen) is kept; `UAvatar` is used where a screen adopts it (Exit). Row-action `Dropdown` menus and `ButtonGroup` are not introduced: the existing rows use one or two visible buttons, which is clearer than a menu.
+- Still not vendored from the starter kit: `tags`, `slider`, `progress-indicators`, `file-upload`, `modals`, `slideout-menus`, `date-picker`, `loading-indicator`, `charts`.

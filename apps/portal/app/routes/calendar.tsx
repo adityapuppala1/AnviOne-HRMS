@@ -16,6 +16,11 @@ import {
   LoadingState,
   PageHeader,
   StatCard,
+  Checkbox,
+  Input,
+  RangeInput,
+  Select,
+  TextArea,
 } from "@anvi/ui";
 import type { Calendar as CalendarData, Holiday } from "@anvi/contracts";
 import { api, useCalendar } from "../lib/api";
@@ -33,6 +38,8 @@ const daysBetween = (from: string, to: string) =>
   Math.round((at(to).getTime() - at(from).getTime()) / 86400000);
 
 type Editing = { kind: "new" } | { kind: "edit"; holiday: Holiday } | null;
+
+const WHOLE_ORGANIZATION = "__organization";
 
 export default function CalendarPage() {
   const { me } = useWorkspace();
@@ -311,10 +318,14 @@ function WorkWeek({
         </div>
         {changed && (
           <div className="leave-form calendar-week-save">
-            <label>
-              {text.week.reasonLabel}
-              <textarea name="reason" required minLength={10} maxLength={300} />
-            </label>
+            <TextArea
+              label={text.week.reasonLabel}
+              name="reason"
+              isRequired
+              hideRequiredIndicator
+              minLength={10}
+              maxLength={300}
+            />
             {error && (
               <p role="alert" className="inline-error">
                 {error}
@@ -363,6 +374,7 @@ function HolidayDialog({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const locationId = String(form.get("location") ?? WHOLE_ORGANIZATION);
     setBusy(true);
     setError("");
     try {
@@ -377,7 +389,7 @@ function HolidayDialog({
         await send("/calendar/holidays", "POST", {
           date: String(form.get("date")),
           name: String(form.get("name")),
-          locationId: String(form.get("location")) || null,
+          locationId: locationId === WHOLE_ORGANIZATION ? null : locationId,
           reason: String(form.get("reason")),
         });
       await refresh();
@@ -416,55 +428,60 @@ function HolidayDialog({
           </p>
         ) : (
           <div className="leave-dates">
-            <label>
-              {text.dialog.date}
-              <input
-                type="date"
-                name="date"
-                required
-                defaultValue={`${data.year}-01-01`}
-                min={`${data.year}-01-01`}
-                max={`${data.year}-12-31`}
+            <RangeInput
+              type="date"
+              name="date"
+              label={text.dialog.date}
+              isRequired
+              defaultValue={`${data.year}-01-01`}
+              min={`${data.year}-01-01`}
+              max={`${data.year}-12-31`}
+            />
+            <Select
+              label={text.dialog.appliesTo}
+              name="location"
+              defaultSelectedKey={WHOLE_ORGANIZATION}
+            >
+              <Select.Item
+                id={WHOLE_ORGANIZATION}
+                label={text.dialog.wholeOrganization}
               />
-            </label>
-            <label>
-              {text.dialog.appliesTo}
-              <select name="location" defaultValue="">
-                <option value="">{text.dialog.wholeOrganization}</option>
-                {data.locations.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {text.dialog.office(l.name)}
-                  </option>
-                ))}
-              </select>
-            </label>
+              {data.locations.map((l) => (
+                <Select.Item
+                  key={l.id}
+                  id={l.id}
+                  label={text.dialog.office(l.name)}
+                />
+              ))}
+            </Select>
           </div>
         )}
-        <label>
-          {text.dialog.name}
-          <input
-            name="name"
-            required
-            minLength={2}
-            maxLength={60}
-            defaultValue={holiday?.name ?? ""}
-            autoFocus
-          />
-        </label>
+        <Input
+          label={text.dialog.name}
+          name="name"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={60}
+          defaultValue={holiday?.name ?? ""}
+          autoFocus
+        />
         {holiday && (
-          <label className="calendar-check">
-            <input
-              type="checkbox"
-              name="active"
-              defaultChecked={holiday.active}
-            />
-            {text.dialog.observed}
-          </label>
+          <Checkbox
+            name="active"
+            value="on"
+            defaultSelected={holiday.active}
+            label={text.dialog.observed}
+          />
         )}
-        <label>
-          {text.dialog.reason}
-          <textarea name="reason" required minLength={10} maxLength={300} />
-        </label>
+        <TextArea
+          label={text.dialog.reason}
+          name="reason"
+          isRequired
+          hideRequiredIndicator
+          minLength={10}
+          maxLength={300}
+        />
         {error && (
           <p role="alert" className="inline-error">
             {error}

@@ -16,6 +16,8 @@ import {
   PageHeader,
   StatusBadge,
   type Column,
+  Input,
+  Select,
 } from "@anvi/ui";
 import type { Employee } from "@anvi/contracts";
 import { useDirectory } from "../lib/api";
@@ -69,6 +71,8 @@ const columns: Column<Employee>[] = [
   },
 ];
 
+const ALL = "__all";
+
 export default function People() {
   const { me } = useWorkspace();
   if (!me.permissions.includes("directory.read"))
@@ -115,44 +119,43 @@ function Directory() {
       ></PageHeader>
       <section className="directory-panel">
         <div className="directory-toolbar">
-          <label className="search-box">
-            <Search size={18} />
-            <input
-              aria-label={text.searchLabel}
-              placeholder={text.searchPlaceholder}
-              maxLength={80}
-              value={params.get("q") ?? ""}
-              onChange={(event) => filter("q", event.target.value)}
-            />
-          </label>
+          <Input
+            aria-label={text.searchLabel}
+            placeholder={text.searchPlaceholder}
+            maxLength={80}
+            icon={Search}
+            value={params.get("q") ?? ""}
+            onChange={(value) => filter("q", value)}
+            className="kit-search"
+          />
           <div className="directory-filters">
             <SlidersHorizontal size={16} />
-            <label className="sr-only" htmlFor="department">
-              {text.department}
-            </label>
-            <select
-              id="department"
-              value={params.get("department") ?? ""}
-              onChange={(e) => filter("department", e.target.value)}
+            <Select
+              aria-label={text.department}
+              selectedKey={params.get("department") || ALL}
+              onSelectionChange={(key) =>
+                filter("department", key === ALL ? "" : String(key))
+              }
+              className="kit-filter"
             >
-              <option value="">{text.allDepartments}</option>
-              {data?.departments.map((d) => (
-                <option key={d}>{d}</option>
+              <Select.Item id={ALL} label={text.allDepartments} />
+              {(data?.departments ?? []).map((d) => (
+                <Select.Item key={d} id={d} label={d} />
               ))}
-            </select>
-            <label className="sr-only" htmlFor="location">
-              {text.location}
-            </label>
-            <select
-              id="location"
-              value={params.get("location") ?? ""}
-              onChange={(e) => filter("location", e.target.value)}
+            </Select>
+            <Select
+              aria-label={text.location}
+              selectedKey={params.get("location") || ALL}
+              onSelectionChange={(key) =>
+                filter("location", key === ALL ? "" : String(key))
+              }
+              className="kit-filter"
             >
-              <option value="">{text.allLocations}</option>
-              {data?.locations.map((l) => (
-                <option key={l}>{l}</option>
+              <Select.Item id={ALL} label={text.allLocations} />
+              {(data?.locations ?? []).map((l) => (
+                <Select.Item key={l} id={l} label={l} />
               ))}
-            </select>
+            </Select>
           </div>
         </div>
         <div className="directory-meta">

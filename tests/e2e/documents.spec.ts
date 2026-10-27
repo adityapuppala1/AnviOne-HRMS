@@ -42,9 +42,9 @@ test("upload, download and withdraw a document; HR verifies others' documents", 
   const title = `Address proof ${Math.random().toString(36).slice(2, 7)}`;
   await page.getByRole("button", { name: "Upload a document" }).click();
   const dialog = page.getByRole("dialog", { name: "Upload a document" });
-  await dialog
-    .getByRole("combobox", { name: "What is it?" })
-    .selectOption("other");
+  await dialog.getByRole("button", { name: /What is it\?/ }).click();
+  await page.getByRole("option", { name: "Other" }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog.getByRole("textbox", { name: "Title" }).fill(title);
   await dialog.getByLabel("File").setInputFiles({
     name: "address-proof.pdf",

@@ -19,10 +19,7 @@ import {
   ErrorState,
   LoadingState,
   StatusBadge,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
+  UTabs,
 } from "@anvi/ui";
 import { useEmployee } from "../lib/api";
 import { profileCopy as text } from "../lib/copy/screens";
@@ -104,18 +101,18 @@ export default function Profile() {
       </section>
       <div className="profile-body">
         <section className="panel profile-main">
-          <Tabs defaultSelectedKey="about">
-            <TabList aria-label={text.sectionsLabel} className="tabs-list">
-              <Tab id="about" className="tab">
+          <UTabs defaultSelectedKey="about" keyboardActivation="automatic">
+            <UTabs.List type="underline" aria-label={text.sectionsLabel}>
+              <UTabs.Item id="about">
                 <UserCircle size={18} />
                 {text.tabs.overview}
-              </Tab>
-              <Tab id="employment" className="tab">
+              </UTabs.Item>
+              <UTabs.Item id="employment">
                 <Briefcase size={18} />
                 {text.tabs.employment}
-              </Tab>
-            </TabList>
-            <TabPanel id="about" className="tab-panel">
+              </UTabs.Item>
+            </UTabs.List>
+            <UTabs.Panel id="about" className="tab-panel">
               <h2>{text.overview.title}</h2>
               <p className="section-description">{text.overview.description}</p>
               <dl className="profile-details">
@@ -150,8 +147,8 @@ export default function Profile() {
                   </div>
                 ))}
               </dl>
-            </TabPanel>
-            <TabPanel id="employment" className="tab-panel">
+            </UTabs.Panel>
+            <UTabs.Panel id="employment" className="tab-panel">
               <h2>{text.employment.title}</h2>
               <p className="section-description">
                 {text.employment.description}
@@ -199,8 +196,8 @@ export default function Profile() {
                 </div>
                 <span className="milestone-dot" />
               </div>
-            </TabPanel>
-          </Tabs>
+            </UTabs.Panel>
+          </UTabs>
           <div className="profile-privacy">
             <LockKey size={19} />
             <p>{text.privacy}</p>

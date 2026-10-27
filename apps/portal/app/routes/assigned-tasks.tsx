@@ -9,6 +9,8 @@ import {
   PageHeader,
   StatCard,
   StatusBadge,
+  Select,
+  TextArea,
 } from "@anvi/ui";
 import { Prohibit } from "@phosphor-icons/react/dist/csr/Prohibit";
 import { ListChecks } from "@phosphor-icons/react/dist/csr/ListChecks";
@@ -127,18 +129,17 @@ function TaskDocket({ csrf }: { csrf: string }) {
             <span className="docket-kicker">{text.kicker}</span>
             <strong>{text.assigned(query.data?.items.length ?? "—")}</strong>
           </div>
-          <label>
-            <span className="sr-only">{text.filterLabel}</span>
-            <select
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-            >
-              <option value="open">{text.filters.open}</option>
-              <option value="all">{text.filters.all}</option>
-              <option value="completed">{text.filters.completed}</option>
-              <option value="blocked">{text.filters.blocked}</option>
-            </select>
-          </label>
+          <Select
+            aria-label={text.filterLabel}
+            selectedKey={filter}
+            onSelectionChange={(key) => setFilter(String(key))}
+            className="kit-filter"
+          >
+            <Select.Item id="open" label={text.filters.open} />
+            <Select.Item id="all" label={text.filters.all} />
+            <Select.Item id="completed" label={text.filters.completed} />
+            <Select.Item id="blocked" label={text.filters.blocked} />
+          </Select>
         </div>
         {query.error ? (
           <ErrorState
@@ -242,37 +243,35 @@ function TaskDocket({ csrf }: { csrf: string }) {
               <br />
               {text.forCandidate} {selected.candidateName}
             </p>
-            <label>
-              {text.newStatus}
-              <select
-                name="state"
-                autoFocus
-                defaultValue={
-                  selected.state === "completed"
-                    ? "pending"
-                    : selected.waitingOn
-                      ? "blocked"
-                      : "completed"
-                }
-              >
-                {Object.entries(statusNames).map(([key, label]) => (
-                  <option
-                    key={key}
-                    value={key}
-                    disabled={
-                      key === selected.state ||
-                      (key === "completed" && Boolean(selected.waitingOn))
-                    }
-                  >
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              {text.noteLabel}
-              <textarea name="reason" required minLength={10} maxLength={300} />
-            </label>
+            <Select
+              label={text.newStatus}
+              name="state"
+              autoFocus
+              defaultSelectedKey={
+                selected.state === "completed"
+                  ? "pending"
+                  : selected.waitingOn
+                    ? "blocked"
+                    : "completed"
+              }
+              disabledKeys={Object.keys(statusNames).filter(
+                (key) =>
+                  key === selected.state ||
+                  (key === "completed" && Boolean(selected.waitingOn)),
+              )}
+            >
+              {Object.entries(statusNames).map(([key, label]) => (
+                <Select.Item key={key} id={key} label={label} />
+              ))}
+            </Select>
+            <TextArea
+              label={text.noteLabel}
+              name="reason"
+              isRequired
+              hideRequiredIndicator
+              minLength={10}
+              maxLength={300}
+            />
             <p>{text.noteHelp}</p>
             {error && (
               <p role="alert" className="inline-error">

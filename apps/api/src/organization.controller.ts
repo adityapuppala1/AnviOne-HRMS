@@ -11,7 +11,9 @@ import {
 } from "@nestjs/common";
 import { z } from "zod";
 import {
+  organizationChartQuerySchema,
   organizationCreateSchema,
+  organizationMergeSchema,
   organizationUpdateSchema,
   organizationQuerySchema,
 } from "@anvi/contracts";
@@ -20,7 +22,8 @@ import { OrganizationStore } from "./organization.store";
 import { parse } from "./http";
 import { type AppRequest } from "./auth";
 
-// Department and location masters.
+// Organization masters (departments, locations, designations, grades, cost
+// centres), department/location merges and the reporting chart.
 @Controller()
 export class OrganizationController {
   private readonly organization;
@@ -35,6 +38,22 @@ export class OrganizationController {
       req.actor,
       parse(organizationQuerySchema, query),
     );
+  }
+  // Declared before ":id" so "chart" is never read as an id.
+  @Get("api/v1/organization/chart") organizationChart(
+    @Req() req: AppRequest,
+    @Query() query: unknown,
+  ) {
+    return this.organization.chart(
+      req.actor,
+      parse(organizationChartQuerySchema, query),
+    );
+  }
+  @Get("api/v1/organization/:id") organizationUnit(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+  ) {
+    return this.organization.detail(req.actor, parse(z.uuid(), id));
   }
   @Post("api/v1/organization") createOrganizationUnit(
     @Req() req: AppRequest,
@@ -55,6 +74,18 @@ export class OrganizationController {
       req.actor,
       parse(z.uuid(), id),
       parse(organizationUpdateSchema, body),
+      req.requestId,
+    );
+  }
+  @Post("api/v1/organization/:id/merge") mergeOrganizationUnit(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.organization.merge(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(organizationMergeSchema, body),
       req.requestId,
     );
   }

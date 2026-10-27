@@ -20,7 +20,7 @@
   font-size: 14px;
   max-width: 56ch;
 }
-.leave-tabs .tabs-list {
+.leave-tabs [role="tablist"] {
   width: fit-content;
   max-width: 100%;
   overflow-x: auto;
@@ -271,23 +271,11 @@
   color: var(--muted);
   font-size: 13px;
 }
-.leave-form label {
+.leave-form label:not([data-rac]) {
   display: grid;
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-}
-.leave-form textarea {
-  width: 100%;
-  min-height: 92px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  resize: vertical;
 }
 .leave-dates {
   display: grid;

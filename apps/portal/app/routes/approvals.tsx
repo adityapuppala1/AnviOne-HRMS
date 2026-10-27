@@ -18,6 +18,7 @@ import {
   PageHeader,
   StatCard,
   StatusBadge,
+  TextArea,
 } from "@anvi/ui";
 import type { ApprovalItem } from "@anvi/contracts";
 import { api, useApprovals } from "../lib/api";
@@ -242,18 +243,19 @@ export default function Approvals() {
                     subject(noting.item),
                   )}
             </p>
-            <label>
-              {noting.decision === "approve"
-                ? text.dialog.approveLabel
-                : text.dialog.declineLabel}
-              <textarea
-                name="note"
-                required
-                minLength={minimum}
-                maxLength={300}
-                autoFocus
-              />
-            </label>
+            <TextArea
+              label={
+                noting.decision === "approve"
+                  ? text.dialog.approveLabel
+                  : text.dialog.declineLabel
+              }
+              name="note"
+              isRequired
+              hideRequiredIndicator
+              minLength={minimum}
+              maxLength={300}
+              autoFocus
+            />
             {error && (
               <p role="alert" className="inline-error">
                 {error}

@@ -20,7 +20,7 @@ import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
-import { DialogPanel, Button, Avatar } from "@anvi/ui";
+import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
 import type { Me } from "@anvi/contracts";
@@ -52,17 +52,16 @@ export function Command({
   }
   return (
     <DialogPanel open={open} onOpenChange={setOpen} title="Find your way">
-      <label className="search-box command-input">
-        <Search size={19} />
-        <input
-          autoFocus
-          aria-label="Search people and pages"
-          placeholder="Search a name, team, or page"
-          maxLength={80}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </label>
+      <Input
+        autoFocus
+        aria-label="Search people and pages"
+        placeholder="Search a name, team, or page"
+        maxLength={80}
+        icon={Search}
+        value={search}
+        onChange={setSearch}
+        className="command-input"
+      />
       <p className="eyebrow command-label">PAGES</p>
       <div className="command-results">
         <Button variant="ghost" onPress={() => go("/")}>
@@ -124,6 +123,12 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/policies")}>
             <Scroll size={18} />
             {copy.nav.policies}
+          </Button>
+        )}
+        {me.permissions.includes("directory.read") && (
+          <Button variant="ghost" onPress={() => go("/chart")}>
+            <TreeStructure size={18} />
+            {copy.nav.chart}
           </Button>
         )}
         {(me.permissions.includes("profile.self") ||

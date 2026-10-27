@@ -1,24 +1,61 @@
 import { randomUUID } from "node:crypto";
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from "@nestjs/common";
 import { audit, scoped, type PoolClient } from "@anvi/database";
 import {
+  organizationChartNodeSchema,
   organizationUnitSchema,
+  type OrganizationChart,
+  type OrganizationDetail,
   type OrganizationDirectory,
+  type OrganizationMergeResult,
   type OrganizationUnit,
+  type organizationChartQuerySchema,
   type organizationCreateSchema,
+  type organizationMergeSchema,
   type organizationUpdateSchema,
   type organizationQuerySchema,
 } from "@anvi/contracts";
+import { scopeFor, type Principal } from "@anvi/authz";
 import type { z } from "zod";
-import type { Principal } from "@anvi/authz";
 import type { PlatformStore, SessionActor } from "./platform.store";
 
-const columns = `u.id, u.kind, u.code, u.name, u.active, u.version,
+// One definition of "in effect", evaluated in the entity's business date.
+const status = `CASE WHEN NOT u.active OR u.merged_into_id IS NOT NULL THEN 'inactive'
+  WHEN u.effective_from > leave_entity_today() THEN 'scheduled'
+  WHEN u.effective_to < leave_entity_today() THEN 'ended'
+  ELSE 'in_effect' END`;
+export const organizationUnitColumns = `u.id, u.kind, u.code, u.name, u.active, u.version,
   (SELECT count(*)::int FROM employee e
     WHERE e.tenant_id = u.tenant_id AND e.entity_id = u.entity_id
       AND e.status IN ('active','notice')
-      AND CASE WHEN u.kind = 'department' THEN e.department_id = u.id ELSE e.location_id = u.id END
-  ) AS "employeeCount"`;
+      AND CASE u.kind WHEN 'department' THEN e.department_id = u.id
+        WHEN 'location' THEN e.location_id = u.id ELSE false END
+  ) AS "employeeCount",
+  to_char(u.effective_from,'YYYY-MM-DD') AS "effectiveFrom",
+  to_char(u.effective_to,'YYYY-MM-DD') AS "effectiveTo",
+  (${status}) = 'in_effect' AS "inEffect", ${status} AS status,
+  u.merged_into_id AS "mergedIntoId"`;
+const columns = organizationUnitColumns;
+
+const ruleErrors: Record<string, (message: string) => Error> = {
+  OG001: (m) => new ConflictException(m),
+  OG002: (m) => new BadRequestException(m),
+  OG003: (m) => new NotFoundException(m),
+  OG004: (m) => new ConflictException(m),
+  OG005: (m) => new ForbiddenException(m),
+};
+const busy = "Someone else changed this at the same time. Try again.";
+const conflictCodes: Record<string, string> = {
+  "40P01": busy,
+  "40001": busy,
+  "55P03": busy,
+};
+const CHART_NODE_CAP = 2000;
 
 // This module owns the master lifecycle transaction: version check, mutation,
 // mandatory reason, audit snapshot and outbox are one commit.
@@ -55,18 +92,47 @@ export class OrganizationStore {
     });
   }
 
+  async detail(actor: Principal, id: string): Promise<OrganizationDetail> {
+    this.platform.require(actor, "organization.read");
+    return scoped(this.platform.pool, actor, async (client) => {
+      const item = await this.readUnit(client, id);
+      const ref = `u.id, u.code, u.name,
+        CASE WHEN u.merged_at IS NULL THEN NULL
+          ELSE to_char(u.merged_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') END AS "mergedAt"`;
+      const into = item.mergedIntoId
+        ? await client.query(
+            `SELECT u.id, u.code, u.name,
+               (SELECT to_char(s.merged_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+                FROM org_unit s WHERE s.id=$2) AS "mergedAt"
+             FROM org_unit u WHERE u.id=$1`,
+            [item.mergedIntoId, id],
+          )
+        : null;
+      const from = await client.query(
+        `SELECT ${ref} FROM org_unit u WHERE u.merged_into_id=$1
+         ORDER BY u.merged_at DESC, u.id LIMIT 200`,
+        [id],
+      );
+      return {
+        item,
+        mergedInto: into?.rows[0] ?? null,
+        mergedFrom: from.rows,
+      };
+    });
+  }
+
   async create(
     actor: Principal,
     input: z.infer<typeof organizationCreateSchema>,
     requestId: string,
   ): Promise<OrganizationUnit> {
     this.platform.require(actor, "organization.write");
-    return this.mapConflict(async () =>
+    return this.rules(async () =>
       scoped(this.platform.pool, actor, async (client) => {
         const id = randomUUID();
         await client.query(
-          `INSERT INTO org_unit(id,tenant_id,entity_id,kind,code,name)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
+          `INSERT INTO org_unit(id,tenant_id,entity_id,kind,code,name,effective_from,effective_to)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
           [
             id,
             actor.tenantId,
@@ -74,6 +140,8 @@ export class OrganizationStore {
             input.kind,
             input.code,
             input.name,
+            input.effectiveFrom ?? null,
+            input.effectiveTo ?? null,
           ],
         );
         const item = await this.readUnit(client, id);
@@ -101,7 +169,7 @@ export class OrganizationStore {
     requestId: string,
   ): Promise<OrganizationUnit> {
     this.platform.require(actor, "organization.write");
-    return this.mapConflict(async () =>
+    return this.rules(async () =>
       scoped(this.platform.pool, actor, async (client) => {
         const locked = await client.query(
           "SELECT id FROM org_unit WHERE id=$1 FOR UPDATE",
@@ -117,12 +185,55 @@ export class OrganizationStore {
             "This record changed. Reload it before saving again.",
           );
         }
+        if (previous.mergedIntoId)
+          throw new ConflictException(
+            "This record was merged into another and can no longer change.",
+          );
+        const effectiveFrom = input.effectiveFrom ?? previous.effectiveFrom;
+        const effectiveTo =
+          input.effectiveTo === undefined
+            ? previous.effectiveTo
+            : input.effectiveTo;
+        if (effectiveTo !== null && effectiveTo < effectiveFrom)
+          throw new BadRequestException(
+            "The end date cannot be before the start date.",
+          );
+        // Moving a still-used, active unit out of effect by dates would strand its
+        // people and offers; a merge is the safe way to retire it.
+        if (previous.active && input.active) {
+          const check = await client.query<{
+            inEffect: boolean;
+            candidates: number;
+          }>(
+            `SELECT ($1::date <= leave_entity_today()
+                AND ($2::date IS NULL OR $2::date >= leave_entity_today())) AS "inEffect",
+              (SELECT count(*)::int FROM candidate_case c
+                WHERE (c.department_id=$3 OR c.location_id=$3)
+                  AND c.state NOT IN ('approved','cancelled')) AS candidates`,
+            [effectiveFrom, effectiveTo, id],
+          );
+          const row = check.rows[0]!;
+          if (
+            !row.inEffect &&
+            previous.inEffect &&
+            (previous.employeeCount > 0 || row.candidates > 0)
+          )
+            throw new ConflictException(
+              `This record still has ${previous.employeeCount} employee(s) and ${row.candidates} open candidate(s). Merge it into another record instead of ending it by date.`,
+            );
+        }
         // A replay with unchanged values creates no second version or domain event.
-        if (previous.name === input.name && previous.active === input.active)
+        if (
+          previous.name === input.name &&
+          previous.active === input.active &&
+          previous.effectiveFrom === effectiveFrom &&
+          previous.effectiveTo === effectiveTo
+        )
           return previous;
         await client.query(
-          "UPDATE org_unit SET name=$2, active=$3, version=version+1 WHERE id=$1",
-          [id, input.name, input.active],
+          `UPDATE org_unit SET name=$2, active=$3, effective_from=$4, effective_to=$5,
+           version=version+1 WHERE id=$1`,
+          [id, input.name, input.active, effectiveFrom, effectiveTo],
         );
         const item = await this.readUnit(client, id);
         await audit(
@@ -145,6 +256,164 @@ export class OrganizationStore {
     );
   }
 
+  // The database function owns the moves and the closing of the source; this
+  // transaction adds the single audit row and domain event around it.
+  async merge(
+    actor: Principal,
+    id: string,
+    input: z.infer<typeof organizationMergeSchema>,
+    requestId: string,
+  ): Promise<OrganizationMergeResult> {
+    this.platform.require(actor, "organization.write");
+    return this.rules(
+      async () =>
+        scoped(this.platform.pool, actor, async (client) => {
+          const { rows } = await client.query<{
+            result: {
+              moved: number;
+              movedActive: number;
+              movedInactive: number;
+              movedCandidates: number;
+              kind: string;
+              version: number;
+            };
+          }>("SELECT merge_org_units($1,$2,$3,$4) AS result", [
+            id,
+            input.targetId,
+            input.version,
+            input.targetVersion,
+          ]);
+          const result = rows[0]!.result;
+          const source = await this.readUnit(client, id);
+          const target = await this.readUnit(client, input.targetId);
+          await audit(
+            client,
+            actor,
+            "organization.merged",
+            `organization:${id}:v${source.version}`,
+            requestId,
+            {
+              reason: input.reason,
+              details: {
+                kind: result.kind,
+                sourceId: source.id,
+                sourceCode: source.code,
+                targetId: target.id,
+                targetCode: target.code,
+                movedEmployees: result.moved,
+                movedActive: result.movedActive,
+                movedInactive: result.movedInactive,
+                movedCandidates: result.movedCandidates,
+                after: this.snapshot(source),
+              },
+            },
+          );
+          await this.event(client, actor, source, "organization.merged.v1");
+          return {
+            source,
+            target,
+            movedEmployees: result.moved,
+            movedActive: result.movedActive,
+            movedInactive: result.movedInactive,
+            movedCandidates: result.movedCandidates,
+          };
+        }),
+      true,
+    );
+  }
+
+  // Reporting lines drawn only from rows the caller's directory scope already
+  // returns (employee RLS): HR the entity, a manager self plus direct reports,
+  // an employee only self. Managers outside that set are never named.
+  async chart(
+    actor: Principal,
+    query: z.infer<typeof organizationChartQuerySchema>,
+  ): Promise<OrganizationChart> {
+    this.platform.require(actor, "directory.read");
+    const scope = scopeFor(actor, "directory.read")!;
+    return scoped(this.platform.pool, actor, async (client) => {
+      const { rows } = await client.query<{
+        id: string;
+        name: string;
+        initials: string;
+        title: string;
+        department: string;
+        status: "active" | "notice";
+        managerId: string | null;
+      }>(
+        `SELECT id, name, initials, title, department, status, manager_id AS "managerId"
+         FROM employee_directory WHERE status IN ('active','notice')
+         ORDER BY name, id LIMIT $1`,
+        [CHART_NODE_CAP + 1],
+      );
+      let truncated = rows.length > CHART_NODE_CAP;
+      const people = rows.slice(0, CHART_NODE_CAP);
+      const byId = new Map(people.map((p) => [p.id, p]));
+      const reports = new Map<string, string[]>();
+      for (const p of people) {
+        if (p.managerId && byId.has(p.managerId)) {
+          const list = reports.get(p.managerId) ?? [];
+          list.push(p.id);
+          reports.set(p.managerId, list);
+        }
+      }
+      let roots: string[];
+      if (query.rootId) {
+        if (!byId.has(query.rootId))
+          throw new NotFoundException("This person is not in your view.");
+        roots = [query.rootId];
+      } else {
+        roots = people
+          .filter((p) => !p.managerId || !byId.has(p.managerId))
+          .map((p) => p.id);
+      }
+      const depthOf = new Map<string, number>();
+      const walk = (start: string[]) => {
+        const queue: [string, number][] = start.map((id) => [id, 0]);
+        for (const [id] of queue) depthOf.set(id, 0);
+        for (let i = 0; i < queue.length; i++) {
+          const [id, depth] = queue[i]!;
+          for (const child of reports.get(id) ?? []) {
+            if (depthOf.has(child)) continue;
+            if (depth + 1 >= query.depth) {
+              truncated = true;
+              continue;
+            }
+            depthOf.set(child, depth + 1);
+            queue.push([child, depth + 1]);
+          }
+        }
+      };
+      walk(roots);
+      if (!query.rootId) {
+        // People reachable from no root sit on a reporting loop: break it at the
+        // first by name so everyone visible is still drawn exactly once.
+        for (const p of people) {
+          if (depthOf.has(p.id)) continue;
+          truncated = true;
+          roots.push(p.id);
+          walk([p.id]);
+        }
+      }
+      const rootSet = new Set(roots);
+      const nodes = people
+        .filter((p) => depthOf.has(p.id))
+        .map((p) =>
+          organizationChartNodeSchema.parse({
+            ...p,
+            managerId:
+              rootSet.has(p.id) || !p.managerId || !byId.has(p.managerId)
+                ? null
+                : p.managerId,
+            directReportCount: reports.get(p.id)?.length ?? 0,
+            depth: depthOf.get(p.id)!,
+          }),
+        )
+        .sort((a, b) => a.depth - b.depth);
+      return { scope, rootIds: roots, nodes, total: nodes.length, truncated };
+    });
+  }
+
   private async readUnit(
     client: PoolClient,
     id: string,
@@ -159,8 +428,28 @@ export class OrganizationStore {
   }
 
   private snapshot(item: OrganizationUnit) {
-    const { id, kind, code, name, active, version } = item;
-    return { id, kind, code, name, active, version };
+    const {
+      id,
+      kind,
+      code,
+      name,
+      active,
+      version,
+      effectiveFrom,
+      effectiveTo,
+      mergedIntoId,
+    } = item;
+    return {
+      id,
+      kind,
+      code,
+      name,
+      active,
+      version,
+      effectiveFrom,
+      effectiveTo,
+      mergedIntoId,
+    };
   }
 
   private async event(
@@ -183,19 +472,40 @@ export class OrganizationStore {
     );
   }
 
-  private async mapConflict<T>(work: () => Promise<T>): Promise<T> {
+  // passGuardMessage: the merge path surfaces the specific guard text for 23514.
+  private async rules<T>(
+    work: () => Promise<T>,
+    passGuardMessage = false,
+  ): Promise<T> {
     try {
       return await work();
     } catch (error) {
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "23505"
-      ) {
-        throw new ConflictException(
-          "A record with that code or name already exists in this entity.",
-        );
+      if (error && typeof error === "object" && "code" in error) {
+        const code = error.code;
+        if (code === "23505")
+          throw new ConflictException(
+            "A record with that code or name already exists in this entity.",
+          );
+        if (typeof code === "string" && code in conflictCodes)
+          throw new ConflictException(conflictCodes[code]);
+        if (
+          passGuardMessage &&
+          code === "23514" &&
+          "message" in error &&
+          typeof error.message === "string"
+        )
+          throw new BadRequestException(`${error.message}.`);
+        if (code === "23514" || code === "23503")
+          throw new BadRequestException(
+            "This organization change does not meet the rules.",
+          );
+        if (
+          typeof code === "string" &&
+          code in ruleErrors &&
+          "message" in error &&
+          typeof error.message === "string"
+        )
+          throw ruleErrors[code]!(`${error.message}.`);
       }
       throw error;
     }

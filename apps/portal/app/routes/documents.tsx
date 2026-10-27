@@ -19,10 +19,10 @@ import {
   PageHeader,
   StatCard,
   StatusBadge,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
+  Input,
+  Select,
+  TextArea,
+  UTabs,
 } from "@anvi/ui";
 import type { DocumentCategory, EmployeeDocument } from "@anvi/contracts";
 import { api, ApiError, useDocumentReview, useDocuments } from "../lib/api";
@@ -84,22 +84,18 @@ export default function Documents() {
         }
       />
       {canOwn && canReview ? (
-        <Tabs className="leave-tabs">
-          <TabList aria-label={text.tabs.label} className="tabs-list">
-            <Tab id="mine" className="tab">
-              {text.tabs.mine}
-            </Tab>
-            <Tab id="review" className="tab">
-              {text.tabs.review}
-            </Tab>
-          </TabList>
-          <TabPanel id="mine" className="tab-panel">
+        <UTabs className="leave-tabs" keyboardActivation="automatic">
+          <UTabs.List type="underline" aria-label={text.tabs.label}>
+            <UTabs.Item id="mine">{text.tabs.mine}</UTabs.Item>
+            <UTabs.Item id="review">{text.tabs.review}</UTabs.Item>
+          </UTabs.List>
+          <UTabs.Panel id="mine" className="tab-panel">
             <Mine query={mine} send={send} refresh={refresh} />
-          </TabPanel>
-          <TabPanel id="review" className="tab-panel">
+          </UTabs.Panel>
+          <UTabs.Panel id="review" className="tab-panel">
             <Review query={review} send={send} refresh={refresh} />
-          </TabPanel>
-        </Tabs>
+          </UTabs.Panel>
+        </UTabs>
       ) : canOwn ? (
         <Mine query={mine} send={send} refresh={refresh} />
       ) : (
@@ -459,16 +455,15 @@ function Review({
             }}
           >
             <p>{text.review.dialogIntro(rejecting.employeeName)}</p>
-            <label>
-              {text.review.noteLabel}
-              <textarea
-                name="note"
-                required
-                minLength={3}
-                maxLength={300}
-                autoFocus
-              />
-            </label>
+            <TextArea
+              label={text.review.noteLabel}
+              name="note"
+              isRequired
+              hideRequiredIndicator
+              minLength={3}
+              maxLength={300}
+              autoFocus
+            />
             {error && (
               <p role="alert" className="inline-error">
                 {error}
@@ -560,26 +555,25 @@ function UploadDialog({
       className="leave-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
-        <label>
-          {text.upload.categoryLabel}
-          <select name="category" defaultValue="identity" autoFocus>
-            {Object.entries(categories).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          {text.upload.titleLabel}
-          <input
-            name="title"
-            required
-            minLength={2}
-            maxLength={80}
-            placeholder={text.upload.titlePlaceholder}
-          />
-        </label>
+        <Select
+          label={text.upload.categoryLabel}
+          name="category"
+          defaultSelectedKey="identity"
+          autoFocus
+        >
+          {Object.entries(categories).map(([value, label]) => (
+            <Select.Item key={value} id={value} label={label} />
+          ))}
+        </Select>
+        <Input
+          label={text.upload.titleLabel}
+          name="title"
+          isRequired
+          hideRequiredIndicator
+          minLength={2}
+          maxLength={80}
+          placeholder={text.upload.titlePlaceholder}
+        />
         <label>
           {text.upload.fileLabel}
           <input

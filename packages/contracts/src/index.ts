@@ -121,9 +121,29 @@ export const authConfigSchema = z.object({
   demo: z.boolean(),
 });
 
-export const organizationKindSchema = z.enum(["department", "location"]);
+export const organizationKindSchema = z.enum([
+  "department",
+  "location",
+  "designation",
+  "grade",
+  "cost_center",
+]);
+// Only these kinds hold employees today, so only these can be merged.
+export const organizationMergeableKindSchema = z.enum([
+  "department",
+  "location",
+]);
+export const organizationStatusSchema = z.enum([
+  "scheduled",
+  "in_effect",
+  "ended",
+  "inactive",
+]);
 const organizationNameSchema = z.string().trim().min(2).max(60);
 const changeReasonSchema = z.string().trim().min(10).max(300);
+const organizationDateSchema = z.iso
+  .date()
+  .refine((v) => v >= "1900-01-01" && v <= "2199-12-31");
 export const organizationUnitSchema = z.object({
   id: z.uuid(),
   kind: organizationKindSchema,
@@ -131,7 +151,14 @@ export const organizationUnitSchema = z.object({
   name: z.string(),
   active: z.boolean(),
   version: z.number().int().positive(),
+  // Counts active and notice employees; always 0 for kinds that hold no employees yet.
   employeeCount: z.number().int().nonnegative(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().nullable(),
+  // Active, not merged, and today (entity time) inside the inclusive window.
+  inEffect: z.boolean(),
+  status: organizationStatusSchema,
+  mergedIntoId: z.uuid().nullable(),
 });
 export type OrganizationUnit = z.infer<typeof organizationUnitSchema>;
 export const organizationQuerySchema = z
@@ -159,16 +186,87 @@ export const organizationCreateSchema = z
       .regex(/^[A-Z][A-Z0-9_-]{1,19}$/),
     name: organizationNameSchema,
     reason: changeReasonSchema,
+    // Defaults to today in the entity's time zone.
+    effectiveFrom: organizationDateSchema.optional(),
+    effectiveTo: organizationDateSchema.nullable().optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (v) =>
+      !v.effectiveTo || !v.effectiveFrom || v.effectiveTo >= v.effectiveFrom,
+    { message: "The end date cannot be before the start date." },
+  );
 export const organizationUpdateSchema = z
   .object({
     name: organizationNameSchema,
     active: z.boolean(),
     version: z.number().int().positive(),
     reason: changeReasonSchema,
+    // Omitted keeps the current window; effectiveTo null clears the end date.
+    effectiveFrom: organizationDateSchema.optional(),
+    effectiveTo: organizationDateSchema.nullable().optional(),
   })
   .strict();
+export const organizationMergeSchema = z.strictObject({
+  targetId: z.uuid(),
+  version: z.number().int().positive(),
+  targetVersion: z.number().int().positive(),
+  reason: changeReasonSchema,
+});
+export const organizationRefSchema = z.object({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+  mergedAt: z.string().nullable(),
+});
+export const organizationDetailSchema = z.object({
+  item: organizationUnitSchema,
+  mergedInto: organizationRefSchema.nullable(),
+  mergedFrom: z.array(organizationRefSchema),
+});
+export type OrganizationDetail = z.infer<typeof organizationDetailSchema>;
+export const organizationMergeResultSchema = z.object({
+  source: organizationUnitSchema,
+  target: organizationUnitSchema,
+  // Every employment row moved, including former (inactive) employees, so nothing
+  // keeps pointing at the closed record.
+  movedEmployees: z.number().int().nonnegative(),
+  movedActive: z.number().int().nonnegative(),
+  movedInactive: z.number().int().nonnegative(),
+  // Unfinished candidate offers re-pointed to the target.
+  movedCandidates: z.number().int().nonnegative(),
+});
+export type OrganizationMergeResult = z.infer<
+  typeof organizationMergeResultSchema
+>;
+export const organizationChartQuerySchema = z.strictObject({
+  rootId: z.uuid().optional(),
+  // Levels counted including the root: depth=1 returns only the roots.
+  depth: z.coerce.number().int().min(1).max(20).default(20),
+});
+export const organizationChartNodeSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  initials: z.string(),
+  title: z.string(),
+  department: z.string(),
+  status: z.enum(["active", "notice"]),
+  // Null when the manager is outside what the caller may see (or there is none).
+  managerId: z.uuid().nullable(),
+  directReportCount: z.number().int().nonnegative(),
+  depth: z.number().int().nonnegative(),
+});
+export const organizationChartSchema = z.object({
+  scope: z.enum(["self", "team", "entity"]),
+  rootIds: z.array(z.uuid()),
+  nodes: z.array(organizationChartNodeSchema),
+  total: z.number().int().nonnegative(),
+  // True when the depth or node cap cut the tree, or a reporting loop was broken.
+  // The UI should say the chart is partial; "scope" says why a manager sees one
+  // level (self + direct reports) and an employee only themselves.
+  truncated: z.boolean(),
+});
+export type OrganizationChart = z.infer<typeof organizationChartSchema>;
 
 export const candidateStateSchema = z.enum([
   "draft",

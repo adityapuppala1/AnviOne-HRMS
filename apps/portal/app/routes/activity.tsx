@@ -12,8 +12,10 @@ import {
   DialogPanel,
   EmptyBlock,
   ErrorState,
+  Input,
   LoadingState,
   PageHeader,
+  Select,
 } from "@anvi/ui";
 import { useAudit } from "../lib/api";
 import { copy } from "../lib/copy";
@@ -62,30 +64,25 @@ function ActivityLog() {
       ></PageHeader>
       <section className="panel audit-panel">
         <div className="directory-toolbar">
-          <label className="search-box">
-            <MagnifyingGlass size={19} />
-            <input
-              aria-label={text.search}
-              placeholder={text.searchPlaceholder}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
-          <label className="activity-filter">
-            <Funnel size={18} />
-            <span className="sr-only">{text.type}</span>
-            <select
-              aria-label={text.type}
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              {Object.entries(text.filters).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Input
+            aria-label={text.search}
+            placeholder={text.searchPlaceholder}
+            icon={MagnifyingGlass}
+            value={search}
+            onChange={setSearch}
+            className="kit-search"
+          />
+          <Select
+            aria-label={text.type}
+            icon={Funnel}
+            selectedKey={filter}
+            onSelectionChange={(key) => setFilter(String(key))}
+            className="kit-filter"
+          >
+            {Object.entries(text.filters).map(([value, label]) => (
+              <Select.Item key={value} id={value} label={label} />
+            ))}
+          </Select>
         </div>
         <div className="audit-summary">
           <span aria-live="polite">{text.shown(events?.length)}</span>

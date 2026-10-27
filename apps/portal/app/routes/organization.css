@@ -1,3 +1,6 @@
+.organization-page {
+  min-width: 0;
+}
 .organization-page .page-heading > .button {
   flex-shrink: 0;
 }
@@ -36,7 +39,7 @@
   font-size: 17px;
   overflow-wrap: anywhere;
 }
-.organization-scope > .badge {
+.organization-scope > :last-child {
   margin-left: auto;
 }
 .organization-layout {
@@ -49,11 +52,20 @@
   overflow: hidden;
   min-width: 0;
 }
-.organization-records .tabs-list {
+.organization-tabs-scroll {
+  overflow-x: auto;
   padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
 }
-.organization-records .tab {
-  min-height: 65px;
+.organization-tabs {
+  min-width: max-content;
+  border-bottom: 0;
+}
+.organization-tabs [role="tab"] {
+  min-height: 56px;
+  align-items: center;
+  white-space: nowrap;
 }
 .organization-toolbar {
   display: flex;
@@ -61,7 +73,7 @@
   align-items: center;
   padding: 22px 22px 0;
 }
-.organization-toolbar .search-box {
+.organization-search {
   flex: 1;
   min-width: 0;
 }
@@ -83,90 +95,64 @@
   font-weight: 550;
   font-size: 12px;
 }
-.organization-column-labels,
-.organization-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 125px 92px 40px;
-  align-items: center;
-  gap: 14px;
-  padding-left: 24px;
-  padding-right: 24px;
-}
-.organization-column-labels {
+.organization-untracked {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 24px 16px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
   background: var(--surface-subtle);
   color: var(--muted);
-  font-size: 10px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.6;
 }
-.organization-row {
-  min-height: 91px;
-  padding-top: 18px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
-}
-.organization-row:last-child {
-  border-bottom: 0;
-}
-.organization-row > .button {
-  width: 38px;
-  min-height: 38px;
+.organization-untracked svg {
+  flex-shrink: 0;
+  margin-top: 2px;
   color: var(--brand-ink);
 }
-.organization-record-name {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  min-width: 0;
+.organization-muted {
+  color: var(--muted);
+  font-size: 12px;
 }
 .organization-unit-icon {
-  width: 42px;
-  height: 45px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   border: 1px solid var(--line);
   border-radius: 11px;
   color: var(--brand-ink);
   background: var(--surface-subtle);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
 }
-.organization-record-name > div {
-  min-width: 0;
-}
-.organization-record-name h2 {
-  font-size: 16px;
-  letter-spacing: -0.2px;
-  overflow-wrap: anywhere;
+.organization-unit-icon.is-muted {
+  color: var(--muted);
 }
 .organization-code {
   display: inline-block;
   font-size: 10px;
   letter-spacing: 0.5px;
-  margin-top: 5px;
+  margin-top: 3px;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
-.organization-assigned {
+.organization-page h2.text-sm {
+  overflow-wrap: anywhere;
+}
+.organization-row-actions {
   display: flex;
-  align-items: baseline;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--muted);
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
 }
-.organization-assigned strong {
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
+.organization-row-actions .button {
+  color: var(--brand-ink);
 }
-.organization-assigned small {
-  display: none;
-}
-.organization-row.is-inactive .organization-unit-icon {
-  color: var(--muted);
-}
-.organization-availability .badge {
-  white-space: nowrap;
+.organization-mobile-line {
+  margin: 4px 0 8px;
 }
 .organization-pagination {
   display: flex;
@@ -184,7 +170,7 @@
 }
 .organization-pagination .button {
   font-size: 11px;
-  min-height: 38px;
+  min-height: 44px;
   padding: 8px 10px;
 }
 .organization-guide {
@@ -217,6 +203,7 @@
   border-top: 1px solid var(--line);
 }
 .organization-guide-rule > svg {
+  flex-shrink: 0;
   color: var(--brand-ink);
   margin-top: 2px;
 }
@@ -238,37 +225,19 @@
   padding-top: 18px;
   font-size: 10px;
 }
-.organization-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 55px 24px;
-  gap: 12px;
-}
-.organization-empty > svg {
-  color: var(--brand-ink);
-  margin-bottom: 8px;
-}
-.organization-empty p {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-  max-width: 340px;
-}
-.organization-empty > .button {
-  margin-top: 5px;
-}
 .organization-success > span {
   flex: 1;
 }
 .organization-success .button {
-  min-height: 28px;
-  width: 28px;
+  min-height: 44px;
+  width: 44px;
   padding: 4px;
 }
 .organization-editor {
   max-width: 570px;
+}
+.organization-detail {
+  max-width: 520px;
 }
 .organization-form-intro {
   font-size: 12px;
@@ -276,92 +245,24 @@
   line-height: 1.7;
   margin: 0 0 22px;
 }
-.organization-form > label,
-.organization-field {
-  display: block;
-  margin-bottom: 21px;
+.organization-form > [data-rac],
+.organization-form > .organization-dates,
+.organization-form > .organization-state-choice,
+.organization-form > .organization-counts {
+  margin-bottom: 20px;
 }
-.organization-form > label > strong,
-.organization-field > label > strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.organization-form input,
-.organization-form textarea {
-  font-size: 13px;
-}
-.organization-form input:read-only {
-  background: var(--surface-subtle);
-  color: var(--muted);
-}
-.organization-form textarea {
-  width: 100%;
-  resize: vertical;
-  min-height: 90px;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 12px;
-  font-family: inherit;
-  line-height: 1.6;
-}
-.organization-form small {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 7px;
-  line-height: 1.6;
+.organization-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 .organization-state-choice {
-  border: 0;
-  padding: 0;
-  margin: 0 0 22px;
+  display: grid;
+  gap: 10px;
 }
-.organization-state-choice legend {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.organization-state-choice > label {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  position: relative;
-  padding: 13px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  margin-top: 8px;
-  cursor: pointer;
-}
-.organization-state-choice > label.selected {
-  border-color: var(--brand);
-  background: var(--brand-soft);
-}
-.organization-state-choice input {
-  width: 17px;
-  min-height: 17px;
-  height: 17px;
-  margin: 0;
-  flex-shrink: 0;
-  accent-color: var(--brand);
-}
-.organization-state-choice strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 550;
-}
-.organization-state-choice span {
-  display: block;
-  color: var(--muted);
-  margin-top: 4px;
-  font-size: 11px;
-}
-.organization-state-choice svg {
-  margin-left: auto;
-  color: var(--brand-ink);
+.organization-legend {
+  font-size: 14px;
+  font-weight: 500;
 }
 .organization-impact {
   background: var(--surface-subtle);
@@ -371,7 +272,40 @@
   color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+}
+.organization-counts {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  font-size: 13px;
+}
+.organization-counts ul {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.organization-counts li::before {
+  content: "";
+  flex: 0 0 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.organization-counts li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+.organization-counts small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
 }
 .organization-form-actions {
   display: flex;
@@ -390,10 +324,53 @@
 .organization-form-error .button {
   margin-top: 13px;
 }
-[data-density="compact"] .organization-row {
-  min-height: 75px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+.organization-facts {
+  display: grid;
+  gap: 0;
+  margin: 0 0 22px;
+}
+.organization-facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.organization-facts dt {
+  color: var(--muted);
+}
+.organization-facts dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.organization-detail-heading {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+.organization-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 13px;
+}
+.organization-history li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+}
+.organization-history svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--brand-ink);
+}
+.organization-moved {
+  margin-bottom: 8px;
 }
 @media (max-width: 1280px) {
   .organization-layout {
@@ -401,41 +378,24 @@
   }
   .organization-guide {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 30px;
     padding: 24px;
   }
-  .organization-guide-symbol {
-    grid-column: 1;
-    grid-row: 1;
-    margin-bottom: 12px;
-  }
+  .organization-guide-symbol,
   .organization-guide > .eyebrow {
     display: none;
   }
-  .organization-guide h2 {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .organization-guide > p:not(.organization-guide-footnote) {
-    grid-column: 1;
-    grid-row: 3;
+  .organization-guide h2,
+  .organization-guide > p:not(.eyebrow):not(.organization-guide-footnote) {
+    grid-column: 1 / -1;
   }
   .organization-guide-rule {
-    grid-column: 2;
-    padding: 0;
-    margin: 0 0 22px;
-    border: 0;
-  }
-  .organization-guide-rule:nth-of-type(2) {
-    grid-row: 1 / span 2;
-  }
-  .organization-guide-rule:nth-of-type(3) {
-    grid-row: 3;
+    padding-top: 18px;
+    margin-top: 18px;
   }
   .organization-guide > .organization-guide-footnote {
     grid-column: 1 / -1;
-    margin-top: 0;
   }
 }
 @media (max-width: 600px) {
@@ -449,20 +409,14 @@
     padding: 14px;
     gap: 10px;
   }
-  .organization-scope > .badge {
+  .organization-scope > :last-child {
     display: none;
   }
   .organization-scope strong {
     font-size: 15px;
   }
-  .organization-records .tabs-list {
+  .organization-tabs-scroll {
     padding: 0 10px;
-  }
-  .organization-records .tab {
-    padding: 14px 10px;
-    min-height: 56px;
-    gap: 8px;
-    font-size: 12px;
   }
   .organization-toolbar {
     padding: 18px 15px 0;
@@ -479,71 +433,20 @@
     align-items: flex-start;
     gap: 4px;
   }
-  .organization-column-labels {
-    display: none;
-  }
-  .organization-row {
-    padding: 18px 16px;
-    grid-template-columns: minmax(0, 1fr) 40px;
-    gap: 14px 10px;
-    border-top: 1px solid var(--line);
-    border-bottom: 0;
-  }
-  .organization-record-name {
-    grid-column: 1;
-    gap: 10px;
-  }
-  .organization-record-name h2 {
-    font-size: 16px;
-  }
-  .organization-record-name + .organization-assigned {
-    grid-row: 2;
-    grid-column: 1;
-  }
-  .organization-assigned {
-    padding-left: 52px;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .organization-assigned small {
-    display: block;
-    width: 100%;
-    font-size: 10px;
-  }
-  .organization-row > .button {
-    grid-row: 1;
-    grid-column: 2;
-  }
-  .organization-availability {
-    grid-row: 2;
-    grid-column: 2;
-    justify-self: end;
+  .organization-untracked {
+    margin: 0 16px 14px;
   }
   .organization-pagination {
     padding: 18px 16px;
     gap: 12px;
     flex-wrap: wrap;
   }
-  .organization-pagination .button {
-    min-height: 40px;
-  }
   .organization-guide {
     display: block;
     padding: 24px;
   }
-  .organization-guide-symbol {
-    margin-bottom: 18px;
-  }
-  .organization-guide h2 {
-    margin-top: 0;
-  }
-  .organization-guide-rule {
-    padding-top: 20px;
-    margin: 20px 0;
-    border-top: 1px solid var(--line);
-  }
-  .organization-guide > .organization-guide-footnote {
-    margin-top: 20px;
+  .organization-dates {
+    grid-template-columns: minmax(0, 1fr);
   }
   .organization-form-actions .button {
     flex: 1;

@@ -3,7 +3,7 @@ import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass"
 import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
 import { Keyboard } from "@phosphor-icons/react/dist/csr/Keyboard";
 import { Question } from "@phosphor-icons/react/dist/csr/Question";
-import { Button, EmptyBlock, PageHeader } from "@anvi/ui";
+import { Button, EmptyBlock, PageHeader, Input } from "@anvi/ui";
 import { helpCopy as text } from "../lib/copy/insights";
 import "./help.css";
 
@@ -32,16 +32,15 @@ export default function Help() {
     <div className="page-enter help">
       <PageHeader title={text.title} description={text.description} />
       <div className="help-search">
-        <label className="search-box">
-          <MagnifyingGlass size={19} />
-          <input
-            type="search"
-            aria-label={text.search}
-            placeholder={text.searchPlaceholder}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
+        <Input
+          type="search"
+          aria-label={text.search}
+          placeholder={text.searchPlaceholder}
+          icon={MagnifyingGlass}
+          value={query}
+          onChange={setQuery}
+          className="kit-search"
+        />
         <span className="sr-only" role="status" aria-live="polite">
           {term ? text.results(count) : ""}
         </span>

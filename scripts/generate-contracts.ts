@@ -14,6 +14,11 @@ import {
   organizationUnitSchema,
   organizationCreateSchema,
   organizationUpdateSchema,
+  organizationKindSchema,
+  organizationDetailSchema,
+  organizationMergeSchema,
+  organizationMergeResultSchema,
+  organizationChartSchema,
   candidateListSchema,
   candidateOptionsSchema,
   candidateDetailSchema,
@@ -479,7 +484,7 @@ const spec = {
     "/organization": {
       get: {
         ...read(
-          "HR-only department/location masters within the current entity",
+          "HR-only organization masters (department, location, designation, grade, cost centre) with effective status, within the current entity",
           organizationDirectorySchema,
         ),
         parameters: [
@@ -488,7 +493,7 @@ const spec = {
             in: "query",
             schema: {
               type: "string",
-              enum: ["department", "location"],
+              enum: organizationKindSchema.options,
               default: "department",
             },
           },
@@ -511,10 +516,61 @@ const spec = {
         organizationUnitSchema,
       ),
     },
+    "/organization/chart": {
+      get: {
+        ...read(
+          "Reporting chart limited to the caller's directory scope (HR entity, manager self and direct reports, employee self); depth counts levels including the root (depth=1 returns roots only), capped at 20 levels and 2000 people; truncated marks a partial chart",
+          organizationChartSchema,
+        ),
+        parameters: [
+          {
+            name: "rootId",
+            in: "query",
+            schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "depth",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 20, default: 20 },
+          },
+        ],
+      },
+    },
+    "/organization/{id}/merge": {
+      post: {
+        ...write(
+          "Merge a department or location into another in effect: moves every employee (current and former) and unfinished candidates, closes the source and records one audit row; refused while draft or published policies or active holidays still use the source; both versions are required",
+          organizationMergeSchema,
+          organizationMergeResultSchema,
+        ),
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+      },
+    },
     "/organization/{id}": {
+      get: {
+        ...read(
+          "One organization master with what it was merged into and what was merged into it",
+          organizationDetailSchema,
+        ),
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+      },
       put: {
         ...write(
-          "Rename or change active state with a version and recorded reason",
+          "Rename, change active state or effective window with a version and recorded reason",
           organizationUpdateSchema,
           organizationUnitSchema,
           "200",

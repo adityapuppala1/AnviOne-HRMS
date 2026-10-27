@@ -51,8 +51,10 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await dialog.getByLabel("Proposed role").fill("Product designer");
   await dialog.getByLabel("Proposed joining date").fill("2027-01-01");
   for (const label of ["Department", "Location", "Reporting manager"]) {
-    await expect(dialog.getByLabel(label).locator("option")).not.toHaveCount(1);
-    await dialog.getByLabel(label).selectOption({ index: 1 });
+    await dialog.getByRole("button", { name: new RegExp(label) }).click();
+    await expect(page.getByRole("option").nth(0)).toBeVisible();
+    await page.getByRole("option").first().click();
+    await expect(page.getByRole("listbox")).toHaveCount(0);
   }
   await accessible(page);
   await dialog
@@ -296,7 +298,9 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     })
     .click();
   await expect(dialog.getByLabel("New task status")).toBeFocused();
-  await dialog.getByLabel("New task status").selectOption("completed");
+  await dialog.getByRole("button", { name: /New task status/ }).click();
+  await page.getByRole("option", { name: "Completed" }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog
     .getByLabel("Completion / change note")
     .fill("Completed the assigned fictional readiness coordination step.");

@@ -16,10 +16,10 @@ import {
   PageHeader,
   StatCard,
   BadgeWithDot,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
+  RangeInput,
+  Select,
+  TextArea,
+  UTabs,
 } from "@anvi/ui";
 import {
   leaveRequestSchema,
@@ -150,25 +150,25 @@ export default function Leave() {
         </div>
       )}
       {canRequest && canApprove ? (
-        <Tabs className="leave-tabs">
-          <TabList aria-label={text.tabs.label} className="tabs-list">
-            <Tab id="mine" className="tab">
+        <UTabs className="leave-tabs" keyboardActivation="automatic">
+          <UTabs.List type="underline" aria-label={text.tabs.label}>
+            <UTabs.Item id="mine">
               <AirplaneTilt size={18} />
               {text.tabs.mine}
-            </Tab>
-            <Tab id="team" className="tab">
+            </UTabs.Item>
+            <UTabs.Item id="team">
               <CalendarCheck size={18} />
               {text.tabs.team}
               {Boolean(waiting) && <span className="tab-count">{waiting}</span>}
-            </Tab>
-          </TabList>
-          <TabPanel id="mine" className="tab-panel">
+            </UTabs.Item>
+          </UTabs.List>
+          <UTabs.Panel id="mine" className="tab-panel">
             <MyLeave query={mine} send={send} refresh={refresh} />
-          </TabPanel>
-          <TabPanel id="team" className="tab-panel">
+          </UTabs.Panel>
+          <UTabs.Panel id="team" className="tab-panel">
             <Approvals query={approvals} send={send} refresh={refresh} />
-          </TabPanel>
-        </Tabs>
+          </UTabs.Panel>
+        </UTabs>
       ) : canRequest ? (
         <MyLeave query={mine} send={send} refresh={refresh} />
       ) : (
@@ -643,16 +643,15 @@ function Approvals({
                 range(declining.startDate, declining.endDate),
               )}
             </p>
-            <label>
-              {text.declineDialog.reasonLabel}
-              <textarea
-                name="note"
-                required
-                minLength={3}
-                maxLength={300}
-                autoFocus
-              />
-            </label>
+            <TextArea
+              label={text.declineDialog.reasonLabel}
+              name="note"
+              isRequired
+              hideRequiredIndicator
+              minLength={3}
+              maxLength={300}
+              autoFocus
+            />
             {error && (
               <p role="alert" className="inline-error">
                 {error}
@@ -746,50 +745,46 @@ function RequestDialog({
       className="leave-modal"
     >
       <form className="leave-form" onSubmit={(event) => void submit(event)}>
-        <label>
-          {text.request.typeLabel}
-          <select
-            name="type"
-            value={type}
-            onChange={(event) => setType(event.target.value)}
-            autoFocus
-          >
-            {balances.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-                {b.available === null
+        <Select
+          label={text.request.typeLabel}
+          name="type"
+          selectedKey={type}
+          onSelectionChange={(key) => setType(String(key))}
+          autoFocus
+        >
+          {balances.map((b) => (
+            <Select.Item
+              key={b.id}
+              id={b.id}
+              label={`${b.name}${
+                b.available === null
                   ? text.request.optionNoLimit
-                  : text.request.optionLeft(b.available)}
-              </option>
-            ))}
-          </select>
-        </label>
+                  : text.request.optionLeft(b.available)
+              }`}
+            />
+          ))}
+        </Select>
         <div className="leave-dates">
-          <label>
-            {text.request.firstDay}
-            <input
-              type="date"
-              name="start"
-              required
-              value={start}
-              onChange={(event) => {
-                setStart(event.target.value);
-                if (!end || event.target.value > end)
-                  setEnd(event.target.value);
-              }}
-            />
-          </label>
-          <label>
-            {text.request.lastDay}
-            <input
-              type="date"
-              name="end"
-              required
-              min={start || today}
-              value={end}
-              onChange={(event) => setEnd(event.target.value)}
-            />
-          </label>
+          <RangeInput
+            type="date"
+            name="start"
+            label={text.request.firstDay}
+            isRequired
+            value={start}
+            onChange={(value) => {
+              setStart(value);
+              if (!end || value > end) setEnd(value);
+            }}
+          />
+          <RangeInput
+            type="date"
+            name="end"
+            label={text.request.lastDay}
+            isRequired
+            min={start || today}
+            value={end}
+            onChange={setEnd}
+          />
         </div>
         <p
           className={`leave-count ${short ? "leave-count-short" : ""}`}
@@ -797,10 +792,14 @@ function RequestDialog({
         >
           {count}
         </p>
-        <label>
-          {text.request.reasonLabel}
-          <textarea name="reason" required minLength={3} maxLength={300} />
-        </label>
+        <TextArea
+          label={text.request.reasonLabel}
+          name="reason"
+          isRequired
+          hideRequiredIndicator
+          minLength={3}
+          maxLength={300}
+        />
         <p className="leave-hint">{text.request.hint}</p>
         {error && (
           <p role="alert" className="inline-error">

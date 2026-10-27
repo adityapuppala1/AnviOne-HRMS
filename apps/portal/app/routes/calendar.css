@@ -185,17 +185,6 @@ button.calendar-weekday:hover {
   color: var(--muted);
   font-size: 12px;
 }
-.leave-form .calendar-check {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-}
-.calendar-check input {
-  width: 20px;
-  height: 20px;
-  min-height: 0;
-}
 
 @media (max-width: 1050px) {
   .calendar-page {

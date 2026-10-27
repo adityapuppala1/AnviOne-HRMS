@@ -25,6 +25,7 @@ import type { Principal } from "@anvi/authz";
 import { hash, opaque, type PlatformStore } from "./platform.store";
 import { previewKey, seal, unseal } from "./onboarding.crypto";
 import { readTasks, changeTask } from "./checklist";
+import { organizationUnitColumns } from "./organization.store";
 import {
   onboardingStarter,
   type candidateTaskCreateSchema,
@@ -83,7 +84,11 @@ export class OnboardingStore {
     this.allow(actor);
     return scoped(this.platform.pool, actor, async (client) => {
       const { rows } = await client.query(
-        `SELECT u.id,u.kind,u.code,u.name,u.active,u.version,0::int AS "employeeCount" FROM org_unit u WHERE active ORDER BY name LIMIT 500`,
+        `SELECT ${organizationUnitColumns} FROM org_unit u
+         WHERE u.kind IN ('department','location') AND u.active AND u.merged_into_id IS NULL
+           AND u.effective_from<=leave_entity_today()
+           AND (u.effective_to IS NULL OR u.effective_to>=leave_entity_today())
+         ORDER BY u.name LIMIT 500`,
       );
       const managers = await client.query(
         "SELECT id,name FROM employee_directory WHERE status='active' ORDER BY name LIMIT 100",
@@ -143,7 +148,9 @@ export class OnboardingStore {
     this.allow(actor);
     return scoped(this.platform.pool, actor, async (client) => {
       const masters = await client.query(
-        "SELECT id,kind FROM org_unit WHERE active AND id=ANY($1::uuid[]) FOR SHARE",
+        `SELECT id,kind FROM org_unit WHERE active AND merged_into_id IS NULL AND id=ANY($1::uuid[])
+         AND effective_from<=leave_entity_today()
+         AND (effective_to IS NULL OR effective_to>=leave_entity_today()) FOR SHARE`,
         [[input.departmentId, input.locationId]],
       );
       const manager = await client.query(
@@ -160,7 +167,7 @@ export class OnboardingStore {
         !manager.rows[0]
       )
         throw new BadRequestException(
-          "Choose active assignments from your current entity.",
+          "Choose departments and locations that are in effect in your current entity.",
         );
       const id = randomUUID();
       await client.query(

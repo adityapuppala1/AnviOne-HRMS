@@ -17,6 +17,7 @@ import {
 } from "@anvi/ui";
 import { Aurora } from "../components/ambient";
 import { Assist, type Suggestion } from "../components/assist";
+import { TodayPanel } from "../components/today";
 import { GlobeStage, type Satellite } from "../components/globe-stage";
 import { usePreferences } from "../lib/preferences";
 import { useWorkspace } from "./workspace";
@@ -87,7 +88,7 @@ function PeopleHome() {
     timeZone: "Asia/Kolkata",
   }).format(new Date());
   return (
-    <div className="page-enter">
+    <div className="page-enter home-page">
       <section className="loom-band" aria-label={text.summaryLabel}>
         <Aurora />
         <GlobeStage
@@ -163,6 +164,7 @@ function PeopleHome() {
           ))}
         </div>
       </section>
+      <TodayPanel me={me} waiting={waiting} />
       <div className="dashboard-grid">
         <section className="panel people-panel">
           <div className="panel-heading">

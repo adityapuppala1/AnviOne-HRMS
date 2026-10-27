@@ -12,8 +12,73 @@ import { z } from "zod";
 import { api, ApiError, useAuthConfig } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
-import { LoomWeave } from "../components/loom-weave";
+import { Aurora } from "../components/ambient";
+import {
+  GlobeStage,
+  type FloatCard,
+  type Satellite,
+} from "../components/globe-stage";
+import { CalendarCheck } from "@phosphor-icons/react/dist/csr/CalendarCheck";
+import { Fingerprint } from "@phosphor-icons/react/dist/csr/Fingerprint";
+import { Files } from "@phosphor-icons/react/dist/csr/Files";
+import { SealCheck } from "@phosphor-icons/react/dist/csr/SealCheck";
+import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
 import { loginCopy as text } from "../lib/copy/screens";
+
+// Product modules orbit the globe, each in its own accent colour.
+const MODULES: Satellite[] = [
+  {
+    key: "leave",
+    node: <CalendarCheck size={19} weight="duotone" />,
+    accent: "#f4b23e",
+  },
+  {
+    key: "attendance",
+    node: <Fingerprint size={19} weight="duotone" />,
+    accent: "#58d6ee",
+  },
+  {
+    key: "documents",
+    node: <Files size={19} weight="duotone" />,
+    accent: "#ff8a73",
+  },
+  {
+    key: "approvals",
+    node: <SealCheck size={19} weight="duotone" />,
+    accent: "#5fdc9f",
+  },
+  {
+    key: "holidays",
+    node: <CalendarDots size={19} weight="duotone" />,
+    accent: "#c7a4ff",
+  },
+  {
+    key: "people",
+    node: <UsersThree size={19} weight="duotone" />,
+    accent: "#ffffff",
+  },
+];
+const CARDS: FloatCard[] = [
+  {
+    key: "leave",
+    icon: <CalendarCheck size={19} weight="fill" />,
+    ...text.stage.leave,
+    accent: "#f4b23e",
+  },
+  {
+    key: "attendance",
+    icon: <Fingerprint size={19} weight="fill" />,
+    ...text.stage.attendance,
+    accent: "#58d6ee",
+  },
+  {
+    key: "documents",
+    icon: <SealCheck size={19} weight="fill" />,
+    ...text.stage.documents,
+    accent: "#5fdc9f",
+  },
+];
 
 export default function Login() {
   const config = useAuthConfig();
@@ -45,13 +110,14 @@ export default function Login() {
   return (
     <main className="login-layout">
       <section className="login-story">
+        <Aurora />
         <Brand />
         <div className="login-story-copy">
           <h1>{text.story.title}</h1>
           <p>{text.story.body}</p>
         </div>
         <div className="login-loom">
-          <LoomWeave knots={["MI", "KS", "TB"]} />
+          <GlobeStage satellites={MODULES} cards={CARDS} />
         </div>
         <div className="login-story-footer">
           <span>{text.story.footerBrand}</span>

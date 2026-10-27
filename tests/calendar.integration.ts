@@ -223,10 +223,18 @@ await test("Holiday and work-week calendar", async (t) => {
           [1, 2, 3, 4],
         );
         await changeRole("employee");
-        const next = monday(today, 140);
+        const view = (await (await request("/leave")).json()) as LeaveOverview;
+        // Seeded holidays move the count, so use the first far-off week without one.
+        const holidays = new Set(view.calendar.holidays.map((h) => h.date));
+        let next = monday(today, 140);
+        while (
+          Array.from({ length: 7 }, (_, i) => shift(next, i)).some((d) =>
+            holidays.has(d),
+          )
+        )
+          next = shift(next, 7);
         const item = await requestLeave(next, shift(next, 6));
         assert.equal(item.days, 4);
-        const view = (await (await request("/leave")).json()) as LeaveOverview;
         const earlier = view.requests.find((r) => r.id === requests[0]);
         if (earlier) assert.equal(earlier.days, 3);
       },

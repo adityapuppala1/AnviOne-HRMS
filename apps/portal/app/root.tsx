@@ -4,9 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/public-sans";
 import { PreferencesProvider } from "./lib/preferences";
+import { Ambient } from "./components/ambient";
 import "@anvi/ui/theme.css";
 import "./styles.css";
 import "./loom.css";
+import "./wow.css";
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
@@ -43,6 +45,7 @@ export default function App() {
   return (
     <QueryClientProvider client={client}>
       <PreferencesProvider>
+        <Ambient />
         <Outlet />
       </PreferencesProvider>
     </QueryClientProvider>

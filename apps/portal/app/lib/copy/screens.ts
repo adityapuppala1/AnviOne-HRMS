@@ -163,6 +163,12 @@ export const loginCopy = {
     footerBrand: "AnviOne / MyAnvi",
     footerTagline: "Made for your people",
   },
+  // Decorative cards floating around the globe; they show what the product does.
+  stage: {
+    leave: { title: "Leave approved", detail: "Your manager said yes" },
+    attendance: { title: "Checked in", detail: "Your day, on record" },
+    documents: { title: "Document verified", detail: "HR confirmed it" },
+  },
   useLightTheme: "Use light theme",
   useDarkTheme: "Use dark theme",
   badge: "Your people workspace",
@@ -206,4 +212,32 @@ export const notFoundCopy = {
   title: "Let’s get you back to your workspace.",
   body: "This page may have moved, or the address may be incomplete.",
   home: "Return home",
+};
+
+// Anvi Assist: next steps are computed from the person's own access; the AI
+// helper is shown as off until its privacy and security review is complete.
+export const assistCopy = {
+  label: "Anvi Assist",
+  title: "Anvi Assist",
+  aiOff: "AI helper is off",
+  aiNote:
+    "Questions about policy, answered with sources, are planned. The helper stays off until privacy and security review is complete.",
+  stepsTitle: "Suggested next steps",
+  noSteps: "Nothing needs you right now.",
+  steps: {
+    approvals: (count: number) => ({
+      title: `Review ${count} waiting ${count === 1 ? "decision" : "decisions"}`,
+      detail: "Leave, attendance, documents and onboarding",
+    }),
+    leave: { title: "Request leave", detail: "See your balance first" },
+    attendance: { title: "Check in", detail: "Record today's attendance" },
+    documents: {
+      title: "Add a document",
+      detail: "PDF, PNG or JPEG up to 5 MB",
+    },
+    holidays: {
+      title: "View the holiday calendar",
+      detail: "Plan around days off",
+    },
+  },
 };

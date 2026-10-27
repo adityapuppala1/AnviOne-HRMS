@@ -25,6 +25,8 @@ These modules run on the same tenant isolation, versioned edits and audit/outbox
 | **Documents**    | Employees, HR              | PDF/PNG/JPEG upload (5 MB, type checked from the file's bytes, PDFs with active content refused), verification, audited downloads | [documents](docs/acceptance-evidence/employee-documents.md)      |
 | **Activity log** | Auditors                   | Searchable record of every action, filterable by module                                                                           | [Atlas](docs/acceptance-evidence/atlas.md)                       |
 
+The interface is the **Anvi Loom** system with a depth layer: a holographic, draggable globe with orbiting modules on sign-in and home, floating cards, mouse parallax, a cursor light and animated backdrop, and count-up numbers. Everything is decorative, stops under reduced motion and needs no extra dependency. **Anvi Assist** on the home page offers next steps computed from your own access; its AI helper is shown as off until it passes privacy and security review. See [Loom depth](docs/adr/0006-loom-depth.md) and its [evidence](docs/acceptance-evidence/loom-depth.md).
+
 Interface text is centralized in `apps/portal/app/lib/copy.ts` and `apps/portal/app/lib/copy/` so a translation can replace one catalog without touching screens. The worker also purges expired and idle sessions every minute; refused sign-ins and rate-limited auth calls are logged as `auth.sign_in_failed` and `auth.rate_limited`. Rate-limit counters are shared through Valkey when `RATE_LIMIT_URL` is set (required, over TLS, in production; see [shared rate limits](docs/plans/shared-rate-limit.md)). Set `TRUST_PROXY` to your reverse proxy's addresses (or a hop count of 1–5) when one is used.
 
 ## Run locally

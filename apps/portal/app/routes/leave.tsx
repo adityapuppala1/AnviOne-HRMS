@@ -12,6 +12,7 @@ import {
   DialogPanel,
   ErrorState,
   LoadingState,
+  NumberTicker,
   Tab,
   TabList,
   TabPanel,
@@ -26,6 +27,7 @@ import {
 } from "@anvi/contracts";
 import { api, useLeave, useLeaveApprovals } from "../lib/api";
 import { useWorkspace } from "./workspace";
+import { usePreferences } from "../lib/preferences";
 import { leaveCopy as text } from "../lib/copy/leave";
 import "./leave.css";
 
@@ -268,6 +270,7 @@ function MyLeave({
 }
 
 function BalanceThread({ balance }: { balance: LeaveBalance }) {
+  const { reduceMotion } = usePreferences();
   if (balance.annualDays === null || balance.available === null)
     return (
       <li className="leave-thread leave-thread-open">
@@ -287,7 +290,10 @@ function BalanceThread({ balance }: { balance: LeaveBalance }) {
       <div className="leave-thread-head">
         <strong>{balance.name}</strong>
         <span>
-          <b>{balance.available}</b> {text.balance.ofLeft(total)}
+          <b>
+            <NumberTicker value={balance.available} disabled={reduceMotion} />
+          </b>{" "}
+          {text.balance.ofLeft(total)}
         </span>
       </div>
       <div

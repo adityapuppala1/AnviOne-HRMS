@@ -15,14 +15,46 @@ import {
   LoadingState,
   NumberTicker,
 } from "@anvi/ui";
-import { LoomWeave } from "../components/loom-weave";
+import { Aurora } from "../components/ambient";
+import { Assist, type Suggestion } from "../components/assist";
+import { GlobeStage, type Satellite } from "../components/globe-stage";
 import { usePreferences } from "../lib/preferences";
 import { useWorkspace } from "./workspace";
-import { useDashboard } from "../lib/api";
+import { useApprovals, useDashboard } from "../lib/api";
 import { PersonRow } from "../components/people";
 import { Distribution } from "../components/distribution";
 import type { Me } from "@anvi/contracts";
-import { homeCopy as text } from "../lib/copy/screens";
+import { assistCopy, homeCopy as text } from "../lib/copy/screens";
+
+const ACCENTS = [
+  "#f4b23e",
+  "#58d6ee",
+  "#ff8a73",
+  "#5fdc9f",
+  "#c7a4ff",
+  "#ffffff",
+];
+
+// Next steps come straight from what the person is allowed to do and what is
+// waiting on them. Nothing here involves AI.
+function nextSteps(permissions: string[], waiting: number): Suggestion[] {
+  const steps = assistCopy.steps;
+  const out: Suggestion[] = [];
+  if (waiting > 0)
+    out.push({
+      key: "approvals",
+      to: "/approvals",
+      ...steps.approvals(waiting),
+    });
+  if (permissions.includes("leave.request"))
+    out.push({ key: "leave", to: "/leave", ...steps.leave });
+  if (permissions.includes("attendance.self"))
+    out.push({ key: "attendance", to: "/attendance", ...steps.attendance });
+  if (permissions.includes("document.self"))
+    out.push({ key: "documents", to: "/documents", ...steps.documents });
+  out.push({ key: "holidays", to: "/calendar", ...steps.holidays });
+  return out.slice(0, 3);
+}
 
 export default function Home() {
   const { me } = useWorkspace();
@@ -36,6 +68,13 @@ function PeopleHome() {
   const { me } = useWorkspace();
   const { data, error, refetch } = useDashboard();
   const { reduceMotion } = usePreferences();
+  const permissions = me.permissions;
+  const approver =
+    permissions.includes("leave.approve") ||
+    permissions.includes("attendance.review") ||
+    permissions.includes("onboarding.manage") ||
+    permissions.includes("document.review");
+  const waiting = useApprovals(approver).data?.waiting ?? 0;
   if (error)
     return (
       <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -50,9 +89,14 @@ function PeopleHome() {
   return (
     <div className="page-enter">
       <section className="loom-band" aria-label={text.summaryLabel}>
-        <LoomWeave
-          className="loom-band-art"
-          knots={data.recent.map((p) => p.initials)}
+        <Aurora />
+        <GlobeStage
+          pins={Math.min(Math.max(data.locations.length + 3, 4), 8)}
+          satellites={data.recent.slice(0, 6).map((p, i): Satellite => ({
+            key: p.id,
+            node: <span>{p.initials}</span>,
+            accent: ACCENTS[i % ACCENTS.length]!,
+          }))}
         />
         <div className="loom-band-copy">
           <p className="loom-date">
@@ -66,7 +110,7 @@ function PeopleHome() {
           <p>{text.summary(data.total, data.departments.length)}</p>
         </div>
         <div className="loom-stats">
-          <Link to="/people" className="loom-stat loom-stat-featured">
+          <Link to="/people" className="loom-stat loom-stat-featured" data-spot>
             <span className="loom-stat-label">
               <Users size={19} weight="duotone" />
               {me.role === "employee"
@@ -102,7 +146,7 @@ function PeopleHome() {
               note: text.stats.locationsNote,
             },
           ].map(({ label, value, icon: Icon, to, note }) => (
-            <Link className="loom-stat" key={label} to={to}>
+            <Link className="loom-stat" key={label} to={to} data-spot>
               <span className="loom-stat-label">
                 <Icon size={19} weight="duotone" />
                 {label}
@@ -187,6 +231,7 @@ function PeopleHome() {
             ))}
           </div>
         </section>
+        <Assist suggestions={nextSteps(permissions, waiting)} />
         <Link to={`/people/${me.employeeId}`} className="profile-shortcut">
           <div className="shortcut-top">
             <Fingerprint size={25} weight="duotone" />

@@ -31,8 +31,8 @@ Managers never see anyone else's personal details. HR cannot decide their own re
 
 - Only contact details can change. Names, job details and bank details are out of scope.
 - No document proof (for example proof of address), and managers play no part in approval.
-- Future-dated changes apply on read or on demand, not on a schedule.
-- No key rotation yet; values carry a version marker so it can be added. If the key changes, old values cannot be read.
+- Future-dated changes apply on read, on demand, and from an hourly worker job (`PROFILE_APPLY_DUE_INTERVAL_MS`, `pnpm profile:apply-due`); a bad row is skipped and reported by id, not allowed to block the rest.
+- Keys rotate: set `PROFILE_DATA_KEYS` (`id:64hex`, newest first) and run `pnpm profile:rekey` (needs a database role that can see the rows). History rows are immutable and are not re-sealed, so retired keys must stay configured while history uses them; the script reports counts by key id.
 - Formats (phone, email, postal code) are validated in the API, because the database only sees ciphertext.
 
 ## Tests

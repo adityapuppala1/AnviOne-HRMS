@@ -149,3 +149,17 @@ export async function purgeStaleSessions(pool: pg.Pool) {
   );
   return rows[0]!;
 }
+// Approved profile changes whose effective date has come, across all tenants, through one
+// narrow SECURITY DEFINER function (045/048). Bounded per call; idempotent; a failing request
+// is skipped (by id) without blocking the rest.
+export async function applyDueProfileChanges(pool: pg.Pool, limit = 200) {
+  const { rows } = await pool.query<{
+    applied: number;
+    skipped: number;
+    skippedIds: string[];
+  }>(
+    'SELECT applied, skipped, skipped_ids AS "skippedIds" FROM profile_apply_due_scheduled($1, $2)',
+    [limit, randomUUID()],
+  );
+  return rows[0]!;
+}

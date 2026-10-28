@@ -32,7 +32,12 @@ import {
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { PlatformStore } from "./platform.store";
-import { openValue, profileKey, sealValue } from "./profile.crypto";
+import {
+  openValue,
+  profileKeys,
+  sealValue,
+  type ProfileKeys,
+} from "./profile.crypto";
 
 // API field -> database column. The database only ever holds sealed values.
 const columns: Record<ProfileField, string> = {
@@ -103,7 +108,7 @@ export class ProfileStore {
   constructor(private readonly platform: PlatformStore) {}
 
   private get key() {
-    return profileKey(this.platform.config);
+    return profileKeys(this.platform.config);
   }
 
   // Reading your own profile also applies your approved change once its date has come.
@@ -554,7 +559,7 @@ export class ProfileStore {
   private shape(
     actor: Principal,
     row: RequestRow,
-    key: Buffer | null,
+    key: ProfileKeys | null,
   ): ProfileChangeRequest {
     const own = row.employeeId === actor.employeeId;
     const { notDue, ...rest } = row;
@@ -595,7 +600,7 @@ export class ProfileStore {
   // A value that cannot be opened (wrong key, tampering) is reported as unavailable instead of
   // failing the whole page; only the record and field are logged, never the value.
   private open(
-    key: Buffer,
+    key: ProfileKeys,
     employeeId: string,
     column: string,
     sealed: string | null,
@@ -639,7 +644,7 @@ export class ProfileStore {
 
   private async profileFor(
     client: PoolClient,
-    key: Buffer,
+    key: ProfileKeys,
     employeeId: string,
   ): Promise<ProfileDetails> {
     const found = await client.query<Record<string, string | number | null>>(
@@ -675,7 +680,7 @@ export class ProfileStore {
 
   private async historyFor(
     client: PoolClient,
-    key: Buffer,
+    key: ProfileKeys,
     employeeId: string,
     limit: number,
   ): Promise<ProfileHistoryEntry[]> {
@@ -717,7 +722,7 @@ export class ProfileStore {
   private async own(
     client: PoolClient,
     actor: Principal,
-    key: Buffer,
+    key: ProfileKeys,
   ): Promise<MyProfile> {
     const open = await this.openFor(client, actor.employeeId);
     const requests = await client.query<RequestRow>(

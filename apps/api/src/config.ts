@@ -18,6 +18,23 @@ const schema = z.object({
     .string()
     .regex(/^[a-f0-9]{64}$/)
     .optional(),
+  // Rotation ring: comma-separated `id:hex` keys (ids 1-255), newest first; the newest seals,
+  // older ids and PROFILE_DATA_KEY (legacy id 0) still open existing values.
+  PROFILE_DATA_KEYS: z
+    .string()
+    .regex(/^\d{1,3}:[a-f0-9]{64}(\s*,\s*\d{1,3}:[a-f0-9]{64})*$/)
+    .transform((value) =>
+      value.split(",").map((part) => {
+        const [id, hex] = part.trim().split(":");
+        return { id: Number(id), hex: hex! };
+      }),
+    )
+    .refine(
+      (keys) =>
+        keys.every((k) => k.id >= 1 && k.id <= 255) &&
+        new Set(keys.map((k) => k.id)).size === keys.length,
+    )
+    .optional(),
   CANDIDATE_ORIGIN: z.url().default("http://127.0.0.2:5174"),
   OIDC_ISSUER: z.url().optional(),
   OIDC_CLIENT_ID: z.string().optional(),
@@ -103,9 +120,9 @@ export function readConfig(env: Record<string, string | undefined>) {
       throw new Error(
         "Production database connection must validate TLS certificates",
       );
-    if (!config.PROFILE_DATA_KEY)
+    if (!config.PROFILE_DATA_KEY && !config.PROFILE_DATA_KEYS?.length)
       throw new Error(
-        "Production requires PROFILE_DATA_KEY to protect personal contact details",
+        "Production requires PROFILE_DATA_KEY or PROFILE_DATA_KEYS to protect personal contact details",
       );
     if (!config.RATE_LIMIT_URL?.startsWith("rediss://"))
       throw new Error(

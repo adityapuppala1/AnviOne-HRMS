@@ -93,6 +93,47 @@ describe("deployment boundaries", () => {
       "PROFILE_DATA_KEY",
     );
   });
+  it("accepts a rotation key ring and refuses malformed keys without echoing them", () => {
+    const production = {
+      NODE_ENV: "production",
+      AUTH_MODE: "oidc",
+      API_HOST: "0.0.0.0",
+      APP_ORIGIN: "https://hr.example.com",
+      DATABASE_URL: "postgresql://db.example.com/anvione?sslmode=verify-full",
+      OIDC_ISSUER: "https://login.example.com/tenant-id/v2.0",
+      OIDC_CLIENT_ID: "client",
+      OIDC_CLIENT_SECRET: "secret",
+      OIDC_REDIRECT_URI: "https://hr.example.com/api/v1/auth/callback",
+      OIDC_REQUIRED_ACR: "mfa",
+      RATE_LIMIT_URL: "rediss://cache.example.com:6380",
+    };
+    expect(
+      readConfig({
+        ...production,
+        PROFILE_DATA_KEYS: `2:${"cd".repeat(32)}, 1:${"ef".repeat(32)}`,
+      }).PROFILE_DATA_KEYS,
+    ).toEqual([
+      { id: 2, hex: "cd".repeat(32) },
+      { id: 1, hex: "ef".repeat(32) },
+    ]);
+    const secret = "9f".repeat(31);
+    for (const value of [
+      `1:${secret}`,
+      `0:${"ab".repeat(32)}`,
+      `256:${"ab".repeat(32)}`,
+      `1:${"ab".repeat(32)},1:${"cd".repeat(32)}`,
+      `x:${"ab".repeat(32)}`,
+    ]) {
+      let message = "";
+      try {
+        readConfig({ ...local, PROFILE_DATA_KEYS: value });
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toContain("PROFILE_DATA_KEYS");
+      expect(message).not.toContain(secret);
+    }
+  });
   it("does not include secret configuration values in errors", () => {
     expect(() =>
       readConfig({ ...local, APP_ORIGIN: "private-secret-value" }),

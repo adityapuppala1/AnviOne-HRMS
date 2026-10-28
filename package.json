@@ -33,7 +33,9 @@
     "test:e2e": "playwright test",
     "build": "node scripts/build-server.mjs && pnpm --filter @anvi/portal build && pnpm --filter @anvi/candidate build",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "worker": "tsx --env-file=.env apps/worker/src/main.ts"
+    "worker": "tsx --env-file=.env apps/worker/src/main.ts",
+    "profile:apply-due": "tsx --env-file=.env scripts/profile-apply-due.ts",
+    "profile:rekey": "tsx --env-file=.env scripts/profile-rekey.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

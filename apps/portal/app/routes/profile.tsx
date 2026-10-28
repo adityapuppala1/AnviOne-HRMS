@@ -22,13 +22,22 @@ import {
   UTabs,
 } from "@anvi/ui";
 import { useEmployee } from "../lib/api";
+import { useWorkspace } from "./workspace";
+import { ClassificationDialog } from "../components/classification-dialog";
+import { classificationCopy } from "../lib/copy/classification";
 import { profileCopy as text } from "../lib/copy/screens";
 
 export default function Profile() {
   const { id = "" } = useParams();
   const { data, error, refetch } = useEmployee(id);
+  const { me } = useWorkspace();
   const [copyState, setCopyState] = useState("");
-  useEffect(() => setCopyState(""), [id]);
+  const [editing, setEditing] = useState(false);
+  const [savedNote, setSavedNote] = useState("");
+  useEffect(() => {
+    setCopyState("");
+    setSavedNote("");
+  }, [id]);
   if (error)
     return (
       <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -178,6 +187,26 @@ export default function Profile() {
                         : text.status.notice,
                     icon: Check,
                   },
+                  ...(
+                    [
+                      ["designation", data.designation],
+                      ["grade", data.grade],
+                      ["costCenter", data.costCenter],
+                    ] as const
+                  )
+                    .filter(
+                      ([key]) =>
+                        !(
+                          data.classificationRestricted && key !== "designation"
+                        ),
+                    )
+                    .map(([key, ref]) => ({
+                      label: classificationCopy.fields[key],
+                      value: ref
+                        ? `${ref.code} - ${ref.name}`
+                        : classificationCopy.notSet,
+                      icon: Briefcase,
+                    })),
                 ].map(({ label, value, icon: Icon }) => (
                   <div key={label}>
                     <dt>
@@ -188,6 +217,21 @@ export default function Profile() {
                   </div>
                 ))}
               </dl>
+              {data.classificationRestricted && (
+                <p className="section-description">
+                  {classificationCopy.restricted}
+                </p>
+              )}
+              {me.permissions.includes("organization.write") && (
+                <div className="profile-classify">
+                  <Button variant="secondary" onPress={() => setEditing(true)}>
+                    {classificationCopy.edit}
+                  </Button>
+                </div>
+              )}
+              <p className="copy-feedback" role="status">
+                {savedNote}
+              </p>
               <div className="employment-milestone">
                 <ClockCounterClockwise size={22} />
                 <div>
@@ -227,6 +271,16 @@ export default function Profile() {
           </section>
         </aside>
       </div>
+      {editing && (
+        <ClassificationDialog
+          employee={data}
+          onClose={() => setEditing(false)}
+          onSaved={(message) => {
+            setEditing(false);
+            setSavedNote(message);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
 import {
   brandingSchema,
   employeeSchema,
+  employeeDetailSchema,
   type Role,
   type Branding,
   type Directory,
@@ -29,6 +30,7 @@ import {
   type directoryQuerySchema,
 } from "@anvi/contracts";
 import type { z } from "zod";
+import { readClassification } from "./organization.store";
 import type { Config } from "./config";
 
 export const hash = (token: string) =>
@@ -230,7 +232,17 @@ export class PlatformStore {
       );
       if (!result.rows[0])
         throw new NotFoundException("This profile is unavailable.");
-      return employeeSchema.parse(result.rows[0]);
+      // Grade and cost centre are HR or self only; designation is a directory field.
+      const classification = await readClassification(client, id);
+      const restricted =
+        actor.employeeId !== id && !scopeFor(actor, "organization.read");
+      return employeeDetailSchema.parse({
+        ...employeeSchema.parse(result.rows[0]),
+        ...classification,
+        grade: restricted ? null : classification.grade,
+        costCenter: restricted ? null : classification.costCenter,
+        classificationRestricted: restricted,
+      });
     });
   }
   async dashboard(actor: Principal): Promise<Dashboard> {

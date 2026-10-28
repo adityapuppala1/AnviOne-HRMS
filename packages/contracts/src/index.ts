@@ -58,6 +58,24 @@ export const employeeSchema = z.object({
   initials: z.string(),
 });
 export type Employee = z.infer<typeof employeeSchema>;
+// The single work profile adds designation, grade and cost centre (never in lists).
+export const employeeDetailSchema = employeeSchema.extend({
+  designation: z
+    .object({ id: z.uuid(), code: z.string(), name: z.string() })
+    .nullable(),
+  grade: z
+    .object({ id: z.uuid(), code: z.string(), name: z.string() })
+    .nullable(),
+  costCenter: z
+    .object({ id: z.uuid(), code: z.string(), name: z.string() })
+    .nullable(),
+  // Expected by PUT /people/:id/classification as `version`.
+  version: z.number().int().nonnegative(),
+  // True when grade and cost centre are withheld (viewer is neither HR nor self);
+  // both are then null regardless of the stored value.
+  classificationRestricted: z.boolean(),
+});
+export type EmployeeDetail = z.infer<typeof employeeDetailSchema>;
 export const directoryQuerySchema = z.object({
   q: z.string().trim().max(80).default(""),
   department: z.string().max(60).default(""),
@@ -153,7 +171,7 @@ export const organizationUnitSchema = z.object({
   name: z.string(),
   active: z.boolean(),
   version: z.number().int().positive(),
-  // Counts active and notice employees; always 0 for kinds that hold no employees yet.
+  // Counts active and notice employees assigned to the unit (any kind).
   employeeCount: z.number().int().nonnegative(),
   effectiveFrom: z.string(),
   effectiveTo: z.string().nullable(),
@@ -227,6 +245,32 @@ export const organizationDetailSchema = z.object({
   mergedFrom: z.array(organizationRefSchema),
 });
 export type OrganizationDetail = z.infer<typeof organizationDetailSchema>;
+// Designation, grade and cost centre of one employee; ids only on input, null clears.
+export const employeeClassificationUpdateSchema = z.strictObject({
+  designationId: z.uuid().nullable(),
+  gradeId: z.uuid().nullable(),
+  costCenterId: z.uuid().nullable(),
+  // The current classification version (employee detail `version`).
+  version: z.number().int().nonnegative(),
+  reason: changeReasonSchema,
+});
+export const classificationRefSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+});
+export const employeeClassificationSchema = z.strictObject({
+  employeeId: z.uuid(),
+  designation: classificationRefSchema.nullable(),
+  grade: classificationRefSchema.nullable(),
+  costCenter: classificationRefSchema.nullable(),
+  // Increments on every real change; an unchanged replay keeps it.
+  version: z.number().int().nonnegative(),
+  changed: z.boolean(),
+});
+export type EmployeeClassification = z.infer<
+  typeof employeeClassificationSchema
+>;
 export const organizationMergeResultSchema = z.object({
   source: organizationUnitSchema,
   target: organizationUnitSchema,

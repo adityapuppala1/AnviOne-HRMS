@@ -18,6 +18,9 @@ import {
   type OrganizationDetail,
   type OrganizationDirectory,
   type OrganizationMergeResult,
+  employeeClassificationSchema,
+  type EmployeeClassification,
+  type employeeClassificationUpdateSchema,
   type OrganizationUnit,
   type organizationChartQuerySchema,
   type organizationCreateSchema,
@@ -29,17 +32,22 @@ import { scopeFor, type Principal } from "@anvi/authz";
 import type { z } from "zod";
 import type { PlatformStore, SessionActor } from "./platform.store";
 
-// One definition of "in effect", evaluated in the entity's business date.
+// One definition of "in effect", evaluated in the entity's business date. The same
+// org_entity_today() the database guards and classify_employee() use.
+const entityToday = `org_entity_today(nullif(current_setting('app.tenant_id',true),'')::uuid, nullif(current_setting('app.entity_id',true),'')::uuid)`;
 const status = `CASE WHEN NOT u.active OR u.merged_into_id IS NOT NULL THEN 'inactive'
-  WHEN u.effective_from > leave_entity_today() THEN 'scheduled'
-  WHEN u.effective_to < leave_entity_today() THEN 'ended'
+  WHEN u.effective_from > ${entityToday} THEN 'scheduled'
+  WHEN u.effective_to < ${entityToday} THEN 'ended'
   ELSE 'in_effect' END`;
 export const organizationUnitColumns = `u.id, u.kind, u.code, u.name, u.active, u.version,
   (SELECT count(*)::int FROM employee e
     WHERE e.tenant_id = u.tenant_id AND e.entity_id = u.entity_id
       AND e.status IN ('active','notice')
       AND CASE u.kind WHEN 'department' THEN e.department_id = u.id
-        WHEN 'location' THEN e.location_id = u.id ELSE false END
+        WHEN 'location' THEN e.location_id = u.id
+        WHEN 'designation' THEN e.designation_id = u.id
+        WHEN 'grade' THEN e.grade_id = u.id
+        WHEN 'cost_center' THEN e.cost_center_id = u.id ELSE false END
   ) AS "employeeCount",
   to_char(u.effective_from,'YYYY-MM-DD') AS "effectiveFrom",
   to_char(u.effective_to,'YYYY-MM-DD') AS "effectiveTo",
@@ -96,6 +104,44 @@ const lite = (row: LiteRow): OrgChartNodeLite =>
     managerId: row.managerId,
     directReportCount: row.directReportCount,
   });
+
+interface ClassificationRef {
+  id: string;
+  code: string;
+  name: string;
+}
+export interface ClassificationRefs {
+  designation: ClassificationRef | null;
+  grade: ClassificationRef | null;
+  costCenter: ClassificationRef | null;
+  version: number;
+}
+// Designation, grade and cost centre of one employee the caller can already see
+// (employee RLS). Ended or merged units stay readable once assigned.
+export async function readClassification(
+  client: PoolClient,
+  employeeId: string,
+): Promise<ClassificationRefs> {
+  const { rows } = await client.query<Partial<ClassificationRefs>>(
+    `SELECT
+       (SELECT json_build_object('id',u.id,'code',u.code,'name',u.name) FROM org_unit u
+         WHERE u.tenant_id=e.tenant_id AND u.entity_id=e.entity_id AND u.id=e.designation_id) AS designation,
+       (SELECT json_build_object('id',u.id,'code',u.code,'name',u.name) FROM org_unit u
+         WHERE u.tenant_id=e.tenant_id AND u.entity_id=e.entity_id AND u.id=e.grade_id) AS grade,
+       (SELECT json_build_object('id',u.id,'code',u.code,'name',u.name) FROM org_unit u
+         WHERE u.tenant_id=e.tenant_id AND u.entity_id=e.entity_id AND u.id=e.cost_center_id) AS "costCenter",
+       e.classification_version AS version
+     FROM employee e WHERE e.id=$1`,
+    [employeeId],
+  );
+  const row = rows[0];
+  return {
+    designation: row?.designation ?? null,
+    grade: row?.grade ?? null,
+    costCenter: row?.costCenter ?? null,
+    version: row?.version ?? 0,
+  };
+}
 
 // This module owns the master lifecycle transaction: version check, mutation,
 // mandatory reason, audit snapshot and outbox are one commit.
@@ -240,13 +286,26 @@ export class OrganizationStore {
           );
         // Moving a still-used, active unit out of effect by dates would strand its
         // people and offers; a merge is the safe way to retire it.
+        const classification = ["designation", "grade", "cost_center"].includes(
+          previous.kind,
+        );
+        const reclassify = `This record is still assigned to ${previous.employeeCount} employee(s). Reclassify them first, then end or deactivate it.`;
+        // Deactivating a designation, grade or cost centre still in use is refused too;
+        // departments and locations keep the ORG-01 behaviour.
+        if (
+          classification &&
+          previous.active &&
+          !input.active &&
+          previous.employeeCount > 0
+        )
+          throw new ConflictException(reclassify);
         if (previous.active && input.active) {
           const check = await client.query<{
             inEffect: boolean;
             candidates: number;
           }>(
-            `SELECT ($1::date <= leave_entity_today()
-                AND ($2::date IS NULL OR $2::date >= leave_entity_today())) AS "inEffect",
+            `SELECT ($1::date <= ${entityToday}
+                AND ($2::date IS NULL OR $2::date >= ${entityToday})) AS "inEffect",
               (SELECT count(*)::int FROM candidate_case c
                 WHERE (c.department_id=$3 OR c.location_id=$3)
                   AND c.state NOT IN ('approved','cancelled')) AS candidates`,
@@ -259,7 +318,9 @@ export class OrganizationStore {
             (previous.employeeCount > 0 || row.candidates > 0)
           )
             throw new ConflictException(
-              `This record still has ${previous.employeeCount} employee(s) and ${row.candidates} open candidate(s). Merge it into another record instead of ending it by date.`,
+              classification
+                ? reclassify
+                : `This record still has ${previous.employeeCount} employee(s) and ${row.candidates} open candidate(s). Merge it into another record instead of ending it by date.`,
             );
         }
         // A replay with unchanged values creates no second version or domain event.
@@ -357,6 +418,111 @@ export class OrganizationStore {
             movedInactive: result.movedInactive,
             movedCandidates: result.movedCandidates,
           };
+        }),
+      true,
+    );
+  }
+
+  requireWrite(actor: Principal) {
+    this.platform.require(actor, "organization.write");
+  }
+
+  // classify_employee() owns the checks, locks and the change; this transaction adds
+  // the audit row (ids and codes only, never names) and the domain event.
+  async classify(
+    actor: Principal,
+    employeeId: string,
+    input: z.infer<typeof employeeClassificationUpdateSchema>,
+    requestId: string,
+  ): Promise<EmployeeClassification> {
+    this.platform.require(actor, "organization.write");
+    return this.rules(
+      async () =>
+        scoped(this.platform.pool, actor, async (client) => {
+          const { rows } = await client.query<{
+            result: {
+              changed: boolean;
+              version: number;
+              before: {
+                designationId: string | null;
+                gradeId: string | null;
+                costCenterId: string | null;
+              };
+            };
+          }>("SELECT classify_employee($1,$2,$3,$4,$5) AS result", [
+            employeeId,
+            input.designationId,
+            input.gradeId,
+            input.costCenterId,
+            input.version,
+          ]);
+          const result = rows[0]!.result;
+          const after = await readClassification(client, employeeId);
+          if (result.changed) {
+            const codes = await client.query<{ id: string; code: string }>(
+              "SELECT id, code FROM org_unit WHERE id = ANY($1::uuid[])",
+              [Object.values(result.before).filter(Boolean)],
+            );
+            const code = (id: string | null) =>
+              id ? (codes.rows.find((r) => r.id === id)?.code ?? null) : null;
+            const ref = (unit: { id: string; code: string } | null) =>
+              unit ? { id: unit.id, code: unit.code } : null;
+            await audit(
+              client,
+              actor,
+              "employee.classified",
+              `employee:${employeeId}:classification:v${result.version}`,
+              requestId,
+              {
+                reason: input.reason,
+                details: {
+                  employeeId,
+                  before: {
+                    designation: result.before.designationId
+                      ? {
+                          id: result.before.designationId,
+                          code: code(result.before.designationId),
+                        }
+                      : null,
+                    grade: result.before.gradeId
+                      ? {
+                          id: result.before.gradeId,
+                          code: code(result.before.gradeId),
+                        }
+                      : null,
+                    costCenter: result.before.costCenterId
+                      ? {
+                          id: result.before.costCenterId,
+                          code: code(result.before.costCenterId),
+                        }
+                      : null,
+                  },
+                  after: {
+                    designation: ref(after.designation),
+                    grade: ref(after.grade),
+                    costCenter: ref(after.costCenter),
+                  },
+                },
+              },
+            );
+            await client.query(
+              `INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version)
+             VALUES ($1,$2,$3,'employee.classified.v1',$4,$5)`,
+              [
+                randomUUID(),
+                actor.tenantId,
+                actor.entityId,
+                employeeId,
+                result.version,
+              ],
+            );
+          }
+          return employeeClassificationSchema.parse({
+            employeeId,
+            ...after,
+            version: result.version,
+            changed: result.changed,
+          });
         }),
       true,
     );

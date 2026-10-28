@@ -14,6 +14,7 @@ import type { Response } from "express";
 import type { RateLimitRequestHandler } from "express-rate-limit";
 import { z } from "zod";
 import {
+  employeeClassificationUpdateSchema,
   organizationChartQuerySchema,
   organizationCreateSchema,
   organizationMergeSchema,
@@ -136,6 +137,20 @@ export class OrganizationController {
       req.actor,
       parse(z.uuid(), id),
       parse(organizationMergeSchema, body),
+      req.requestId,
+    );
+  }
+  // HR only: the permission is checked before the body is read.
+  @Put("api/v1/people/:employeeId/classification") classifyEmployee(
+    @Req() req: AppRequest,
+    @Param("employeeId") employeeId: string,
+    @Body() body: unknown,
+  ) {
+    this.organization.requireWrite(req.actor);
+    return this.organization.classify(
+      req.actor,
+      parse(z.uuid(), employeeId),
+      parse(employeeClassificationUpdateSchema, body),
       req.requestId,
     );
   }

@@ -6,7 +6,6 @@ import {
   directorySchema,
   dashboardSchema,
   meSchema,
-  employeeSchema,
   auditSchema,
   authConfigSchema,
   roleSchema,
@@ -17,6 +16,9 @@ import {
   organizationKindSchema,
   organizationDetailSchema,
   organizationMergeSchema,
+  employeeDetailSchema,
+  employeeClassificationUpdateSchema,
+  employeeClassificationSchema,
   organizationMergeResultSchema,
   organizationChartSchema,
   orgChartSearchSchema,
@@ -213,7 +215,10 @@ const spec = {
     },
     "/employees/{id}": {
       get: {
-        ...read("Authorized work profile", employeeSchema),
+        ...read(
+          "Authorized work profile, with designation, grade and cost centre",
+          employeeDetailSchema,
+        ),
         parameters: [
           {
             name: "id",
@@ -573,6 +578,23 @@ const spec = {
         ...read(
           "One person's reporting neighbourhood (manager one level up, up to 200 direct reports by name) with the same basic fields as search, for anyone with directory.read; unknown, former and other-entity people all answer 404; 120 lookups a minute per person; not audited",
           orgChartNeighborhoodSchema,
+        ),
+        parameters: [
+          {
+            name: "employeeId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+      },
+    },
+    "/people/{employeeId}/classification": {
+      put: {
+        ...write(
+          "HR assigns or clears an employee's designation, grade and cost centre (null clears). A changed link must be a unit of that kind in effect in this entity; unchanged links are kept even if their unit has since ended. An unchanged replay writes nothing. Audit carries ids and codes only",
+          employeeClassificationUpdateSchema,
+          employeeClassificationSchema,
         ),
         parameters: [
           {

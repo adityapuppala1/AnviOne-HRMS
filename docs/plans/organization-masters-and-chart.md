@@ -34,7 +34,7 @@ HR keeps more kinds of organization records, says when each is in effect, merges
 
 ## Limits
 
-- Designations, grades and cost centres are masters only; employees cannot be assigned to them yet.
+- Employees are assigned to designations, grades and cost centres by HR on the profile screen (migrations 043-044); merging these three kinds is not supported, so in-use units are retired by reclassifying people first. Grade and cost centre are visible to HR and the person themselves; designation to directory readers.
 - The whole-tree tab is still limited to directory access; the search and neighbourhood views deliberately show seven basic fields for every active person in the entity (ADR 0009).
 - A merge also rewrites the department or location of former employees, so nothing points at a closed record.
 - The chart holds at most 2,000 people and 20 levels, and says when it is partial.

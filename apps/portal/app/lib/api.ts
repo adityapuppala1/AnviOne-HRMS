@@ -7,7 +7,7 @@ import {
   meSchema,
   dashboardSchema,
   directorySchema,
-  employeeSchema,
+  employeeDetailSchema,
   auditSchema,
   authConfigSchema,
   organizationDirectorySchema,
@@ -122,7 +122,9 @@ export const useEmployee = (id: string) =>
   useQuery({
     queryKey: ["employee", id],
     queryFn: ({ signal }) =>
-      api(`/employees/${encodeURIComponent(id)}`, employeeSchema, { signal }),
+      api(`/employees/${encodeURIComponent(id)}`, employeeDetailSchema, {
+        signal,
+      }),
   });
 export const useAudit = () =>
   useQuery({

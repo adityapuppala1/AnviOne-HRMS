@@ -116,7 +116,7 @@ export function EmptyBlock({
   action?: ReactNode;
 }) {
   return (
-    <EmptyState size="md" className="px-4 py-10">
+    <EmptyState size="md" className="overflow-x-clip px-4 py-10">
       <EmptyState.Header>
         <EmptyState.FeaturedIcon icon={icon} color="brand" />
       </EmptyState.Header>

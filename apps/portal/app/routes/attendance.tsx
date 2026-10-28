@@ -11,6 +11,8 @@ import {
   Avatar,
   BadgeWithDot,
   Button,
+  CollectionView,
+  DetailFields,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -680,22 +682,91 @@ function TeamToday({
         {people.length === 0 ? (
           <EmptyBlock icon={UsersThree} title={text.team.nobody} />
         ) : (
-          <ul className="attendance-people">
-            {people.map((p) => (
-              <li key={p.employeeId} className={`presence-${p.status}`}>
+          <CollectionView
+            id="attendance-board"
+            label={text.team.boardTitle(longDate(date))}
+            noun="people"
+            items={people}
+            getKey={(p) => p.employeeId}
+            defaultView="table"
+            columns={[
+              {
+                id: "name",
+                label: "Person",
+                isRowHeader: true,
+                sortValue: (p) => p.name,
+                render: (p) => (
+                  <span className="flex items-center gap-3">
+                    <Avatar initials={p.initials} size="small" />
+                    <strong className="text-sm text-primary">{p.name}</strong>
+                  </span>
+                ),
+              },
+              {
+                id: "department",
+                label: "Team",
+                sortValue: (p) => p.department,
+                render: (p) => <span className="text-sm">{p.department}</span>,
+              },
+              {
+                id: "status",
+                label: "Today",
+                sortValue: (p) => presenceLabels[p.status],
+                render: (p) => (
+                  <span className={`presence-pill presence-${p.status}`}>
+                    {presenceLabels[p.status]}
+                  </span>
+                ),
+              },
+              {
+                id: "in",
+                label: "Checked in",
+                sortValue: (p) => p.checkIn ?? "",
+                render: (p) => (
+                  <span className="text-sm">{p.checkIn ?? "None"}</span>
+                ),
+              },
+              {
+                id: "out",
+                label: "Checked out",
+                sortValue: (p) => p.checkOut ?? "",
+                render: (p) => (
+                  <span className="text-sm">{p.checkOut ?? "None"}</span>
+                ),
+              },
+            ]}
+            renderCard={(p) => (
+              <div
+                className={`flex min-w-0 items-center gap-3 presence-${p.status}`}
+              >
                 <Avatar initials={p.initials} size="small" />
-                <span>
-                  <strong>{p.name}</strong>
-                  <small>{p.department}</small>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <strong className="text-sm">{p.name}</strong>
+                  <small className="text-tertiary">{p.department}</small>
                 </span>
                 <span className="presence-pill">
                   {presenceLabels[p.status]}
                   {p.checkIn ? ` · ${p.checkIn}` : ""}
                   {p.checkOut ? `–${p.checkOut}` : ""}
                 </span>
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+            detail={{
+              title: (p) => p.name,
+              subtitle: (p) => p.department,
+              body: (p) => (
+                <DetailFields
+                  title={longDate(date)}
+                  fields={[
+                    { label: "Status", value: presenceLabels[p.status] },
+                    { label: "Checked in", value: p.checkIn },
+                    { label: "Checked out", value: p.checkOut },
+                    { label: "Team", value: p.department },
+                  ]}
+                />
+              ),
+            }}
+          />
         )}
       </section>
       <section aria-labelledby="awaiting-corrections">

@@ -58,3 +58,15 @@
 .leave-card.approval-document_review {
   border-top-color: var(--chart-5);
 }
+
+/* The CollectionView card already draws the surface. */
+[data-collection] .leave-card {
+  padding: 0;
+  border: 0;
+}
+
+/* This pill sits on the page surface here, not on the dark hero. */
+.approvals-page > .loom-date {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}

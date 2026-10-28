@@ -12,6 +12,10 @@ import { UploadSimple } from "@phosphor-icons/react/dist/csr/UploadSimple";
 import {
   Avatar,
   Button,
+  CollectionView,
+  DetailFields,
+  type CollectionDetail,
+  type Column,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -113,6 +117,120 @@ export default function Documents() {
   );
 }
 
+const statusColor = (status: EmployeeDocument["status"]) =>
+  status === "verified"
+    ? "success"
+    : status === "pending"
+      ? "warning"
+      : status === "rejected"
+        ? "error"
+        : "gray";
+const fullDate = (iso: string) =>
+  new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  });
+function documentColumns(
+  showOwner: boolean,
+  actions: (d: EmployeeDocument) => ReactNode,
+): Column<EmployeeDocument>[] {
+  return [
+    {
+      id: "title",
+      label: showOwner ? "Employee and document" : "Document",
+      isRowHeader: true,
+      sortValue: (d) => (showOwner ? d.employeeName : d.title),
+      render: (d) => (
+        <span className="flex min-w-0 flex-col">
+          <strong className="text-sm text-primary">
+            {showOwner ? d.employeeName : d.title}
+          </strong>
+          {showOwner && (
+            <span className="text-sm text-tertiary">{d.title}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      id: "category",
+      label: "Category",
+      sortValue: (d) => categories[d.category],
+      render: (d) => <span className="text-sm">{categories[d.category]}</span>,
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortValue: (d) => d.status,
+      render: (d) => (
+        <StatusBadge color={statusColor(d.status)} size="sm" type="pill-color">
+          {statusLabels[d.status]}
+        </StatusBadge>
+      ),
+    },
+    {
+      id: "uploaded",
+      label: "Uploaded",
+      sortValue: (d) => d.uploadedAt,
+      render: (d) => <span className="text-sm">{when(d.uploadedAt)}</span>,
+    },
+    {
+      id: "actions",
+      label: "",
+      render: (d) => (
+        <span className="flex flex-wrap gap-2">
+          {d.status !== "withdrawn" && (
+            <a
+              className="button button-secondary"
+              href={`/api/v1/documents/${d.id}/content`}
+              download
+              aria-label={text.row.downloadLabel(d.title)}
+            >
+              <DownloadSimple size={17} />
+              {text.row.download}
+            </a>
+          )}
+          {actions(d)}
+        </span>
+      ),
+    },
+  ];
+}
+const documentDetail: CollectionDetail<EmployeeDocument> = {
+  title: (d) => d.title,
+  subtitle: (d) => (
+    <StatusBadge color={statusColor(d.status)} size="sm" type="pill-color">
+      {statusLabels[d.status]}
+    </StatusBadge>
+  ),
+  body: (d) => (
+    <>
+      <DetailFields
+        title="File"
+        fields={[
+          { label: "Owner", value: d.employeeName },
+          { label: "Department", value: d.department },
+          { label: "Category", value: categories[d.category] },
+          { label: "File name", value: d.fileName },
+          { label: "Type", value: d.contentType },
+          { label: "Size", value: size(d.sizeBytes) },
+          { label: "Uploaded", value: fullDate(d.uploadedAt) },
+          { label: "Version", value: String(d.version) },
+        ]}
+      />
+      <DetailFields
+        title="Review"
+        fields={[
+          { label: "Status", value: statusLabels[d.status] },
+          { label: "Reviewed by", value: d.reviewedBy },
+          { label: "Reviewed", value: d.reviewedAt && fullDate(d.reviewedAt) },
+          { label: "Note", value: d.reviewNote },
+        ]}
+      />
+    </>
+  ),
+};
+
 function DocumentRow({
   document: d,
   actions,
@@ -131,7 +249,7 @@ function DocumentRow({
           ? "error"
           : "gray";
   return (
-    <li className={`document-row document-${d.status}`}>
+    <div className={`document-row document-${d.status}`}>
       <span className="document-icon" aria-hidden="true">
         {d.contentType === "application/pdf" ? (
           <FilePdf size={26} weight="duotone" />
@@ -179,7 +297,7 @@ function DocumentRow({
         )}
         {actions}
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -213,6 +331,16 @@ function Mine({
       );
     }
   }
+  const mineActions = (d: EmployeeDocument) =>
+    d.canWithdraw && (
+      <Button
+        variant="secondary"
+        onPress={() => void withdraw(d)}
+        aria-label={text.mine.withdrawLabel(d.title)}
+      >
+        {text.mine.withdraw}
+      </Button>
+    );
   const items = query.data.items;
   const count = (status: EmployeeDocument["status"]) =>
     items.filter((d) => d.status === status).length;
@@ -263,25 +391,18 @@ function Mine({
             description={text.mine.emptyBody}
           />
         ) : (
-          <ul className="documents">
-            {query.data.items.map((d) => (
-              <DocumentRow
-                key={d.id}
-                document={d}
-                actions={
-                  d.canWithdraw && (
-                    <Button
-                      variant="secondary"
-                      onPress={() => void withdraw(d)}
-                      aria-label={text.mine.withdrawLabel(d.title)}
-                    >
-                      {text.mine.withdraw}
-                    </Button>
-                  )
-                }
-              />
-            ))}
-          </ul>
+          <CollectionView
+            id="documents-mine"
+            label={text.mine.heading}
+            noun="documents"
+            items={query.data.items}
+            getKey={(d) => d.id}
+            columns={documentColumns(false, mineActions)}
+            renderCard={(d) => (
+              <DocumentRow document={d} actions={mineActions(d)} />
+            )}
+            detail={documentDetail}
+          />
         )}
       </section>
     </>
@@ -330,6 +451,29 @@ function Review({
       setBusy(null);
     }
   }
+  const reviewActions = (d: EmployeeDocument) =>
+    d.canReview && (
+      <>
+        <Button
+          isDisabled={busy === d.id}
+          onPress={() => void decide(d, "verify", null)}
+          aria-label={text.review.verifyLabel(d.title, d.employeeName)}
+        >
+          {text.review.verify}
+        </Button>
+        <Button
+          variant="secondary"
+          isDisabled={busy === d.id}
+          onPress={() => {
+            setError("");
+            setRejecting(d);
+          }}
+          aria-label={text.review.rejectLabel(d.title, d.employeeName)}
+        >
+          {text.review.reject}
+        </Button>
+      </>
+    );
   const { pending, recent } = query.data;
   return (
     <div className="leave-approvals">
@@ -368,45 +512,18 @@ function Review({
             description={text.review.emptyBody}
           />
         ) : (
-          <ul className="documents">
-            {pending.map((d) => (
-              <DocumentRow
-                key={d.id}
-                document={d}
-                showOwner
-                actions={
-                  d.canReview && (
-                    <>
-                      <Button
-                        isDisabled={busy === d.id}
-                        onPress={() => void decide(d, "verify", null)}
-                        aria-label={text.review.verifyLabel(
-                          d.title,
-                          d.employeeName,
-                        )}
-                      >
-                        {text.review.verify}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        isDisabled={busy === d.id}
-                        onPress={() => {
-                          setError("");
-                          setRejecting(d);
-                        }}
-                        aria-label={text.review.rejectLabel(
-                          d.title,
-                          d.employeeName,
-                        )}
-                      >
-                        {text.review.reject}
-                      </Button>
-                    </>
-                  )
-                }
-              />
-            ))}
-          </ul>
+          <CollectionView
+            id="documents-review"
+            label={text.review.pendingHeading}
+            noun="documents"
+            items={pending}
+            getKey={(d) => d.id}
+            columns={documentColumns(true, reviewActions)}
+            renderCard={(d) => (
+              <DocumentRow document={d} showOwner actions={reviewActions(d)} />
+            )}
+            detail={documentDetail}
+          />
         )}
       </section>
       {recent.length > 0 && (

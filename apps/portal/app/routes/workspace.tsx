@@ -25,6 +25,7 @@ import { IdentificationCard } from "@phosphor-icons/react/dist/csr/Identificatio
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
+import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -247,6 +248,15 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("project.self") ||
         me.permissions.includes("project.manage"),
+    },
+    {
+      to: "/recruitment",
+      label: copy.nav.recruitment,
+      icon: UserPlus,
+      visible:
+        me.permissions.includes("recruit.manage") ||
+        me.permissions.includes("recruit.request") ||
+        me.permissions.includes("recruit.interview"),
     },
     {
       to: "/reports",
@@ -519,7 +529,10 @@ function Shell({ me }: { me: Me }) {
             >
               <List size={23} />
             </Button>
-            <div className="breadcrumbs">
+            <div
+              className="breadcrumbs"
+              title={`${copy.shell.workspace} / ${title}`}
+            >
               <span>{copy.shell.workspace}</span>
               <span>/</span>
               <strong>{title}</strong>

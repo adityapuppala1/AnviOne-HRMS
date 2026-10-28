@@ -9,6 +9,8 @@ import { PencilSimple } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { Hourglass } from "@phosphor-icons/react/dist/csr/Hourglass";
 import {
   Button,
+  CollectionView,
+  type Column,
   Checkbox,
   DialogPanel,
   EmptyBlock,
@@ -293,15 +295,19 @@ function ManageView() {
             />
           )
         ) : (
-          <ul className="policies-list">
-            {items.map((item) => (
-              <PolicyRow
-                key={item.id}
-                item={item}
-                onOpen={() => setOpenId(item.id)}
-              />
-            ))}
-          </ul>
+          <CollectionView
+            id="policies-hr"
+            label={text.list.heading}
+            noun="policies"
+            items={items}
+            getKey={(item) => item.id}
+            columns={policyColumns(setOpenId)}
+            renderCard={(item) => (
+              <PolicyRow item={item} onOpen={() => setOpenId(item.id)} />
+            )}
+            onOpen={(item) => setOpenId(item.id)}
+            defaultView="table"
+          />
         )}
       </section>
       <PolicyDialog
@@ -322,6 +328,71 @@ function ManageView() {
   );
 }
 
+function policyColumns(open: (id: string) => void): Column<ListItem>[] {
+  return [
+    {
+      id: "code",
+      label: "Code",
+      isRowHeader: true,
+      sortValue: (item) => item.code,
+      render: (item) => <strong className="text-sm">{item.code}</strong>,
+    },
+    {
+      id: "title",
+      label: "Policy",
+      sortValue: (item) => item.title,
+      render: (item) => (
+        <span className="flex min-w-0 flex-col">
+          <span className="text-sm text-primary">{item.title}</span>
+          <small className="text-tertiary">
+            {text.categories[item.category]}
+          </small>
+        </span>
+      ),
+    },
+    {
+      id: "version",
+      label: "Version",
+      render: (item) => <VersionChips item={item} />,
+    },
+    {
+      id: "effective",
+      label: "Effective",
+      sortValue: (item) => (item.current ?? item.draft)?.effectiveOn ?? "",
+      render: (item) => {
+        const v = item.current ?? item.draft;
+        return <span className="text-sm">{v ? day(v.effectiveOn) : ""}</span>;
+      },
+    },
+    {
+      id: "ack",
+      label: "Acknowledged",
+      render: (item) =>
+        item.current?.requiresAcknowledgement && item.stats ? (
+          <span className="text-sm">
+            {text.list.acknowledged(
+              item.stats.acknowledged,
+              item.stats.audience,
+            )}
+          </span>
+        ) : null,
+    },
+    {
+      id: "open",
+      label: "",
+      render: (item) => (
+        <Button
+          variant="secondary"
+          onPress={() => open(item.id)}
+          aria-label={text.list.openLabel(item.code)}
+        >
+          {text.list.open}
+        </Button>
+      ),
+    },
+  ];
+}
+
 function PolicyRow({ item, onOpen }: { item: ListItem; onOpen: () => void }) {
   const version = item.current ?? item.draft;
   const progress =
@@ -335,7 +406,7 @@ function PolicyRow({ item, onOpen }: { item: ListItem; onOpen: () => void }) {
         )
     : 0;
   return (
-    <li className="policies-row">
+    <div className="policies-row">
       <div className="policies-main">
         <div className="policies-title">
           <strong className="policies-code">{item.code}</strong>
@@ -370,7 +441,7 @@ function PolicyRow({ item, onOpen }: { item: ListItem; onOpen: () => void }) {
       >
         {text.list.open}
       </Button>
-    </li>
+    </div>
   );
 }
 

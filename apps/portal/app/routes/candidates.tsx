@@ -8,6 +8,7 @@ import { PaperPlaneTilt } from "@phosphor-icons/react/dist/csr/PaperPlaneTilt";
 import { ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import {
   Button,
+  CollectionView,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -188,10 +189,22 @@ function Intake() {
               description={text.emptyBody}
             />
           ) : (
-            <div className="intake-rows">
-              {list.data.items.map((c) => (
+            <CollectionView
+              id="candidates-intake"
+              label={text.ledgerTitle}
+              noun="candidates"
+              items={list.data.items}
+              getKey={(c) => c.id}
+              views={["cards"]}
+              cardClassName="!p-0 !shadow-none !ring-0"
+              columns={[]}
+              onOpen={(c) => {
+                const next = new URLSearchParams(params);
+                next.set("case", c.id);
+                setParams(next);
+              }}
+              renderCard={(c) => (
                 <button
-                  key={c.id}
                   className={`intake-row ${selected === c.id ? "selected" : ""}`}
                   onClick={() => {
                     const next = new URLSearchParams(params);
@@ -213,8 +226,8 @@ function Intake() {
                   </span>
                   <ArrowUpRight size={18} />
                 </button>
-              ))}
-            </div>
+              )}
+            />
           )}
         </section>
         <section className="panel intake-detail">

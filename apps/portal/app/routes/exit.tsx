@@ -11,6 +11,8 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { SignOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import {
   Button,
+  CollectionView,
+  type Column,
   Checkbox,
   DialogPanel,
   EmptyBlock,
@@ -832,15 +834,19 @@ function ManageView() {
             />
           )
         ) : (
-          <ul className="exit-list">
-            {items.map((item) => (
-              <CaseRow
-                key={item.id}
-                item={item}
-                onOpen={() => setOpenId(item.id)}
-              />
-            ))}
-          </ul>
+          <CollectionView
+            id="exit-hr"
+            label={text.list.heading}
+            noun="exit cases"
+            items={items}
+            getKey={(item) => item.id}
+            columns={exitColumns(setOpenId)}
+            renderCard={(item) => (
+              <CaseRow item={item} onOpen={() => setOpenId(item.id)} />
+            )}
+            onOpen={(item) => setOpenId(item.id)}
+            defaultView="table"
+          />
         )}
       </section>
       <HelpNote />
@@ -857,9 +863,76 @@ function ManageView() {
   );
 }
 
+function exitColumns(open: (id: string) => void): Column<ExitCase>[] {
+  return [
+    {
+      id: "employee",
+      label: "Employee",
+      isRowHeader: true,
+      sortValue: (item) => item.employeeName,
+      render: (item) => (
+        <span className="flex min-w-0 flex-col">
+          <strong className="text-sm text-primary">{item.employeeName}</strong>
+          <small className="text-tertiary">
+            {item.employeeCode}
+            {item.department && ` · ${item.department}`}
+          </small>
+        </span>
+      ),
+    },
+    {
+      id: "kind",
+      label: "Kind",
+      sortValue: (item) => text.kinds[item.kind],
+      render: (item) => (
+        <span className="text-sm">{text.kinds[item.kind]}</span>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortValue: (item) => item.status,
+      render: (item) => <StatusPill status={item.status} />,
+    },
+    {
+      id: "notice",
+      label: "Notice given",
+      sortValue: (item) => item.noticeGivenOn,
+      render: (item) => (
+        <span className="text-sm">{day(item.noticeGivenOn)}</span>
+      ),
+    },
+    {
+      id: "last",
+      label: "Last working day",
+      sortValue: (item) => item.lastWorkingDay ?? "",
+      render: (item) => (
+        <span className="text-sm">
+          {item.lastWorkingDay
+            ? day(item.lastWorkingDay)
+            : text.list.lastDayNone}
+        </span>
+      ),
+    },
+    {
+      id: "open",
+      label: "",
+      render: (item) => (
+        <Button
+          variant="secondary"
+          onPress={() => open(item.id)}
+          aria-label={text.list.openLabel(item.employeeName)}
+        >
+          {text.list.open}
+        </Button>
+      ),
+    },
+  ];
+}
+
 function CaseRow({ item, onOpen }: { item: ExitCase; onOpen: () => void }) {
   return (
-    <li className="exit-row">
+    <div className="exit-row">
       <div className="exit-main">
         <div className="exit-title">
           <strong>{item.employeeName}</strong>
@@ -886,7 +959,7 @@ function CaseRow({ item, onOpen }: { item: ExitCase; onOpen: () => void }) {
       >
         {text.list.open}
       </Button>
-    </li>
+    </div>
   );
 }
 

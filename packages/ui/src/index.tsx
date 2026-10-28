@@ -189,3 +189,12 @@ export {
 export { EmptyState } from "./untitled/components/application/empty-state/empty-state";
 export { Button as UButton } from "./untitled/components/base/buttons/button";
 export { Tabs as UTabs } from "./untitled/components/application/tabs/tabs";
+
+// Shared list pattern: cards or table, paging, details panel (ADR 0010).
+export {
+  CollectionView,
+  DetailPanel,
+  DetailFields,
+  type CollectionDetail,
+  type CollectionViewMode,
+} from "./collection";

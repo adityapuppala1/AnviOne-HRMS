@@ -336,3 +336,25 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 14px;
 }
+
+/* Inside a CollectionView card the row stacks and the card draws the surface. */
+[data-collection] .leave-item {
+  grid-template-columns: auto minmax(0, 1fr);
+  border: 0;
+  padding: 0;
+}
+[data-collection] .leave-item > .button {
+  grid-column: 1 / -1;
+}
+[data-collection] .leave-card {
+  padding: 0;
+  border: 0;
+  grid-template-columns: minmax(0, 1fr);
+  overflow-wrap: anywhere;
+}
+[data-collection] .leave-card .size-max {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+}

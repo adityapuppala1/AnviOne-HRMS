@@ -18,6 +18,8 @@ import { Rocket } from "@phosphor-icons/react/dist/csr/Rocket";
 import { Archive } from "@phosphor-icons/react/dist/csr/Archive";
 import {
   Button,
+  CollectionView,
+  type Column,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -639,19 +641,92 @@ function ProjectsView({
             />
           )
         ) : (
-          <ul className="projects-cards">
-            {data.items.map((project) => (
+          <CollectionView
+            id="projects-all"
+            label={text.list.heading}
+            noun="projects"
+            items={data.items}
+            getKey={(project) => project.id}
+            columns={projectColumns(onOpen)}
+            renderCard={(project) => (
               <ProjectCard
-                key={project.id}
                 project={project}
                 onOpen={() => onOpen(project.id)}
               />
-            ))}
-          </ul>
+            )}
+            onOpen={(project) => onOpen(project.id)}
+            cardClassName="!p-0 !shadow-none !ring-0"
+            defaultView="cards"
+          />
         )}
       </section>
     </>
   );
+}
+
+function projectColumns(open: (id: string) => void): Column<Project>[] {
+  return [
+    {
+      id: "name",
+      label: "Project",
+      isRowHeader: true,
+      sortValue: (p) => p.name,
+      render: (p) => (
+        <span className="flex min-w-0 flex-col">
+          <strong className="text-sm text-primary">{p.name}</strong>
+          <code className="text-xs text-tertiary">{p.code}</code>
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortValue: (p) => p.status,
+      render: (p) => <ProjectPill status={p.status} />,
+    },
+    {
+      id: "owner",
+      label: "Owner",
+      sortValue: (p) => p.ownerName,
+      render: (p) => <span className="text-sm">{p.ownerName}</span>,
+    },
+    {
+      id: "dates",
+      label: "Dates",
+      sortValue: (p) => p.startDate,
+      render: (p) => (
+        <span className="text-sm">
+          {text.list.dates(day(p.startDate), p.endDate ? day(p.endDate) : null)}
+        </span>
+      ),
+    },
+    {
+      id: "counts",
+      label: "Team and tasks",
+      sortValue: (p) => p.openTaskCount,
+      render: (p) => (
+        <span className="flex flex-col text-sm">
+          <span>{text.list.members(p.memberCount)}</span>
+          <span className="text-tertiary">
+            {text.list.openTasks(p.openTaskCount)}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: "open",
+      label: "",
+      render: (p) => (
+        <Button
+          variant="secondary"
+          onPress={() => open(p.id)}
+          aria-label={text.list.openLabel(p.name)}
+        >
+          {text.list.open}
+        </Button>
+      ),
+    },
+  ];
 }
 
 function ProjectCard({
@@ -662,7 +737,7 @@ function ProjectCard({
   onOpen: () => void;
 }) {
   return (
-    <li className="projects-card" data-status={project.status}>
+    <div className="projects-card" data-status={project.status}>
       <div className="projects-card-head">
         <code>{project.code}</code>
         <ProjectPill status={project.status} />
@@ -686,7 +761,7 @@ function ProjectCard({
       >
         {text.list.open}
       </Button>
-    </li>
+    </div>
   );
 }
 

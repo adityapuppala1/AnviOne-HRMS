@@ -595,3 +595,11 @@
   font-size: 12px;
   margin: 0;
 }
+
+/* Inside a CollectionView card the row stacks. */
+[data-collection] .exit-row {
+  flex-direction: column;
+  align-items: stretch;
+  border-top: 0;
+  padding: 0;
+}

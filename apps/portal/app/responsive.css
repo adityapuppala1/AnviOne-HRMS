@@ -209,3 +209,32 @@
     gap: 0;
   }
 }
+
+/* Touch: every control reaches 44 px (WCAG 2.2 target size, our own rule). */
+@media (pointer: coarse) {
+  .group\/input,
+  html
+    .group\/input
+    input[data-rac]:not([type="checkbox"]):not([type="radio"]) {
+    min-height: 44px;
+  }
+  .pagination .button {
+    min-height: 44px;
+  }
+  .view-toggle .button {
+    min-height: 44px;
+    width: 44px;
+  }
+  .chart-legend .button {
+    min-height: 44px;
+  }
+  .button-icon,
+  button.button-icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .calendar-weekdays .calendar-weekday {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

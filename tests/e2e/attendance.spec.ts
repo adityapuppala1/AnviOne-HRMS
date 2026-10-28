@@ -75,7 +75,12 @@ test("check in, correct a past day and review the team board", async ({
 
   await page.getByRole("tab", { name: /Team today/ }).click();
   await expect(page.getByRole("heading", { name: /^Who's in/ })).toBeVisible();
-  await expect(page.locator(".attendance-people li").first()).toBeVisible();
+  await expect(
+    page
+      .locator('[data-collection="attendance-board"]')
+      .getByRole("row")
+      .nth(1),
+  ).toBeVisible();
   const approve = page.getByRole("button", {
     name: /^Approve correction for /,
   });

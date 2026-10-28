@@ -60,3 +60,11 @@ The Reports screen is built on the kit from the start (radio cards, checkboxes, 
 - `apps/candidate` (the separate candidate-facing app, with its own native task status select and form fields) is outside the portal and was not migrated in the onboarding slice.
 - Our own `Avatar` (Loom colours, used on nearly every screen) is kept; `UAvatar` is used where a screen adopts it (Exit). Row-action `Dropdown` menus and `ButtonGroup` are not introduced: the existing rows use one or two visible buttons, which is clearer than a menu.
 - Still not vendored from the starter kit: `tags`, `slider`, `progress-indicators`, `file-upload`, `modals`, `slideout-menus`, `date-picker`, `loading-indicator`, `charts`.
+
+## Collection view and detail panel (28 October 2026)
+
+`slideout-menus` was vendored from the MIT starter kit and `ButtonGroup`, `Table` and `PaginationCardMinimal` are now composed by the shared `CollectionView` (see [ADR 0010](0010-collection-view.md)). Screens migrated to it: Approvals (both sections), Documents (mine and review), Leave (my requests, team pending cards, decided), Activity log, Assets (HR inventory, server paging), Policies (HR list), Exit (HR list), Expenses (my claims, approvals, pay), Projects list, Candidates intake list (cards with paging, master-detail kept), Attendance team board, Calendar holidays (new List view beside the month view). People directory already had cards, table and server paging and keeps its own toggle for now. Still on older patterns: Reports saved list, Organization lists (DataCard), Teams explorer, Tasks, Configuration permission matrix, Settings, Details.
+
+## Recruitment (28 October 2026)
+
+The new Recruitment screen (`/recruitment`, REC-01) is built on the kit from the start: `UTabs`, `CollectionView` with the details panel and server paging for requisitions, candidates, interviews and offers, `Select`, `Input`, `RangeInput`, `TextArea`, `Checkbox`, `StatusBadge`, `StatCard` and `DialogPanel`. Not on `CollectionView`: the pipeline board (columns by stage, loaded 100 at a time with a note when there are more) and the funnel bars, which are plain lists with numbers in text. The people search for hiring managers, interviewers and referrers is a small local picker over the directory search, because the kit combobox is not vendored. Its source is `apps/portal/app/components/recruit/`.

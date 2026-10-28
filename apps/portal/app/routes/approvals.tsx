@@ -11,6 +11,8 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
   Button,
+  CollectionView,
+  DetailFields,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -19,6 +21,8 @@ import {
   StatCard,
   StatusBadge,
   TextArea,
+  type CollectionDetail,
+  type Column,
 } from "@anvi/ui";
 import type { ApprovalItem } from "@anvi/contracts";
 import { api, useApprovals } from "../lib/api";
@@ -189,16 +193,22 @@ export default function Approvals() {
             />
           </div>
         ) : (
-          <ul className="leave-cards">
-            {mine.map((item) => (
+          <CollectionView
+            id="approvals-yours"
+            label={text.sections.yours}
+            noun="approvals"
+            items={mine}
+            getKey={itemKey}
+            columns={approvalColumns}
+            renderCard={(item) => (
               <ApprovalCard
-                key={`${item.kind}-${item.id}`}
                 item={item}
                 busy={busy === item.id}
                 onDecide={(decision) => start(item, decision)}
               />
-            ))}
-          </ul>
+            )}
+            detail={approvalDetail}
+          />
         )}
       </section>
       {others.length > 0 && (
@@ -206,11 +216,16 @@ export default function Approvals() {
           <h2 id="others" className="leave-section-title">
             {text.sections.others}
           </h2>
-          <ul className="leave-cards">
-            {others.map((item) => (
-              <ApprovalCard key={`${item.kind}-${item.id}`} item={item} />
-            ))}
-          </ul>
+          <CollectionView
+            id="approvals-others"
+            label={text.sections.others}
+            noun="approvals"
+            items={others}
+            getKey={itemKey}
+            columns={approvalColumns}
+            renderCard={(item) => <ApprovalCard item={item} />}
+            detail={approvalDetail}
+          />
         </section>
       )}
       <DialogPanel
@@ -352,6 +367,137 @@ function When({ item }: { item: ApprovalItem }) {
   );
 }
 
+const itemKey = (item: ApprovalItem) => `${item.kind}-${item.id}`;
+const approvalColumns: Column<ApprovalItem>[] = [
+  {
+    id: "person",
+    label: "Person",
+    isRowHeader: true,
+    sortValue: (item) => person(item),
+    render: (item) => (
+      <span className="flex min-w-0 flex-col">
+        <strong className="text-sm text-primary">{person(item)}</strong>
+        <span className="text-sm text-tertiary">{item.department}</span>
+      </span>
+    ),
+  },
+  {
+    id: "kind",
+    label: "Request",
+    sortValue: (item) => subject(item),
+    render: (item) => (
+      <span className="text-sm">
+        <KindLabel item={item} />
+      </span>
+    ),
+  },
+  {
+    id: "summary",
+    label: "Details",
+    render: (item) => (
+      <span
+        className="block max-w-xs truncate text-sm text-tertiary"
+        title={summary(item)}
+      >
+        {summary(item)}
+      </span>
+    ),
+  },
+  {
+    id: "submitted",
+    label: "Submitted",
+    sortValue: (item) => item.submittedAt,
+    render: (item) => (
+      <time dateTime={item.submittedAt} className="text-sm">
+        {when(item.submittedAt)}
+      </time>
+    ),
+  },
+  {
+    id: "approver",
+    label: "Decides",
+    render: (item) => (
+      <StatusBadge color="gray" size="sm">
+        {item.approver === "manager"
+          ? text.card.managerDecides
+          : text.card.hrDecides}
+      </StatusBadge>
+    ),
+  },
+];
+const when = (iso: string) =>
+  new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  });
+const approvalDetail: CollectionDetail<ApprovalItem> = {
+  title: (item) => `${subject(item)}: ${person(item)}`,
+  subtitle: (item) => item.department,
+  body: (item) => (
+    <>
+      <DetailFields
+        title="Request"
+        fields={[
+          { label: "Type", value: subject(item) },
+          { label: "Person", value: person(item) },
+          { label: "Department", value: item.department },
+          ...(item.kind === "leave"
+            ? [
+                { label: "Leave type", value: item.leaveType },
+                { label: "From", value: day(item.startDate) },
+                { label: "To", value: day(item.endDate) },
+                { label: "Days", value: text.days(item.days) },
+              ]
+            : item.kind === "attendance_correction"
+              ? [
+                  { label: "Work date", value: day(item.workDate) },
+                  {
+                    label: "Proposed times",
+                    value: text.when.times(item.checkIn, item.checkOut),
+                  },
+                ]
+              : item.kind === "document_review"
+                ? [
+                    { label: "Document", value: item.title },
+                    { label: "File", value: summary(item) },
+                  ]
+                : [
+                    { label: "Candidate role", value: item.candidateTitle },
+                    { label: "Proposed by", value: item.proposerLabel },
+                    {
+                      label: "Evidence",
+                      value: item.evidenceReady
+                        ? text.when.evidenceReady
+                        : text.when.evidenceIncomplete,
+                    },
+                  ]),
+          ...(item.kind === "document_review"
+            ? []
+            : [{ label: "Reason", value: summary(item) }]),
+        ]}
+      />
+      <DetailFields
+        title="Workflow"
+        fields={[
+          { label: "Submitted", value: when(item.submittedAt) },
+          {
+            label: "Decided by",
+            value:
+              item.approver === "manager"
+                ? text.card.managerDecides
+                : text.card.hrDecides,
+          },
+          {
+            label: "Version",
+            value: String(item.version),
+          },
+        ]}
+      />
+    </>
+  ),
+};
+
 function ApprovalCard({
   item,
   busy = false,
@@ -364,7 +510,7 @@ function ApprovalCard({
   const name = person(item);
   const blocked = item.kind === "readiness_review" && !item.evidenceReady;
   return (
-    <li className={`panel leave-card approval-${item.kind}`}>
+    <div className={`leave-card approval-${item.kind}`}>
       <div className="approval-kind">
         <KindLabel item={item} />
       </div>
@@ -421,6 +567,6 @@ function ApprovalCard({
               : text.card.hrDecides}
         </StatusBadge>
       )}
-    </li>
+    </div>
   );
 }

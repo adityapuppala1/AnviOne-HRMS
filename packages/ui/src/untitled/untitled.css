@@ -331,11 +331,11 @@
   --color-text-secondary_hover: var(--color-neutral-800);
   --color-text-tertiary_hover: var(--color-neutral-700);
   --color-text-brand-secondary: var(--color-brand-700);
-  --color-text-placeholder: var(--color-neutral-500);
+  --color-text-placeholder: var(--color-neutral-600);
   --color-text-brand-tertiary: var(--color-brand-600);
   --color-text-editor-icon-fg: var(--color-neutral-400);
   --color-text-editor-icon-fg_active: var(--color-neutral-500);
-  --color-text-quaternary: var(--color-neutral-500);
+  --color-text-quaternary: var(--color-neutral-600);
   --color-text-brand-primary: var(--color-brand-900);
   --color-text-primary_on-brand: var(--color-white);
   --color-text-secondary_on-brand: var(--color-brand-200);
@@ -694,7 +694,7 @@
     --color-text-secondary_hover: var(--color-neutral-200);
     --color-text-tertiary_hover: var(--color-neutral-300);
     --color-text-brand-secondary: var(--color-neutral-300);
-    --color-text-placeholder: var(--color-neutral-500);
+    --color-text-placeholder: var(--color-neutral-400);
     --color-text-brand-tertiary: var(--color-neutral-400);
     --color-text-editor-icon-fg: var(--color-neutral-400);
     --color-text-editor-icon-fg_active: var(--color-white);

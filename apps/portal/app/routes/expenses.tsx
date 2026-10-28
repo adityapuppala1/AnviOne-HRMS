@@ -19,6 +19,8 @@ import { Wallet } from "@phosphor-icons/react/dist/csr/Wallet";
 import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Button,
+  CollectionView,
+  type Column,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -395,16 +397,13 @@ function MineView({
             description={text.mine.emptyBody}
           />
         ) : (
-          <ul className="expenses-list">
-            {items.map((claim) => (
-              <ClaimRow
-                key={claim.id}
-                claim={claim}
-                showPerson={false}
-                onOpen={() => setOpenId(claim.id)}
-              />
-            ))}
-          </ul>
+          <ClaimCollection
+            id="expenses-mine"
+            label={text.mine.heading}
+            claims={items}
+            showPerson={false}
+            onOpen={setOpenId}
+          />
         )}
       </section>
       <DetailsDialog
@@ -479,6 +478,108 @@ function MonthChart({ months }: { months: MyExpenses["months"] }) {
   );
 }
 
+function ClaimCollection({
+  id,
+  label,
+  claims,
+  showPerson,
+  onOpen,
+  extra,
+}: {
+  id: string;
+  label: string;
+  claims: ExpenseClaim[];
+  showPerson: boolean;
+  onOpen: (id: string) => void;
+  extra?: (claim: ExpenseClaim) => ReactNode;
+}) {
+  const columns: Column<ExpenseClaim>[] = [
+    {
+      id: "title",
+      label: "Claim",
+      isRowHeader: true,
+      sortValue: (c) => c.title,
+      render: (c) => (
+        <span className="flex min-w-0 flex-col">
+          <strong className="text-sm text-primary">{c.title}</strong>
+          {showPerson && (
+            <small className="text-tertiary">
+              {text.list.by(c.employeeName, c.employeeCode)}
+              {c.department ? ` · ${c.department}` : ""}
+            </small>
+          )}
+        </span>
+      ),
+    },
+    {
+      id: "category",
+      label: "Category",
+      sortValue: (c) => c.categoryName,
+      render: (c) => (
+        <span className="text-sm">
+          {text.kinds[c.kind]} · {c.categoryName}
+        </span>
+      ),
+    },
+    {
+      id: "amount",
+      label: "Amount",
+      sortValue: (c) => c.amountMinor,
+      render: (c) => (
+        <span className="text-sm font-medium">{money(c.amountMinor)}</span>
+      ),
+    },
+    {
+      id: "date",
+      label: "Date",
+      sortValue: (c) => c.expenseDate,
+      render: (c) => <span className="text-sm">{day(c.expenseDate)}</span>,
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortValue: (c) => c.status,
+      render: (c) => <StatusPill status={c.status} />,
+    },
+    {
+      id: "actions",
+      label: "",
+      render: (c) => (
+        <span className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            onPress={() => onOpen(c.id)}
+            aria-label={text.mine.openLabel(c.title)}
+          >
+            {text.mine.open}
+          </Button>
+          {extra?.(c)}
+        </span>
+      ),
+    },
+  ];
+  return (
+    <CollectionView
+      id={id}
+      label={label}
+      noun="claims"
+      items={claims}
+      getKey={(c) => c.id}
+      columns={columns}
+      defaultView="table"
+      onOpen={(c) => onOpen(c.id)}
+      renderCard={(c) => (
+        <ClaimRow
+          claim={c}
+          showPerson={showPerson}
+          onOpen={() => onOpen(c.id)}
+          extra={extra?.(c)}
+        />
+      )}
+    />
+  );
+}
+
 function ClaimRow({
   claim,
   showPerson,
@@ -491,7 +592,7 @@ function ClaimRow({
   extra?: ReactNode;
 }) {
   return (
-    <li className="expenses-row">
+    <div className="expenses-row">
       <div className="expenses-main">
         <div className="expenses-title">
           <strong>{claim.title}</strong>
@@ -525,7 +626,7 @@ function ClaimRow({
         </Button>
         {extra}
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -662,16 +763,13 @@ function ApprovalsView({
             />
           )
         ) : (
-          <ul className="expenses-list">
-            {items.map((claim) => (
-              <ClaimRow
-                key={claim.id}
-                claim={claim}
-                showPerson
-                onOpen={() => setOpenId(claim.id)}
-              />
-            ))}
-          </ul>
+          <ClaimCollection
+            id="expenses-approvals"
+            label={text.approvals.heading}
+            claims={items}
+            showPerson={true}
+            onOpen={setOpenId}
+          />
         )}
       </section>
       <DetailsDialog
@@ -724,23 +822,20 @@ function PayView({ query }: { query: ReturnType<typeof useExpenses> }) {
             description={text.pay.emptyBody}
           />
         ) : (
-          <ul className="expenses-list">
-            {queue.map((claim) => (
-              <ClaimRow
-                key={claim.id}
-                claim={claim}
-                showPerson
-                onOpen={() => setOpenId(claim.id)}
-                extra={
-                  claim.canPay && (
-                    <Button onPress={() => setPayId(claim.id)}>
-                      {text.pay.markPaid}
-                    </Button>
-                  )
-                }
-              />
-            ))}
-          </ul>
+          <ClaimCollection
+            id="expenses-pay"
+            label={text.pay.heading}
+            claims={queue}
+            showPerson={true}
+            onOpen={setOpenId}
+            extra={(claim) =>
+              claim.canPay && (
+                <Button onPress={() => setPayId(claim.id)}>
+                  {text.pay.markPaid}
+                </Button>
+              )
+            }
+          />
         )}
       </section>
       <DetailsDialog

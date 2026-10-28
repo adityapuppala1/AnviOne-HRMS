@@ -54,6 +54,15 @@ import {
   updatesSchema,
   documentListSchema,
   documentReviewSchema,
+  recruitRequisitionListSchema,
+  recruitCandidateListSchema,
+  recruitCandidateSchema,
+  recruitApplicationListSchema,
+  recruitApplicationDetailSchema,
+  recruitInterviewListSchema,
+  recruitScorecardListSchema,
+  recruitOfferListSchema,
+  recruitFunnelSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -501,4 +510,135 @@ export const useTimeReview = (enabled: boolean) =>
     queryKey: ["time", "review"],
     enabled,
     queryFn: ({ signal }) => api("/time/review", timeReviewSchema, { signal }),
+  });
+
+// Recruitment (REC-01). Every key starts with "recruit" so one invalidation refreshes all tabs.
+const recruitGet = <T>(
+  path: string,
+  query: string,
+  schema: z.ZodType<T>,
+  signal?: AbortSignal,
+) => api(`/recruit/${path}${query ? `?${query}` : ""}`, schema, { signal });
+export const useRecruitRequisitions = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["recruit", "requisitions", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      recruitGet("requisitions", query, recruitRequisitionListSchema, signal),
+  });
+export const useRecruitCandidates = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["recruit", "candidates", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      recruitGet("candidates", query, recruitCandidateListSchema, signal),
+  });
+// Reading one candidate in full is audited, so this runs only when asked for.
+export const useRecruitCandidateReveal = (id: string | null) =>
+  useQuery({
+    queryKey: ["recruit", "candidate-reveal", id],
+    enabled: Boolean(id),
+    staleTime: 0,
+    gcTime: 0,
+    // Each full read is audited, so never repeat one in the background.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    queryFn: ({ signal }) =>
+      recruitGet(`candidates/${id}`, "", recruitCandidateSchema, signal),
+  });
+export const useRecruitApplications = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["recruit", "applications", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      recruitGet("applications", query, recruitApplicationListSchema, signal),
+  });
+export const useRecruitApplication = (id: string | null) =>
+  useQuery({
+    queryKey: ["recruit", "application", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      recruitGet(
+        `applications/${id}`,
+        "",
+        recruitApplicationDetailSchema,
+        signal,
+      ),
+  });
+export const useRecruitInterviews = (
+  enabled: boolean,
+  mine: boolean,
+  query: string,
+) =>
+  useQuery({
+    queryKey: ["recruit", "interviews", mine, query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      recruitGet(
+        mine ? "interviews/mine" : "interviews",
+        query,
+        recruitInterviewListSchema,
+        signal,
+      ),
+  });
+export const useRecruitScorecards = (id: string | null) =>
+  useQuery({
+    queryKey: ["recruit", "scorecards", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      recruitGet(
+        `interviews/${id}/scorecards`,
+        "",
+        recruitScorecardListSchema,
+        signal,
+      ),
+  });
+export const useRecruitOffers = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["recruit", "offers", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      recruitGet("offers", query, recruitOfferListSchema, signal),
+  });
+export const useRecruitFunnel = (enabled: boolean, requisitionId: string) =>
+  useQuery({
+    queryKey: ["recruit", "funnel", requisitionId],
+    enabled,
+    queryFn: ({ signal }) =>
+      recruitGet(
+        "funnel",
+        requisitionId ? `requisitionId=${requisitionId}` : "",
+        recruitFunnelSchema,
+        signal,
+      ),
+  });
+// Departments, locations and designations for the requisition form (HR only today).
+export const useOrganizationOptions = (
+  kind: "department" | "location" | "designation",
+  enabled: boolean,
+) =>
+  useQuery({
+    queryKey: ["organization", "options", kind],
+    enabled,
+    retry: false,
+    queryFn: ({ signal }) =>
+      api(`/organization?kind=${kind}&limit=50`, organizationDirectorySchema, {
+        signal,
+      }),
+  });
+export const usePeopleSearch = (term: string) =>
+  useQuery({
+    queryKey: ["directory", "search", term],
+    enabled: term.trim().length > 0,
+    queryFn: ({ signal }) =>
+      api(
+        `/employees?q=${encodeURIComponent(term.trim())}&limit=6`,
+        directorySchema,
+        { signal },
+      ),
   });

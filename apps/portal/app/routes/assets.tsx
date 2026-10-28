@@ -3,8 +3,6 @@ import { useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 import { Archive as ArchiveBox } from "@phosphor-icons/react/dist/csr/Archive";
-import { CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
-import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { Package } from "@phosphor-icons/react/dist/csr/Package";
@@ -13,6 +11,8 @@ import { UserCheck } from "@phosphor-icons/react/dist/csr/UserCheck";
 import { Wrench } from "@phosphor-icons/react/dist/csr/Wrench";
 import {
   Button,
+  CollectionView,
+  type Column,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -334,39 +334,26 @@ function ManageView() {
             />
           )
         ) : (
-          <ul className="assets-list">
-            {data.items.map((asset) => (
-              <AssetRow
-                key={asset.id}
-                asset={asset}
-                onOpen={() => setOpenId(asset.id)}
-              />
-            ))}
-          </ul>
+          <CollectionView
+            id="assets-hr"
+            label={text.list.heading}
+            noun="assets"
+            items={data.items}
+            getKey={(asset) => asset.id}
+            columns={assetColumns(setOpenId)}
+            renderCard={(asset) => (
+              <AssetRow asset={asset} onOpen={() => setOpenId(asset.id)} />
+            )}
+            onOpen={(asset) => setOpenId(asset.id)}
+            defaultView="table"
+            server={{
+              page: data.page,
+              total: data.total,
+              limit: pageLimit(data),
+              onPageChange: (next) => filter("page", String(next)),
+            }}
+          />
         )}
-        <div className="pagination assets-pagination">
-          <p>{text.list.page(data?.page ?? 1, data?.pages ?? 1)}</p>
-          <div>
-            <Button
-              variant="secondary"
-              aria-label={text.list.previousLabel}
-              isDisabled={!data || data.page <= 1}
-              onPress={() => filter("page", String((data?.page ?? 1) - 1))}
-            >
-              <CaretLeft size={16} />
-              {text.list.previous}
-            </Button>
-            <Button
-              variant="secondary"
-              aria-label={text.list.nextLabel}
-              isDisabled={!data || data.page >= data.pages}
-              onPress={() => filter("page", String((data?.page ?? 1) + 1))}
-            >
-              {text.list.next}
-              <CaretRight size={16} />
-            </Button>
-          </div>
-        </div>
       </section>
       <AddDialog
         open={adding}
@@ -395,10 +382,82 @@ function holderNote(asset: Asset) {
   return asset.acknowledgedAt ? text.list.acknowledged : text.list.awaiting;
 }
 
+// The API reports total and pages but not the page size; derive it.
+function pageLimit(data: {
+  items: unknown[];
+  total: number;
+  page: number;
+  pages: number;
+}) {
+  if (data.pages <= 1) return Math.max(1, data.total);
+  if (data.page < data.pages) return Math.max(1, data.items.length);
+  return Math.max(
+    1,
+    Math.ceil((data.total - data.items.length) / (data.page - 1)),
+  );
+}
+
+function assetColumns(open: (id: string) => void): Column<Asset>[] {
+  return [
+    {
+      id: "tag",
+      label: "Tag",
+      isRowHeader: true,
+      render: (asset) => <strong className="text-sm">{asset.tag}</strong>,
+    },
+    {
+      id: "name",
+      label: "Asset",
+      render: (asset) => (
+        <span className="flex min-w-0 flex-col">
+          <span className="text-sm text-primary">{asset.name}</span>
+          <small className="text-tertiary">
+            {text.categories[asset.category]}
+            {asset.serialNumber && ` · ${text.list.serial(asset.serialNumber)}`}
+          </small>
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (asset) => <StatusPill status={asset.status} />,
+    },
+    {
+      id: "holder",
+      label: "Held by",
+      render: (asset) =>
+        asset.custodian ? (
+          <span className="flex flex-col text-sm">
+            <span>{text.list.heldBy(asset.custodian.name)}</span>
+            {asset.status === "assigned" && (
+              <small className="text-tertiary">{holderNote(asset)}</small>
+            )}
+          </span>
+        ) : (
+          <small className="text-tertiary">{text.list.noHolder}</small>
+        ),
+    },
+    {
+      id: "open",
+      label: "",
+      render: (asset) => (
+        <Button
+          variant="secondary"
+          onPress={() => open(asset.id)}
+          aria-label={text.list.openLabel(asset.tag)}
+        >
+          {text.list.open}
+        </Button>
+      ),
+    },
+  ];
+}
+
 function AssetRow({ asset, onOpen }: { asset: Asset; onOpen: () => void }) {
   const note = holderNote(asset);
   return (
-    <li className="assets-row">
+    <div className="assets-row">
       <strong className="assets-tag">{asset.tag}</strong>
       <div className="assets-name">
         <span>{asset.name}</span>
@@ -427,7 +486,7 @@ function AssetRow({ asset, onOpen }: { asset: Asset; onOpen: () => void }) {
       >
         {text.list.open}
       </Button>
-    </li>
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
 import { Key } from "@phosphor-icons/react/dist/csr/Key";
 import { LockKey } from "@phosphor-icons/react/dist/csr/LockKey";
@@ -9,6 +9,7 @@ import { Moon } from "@phosphor-icons/react/dist/csr/Moon";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { Button, Badge, DialogPanel } from "@anvi/ui";
 import { z } from "zod";
+import { roleLabels, roleSchema } from "@anvi/contracts";
 import { api, ApiError, useAuthConfig } from "../lib/api";
 import { usePreferences } from "../lib/preferences";
 import { Brand } from "../components/brand";
@@ -80,20 +81,49 @@ const CARDS: FloatCard[] = [
   },
 ];
 
+// Demo-only personas; the API answers 404 outside demo mode.
+const personasSchema = z.array(
+  z.object({
+    key: z.string(),
+    name: z.string(),
+    title: z.string(),
+    roles: z.array(roleSchema),
+    summary: z.string(),
+  }),
+);
+type Persona = z.infer<typeof personasSchema>[number];
+const personaRoleLabel = (roles: Persona["roles"]) =>
+  roles.length === 1 ? roleLabels[roles[0]!] : text.personas.allRoles;
+
 export default function Login() {
   const config = useAuthConfig();
   const [params] = useSearchParams();
-  const [busy, setBusy] = useState(false),
+  const [busy, setBusy] = useState<string | false>(false),
     [error, setError] = useState(""),
     [help, setHelp] = useState(false);
   const { dark, update } = usePreferences();
   const navigate = useNavigate();
   const client = useQueryClient();
-  async function demo() {
-    setBusy(true);
+  // Kept under the auth-config key so sign-in does not drop and refetch it.
+  const personas = useQuery({
+    queryKey: ["auth-config", "personas"],
+    enabled: config.data?.demo === true,
+    staleTime: 60000,
+    retry: false,
+    queryFn: ({ signal }) =>
+      api("/auth/demo/personas", personasSchema, { signal }),
+  });
+  async function demo(persona?: string) {
+    setBusy(persona ?? "default");
     setError("");
     try {
-      await api("/auth/demo", z.unknown(), { method: "POST" });
+      await api(
+        "/auth/demo",
+        z.unknown(),
+        persona
+          ? { method: "POST", body: JSON.stringify({ persona }) }
+          : { method: "POST" },
+      );
       await client.cancelQueries();
       // Retain only public sign-in configuration while this screen unmounts.
       // Clearing its active query would immediately refetch it after each login.
@@ -185,10 +215,48 @@ export default function Login() {
           ) : !config.data ? (
             <Button isDisabled>{text.preparing}</Button>
           ) : config.data.demo ? (
-            <Button isDisabled={busy} onPress={() => void demo()}>
-              {busy ? text.openingDemo : text.exploreDemo}
-              <ArrowRight size={19} />
-            </Button>
+            <>
+              <Button isDisabled={!!busy} onPress={() => void demo()}>
+                {busy === "default" ? text.openingDemo : text.exploreDemo}
+                <ArrowRight size={19} />
+              </Button>
+              {personas.data && personas.data.length > 0 && (
+                <section
+                  className="persona-picker"
+                  aria-labelledby="persona-picker-title"
+                >
+                  <h3 id="persona-picker-title">{text.personas.title}</h3>
+                  <p>{text.personas.body}</p>
+                  <ul>
+                    {personas.data.map((persona) => {
+                      const role = personaRoleLabel(persona.roles);
+                      return (
+                        <li key={persona.key}>
+                          <Button
+                            variant="secondary"
+                            className="persona-option"
+                            isDisabled={!!busy}
+                            aria-label={text.personas.signInAs(
+                              persona.name,
+                              role,
+                            )}
+                            onPress={() => void demo(persona.key)}
+                          >
+                            <span className="persona-name">
+                              {busy === persona.key
+                                ? text.personas.opening(persona.name)
+                                : persona.name}
+                              <small>{persona.title}</small>
+                            </span>
+                            <Badge>{role}</Badge>
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
+            </>
           ) : (
             <a className="button button-primary" href="/api/v1/auth/login">
               <span className="microsoft-mark" aria-hidden="true">

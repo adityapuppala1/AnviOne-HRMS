@@ -105,3 +105,14 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Inside a CollectionView card the row stacks: icon and text, then actions. */
+[data-collection] .document-row {
+  grid-template-columns: auto minmax(0, 1fr);
+  border-top: 0;
+  padding: 0;
+}
+[data-collection] .document-row .document-actions {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+}

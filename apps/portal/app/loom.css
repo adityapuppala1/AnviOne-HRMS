@@ -478,6 +478,47 @@ textarea:hover {
 .demo-login-note {
   border-radius: 18px;
 }
+/* Demo persona picker: one woven row per synthetic person ------------- */
+.persona-picker {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.persona-picker h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.persona-picker > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.persona-picker ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.persona-picker .persona-option {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 14px;
+  text-align: left;
+}
+.persona-name {
+  display: grid;
+  min-width: 0;
+  font-weight: 600;
+}
+.persona-name small {
+  color: var(--muted);
+  font-weight: 400;
+}
 [data-mode="dark"] .login-icon {
   color: var(--marigold);
 }

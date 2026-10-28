@@ -11,6 +11,8 @@ import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import {
   Badge,
   Button,
+  CollectionView,
+  DetailFields,
   DialogPanel,
   ErrorState,
   LoadingState,
@@ -21,6 +23,7 @@ import {
   RangeInput,
   Select,
   TextArea,
+  type Column,
 } from "@anvi/ui";
 import type { Calendar as CalendarData, Holiday } from "@anvi/contracts";
 import { api, useCalendar } from "../lib/api";
@@ -47,6 +50,7 @@ export default function CalendarPage() {
   const query = useCalendar(year);
   const client = useQueryClient();
   const [editing, setEditing] = useState<Editing>(null);
+  const [listView, setListView] = useState(false);
   const { reduceMotion } = usePreferences();
   if (query.error)
     return (
@@ -103,6 +107,13 @@ export default function CalendarPage() {
           </div>
           <div className="calendar-year-actions">
             <Button
+              variant="secondary"
+              aria-pressed={listView}
+              onPress={() => setListView(!listView)}
+            >
+              {listView ? "Month view" : "List view"}
+            </Button>
+            <Button
               variant="icon"
               aria-label={text.year.show(data.year - 1)}
               onPress={() => setYear(data.year - 1)}
@@ -124,74 +135,85 @@ export default function CalendarPage() {
             )}
           </div>
         </div>
-        <ol className="calendar-months">
-          {Array.from({ length: 12 }, (_, month) => {
-            const items = data.holidays.filter(
-              (h) => at(h.date).getUTCMonth() === month,
-            );
-            const length = new Date(
-              Date.UTC(data.year, month + 1, 0),
-            ).getUTCDate();
-            const label = new Date(
-              Date.UTC(data.year, month, 1),
-            ).toLocaleString("en-IN", { month: "long", timeZone: "UTC" });
-            return (
-              <li
-                key={month}
-                className={`calendar-month ${items.length ? "" : "is-quiet"}`}
-              >
-                <h3>{label}</h3>
-                <div className="calendar-thread" aria-hidden="true">
-                  {items
-                    .filter((h) => h.active)
-                    .map((h) => (
-                      <span
-                        key={h.id}
-                        style={{
-                          left: `${((at(h.date).getUTCDate() - 1) / (length - 1)) * 100}%`,
-                        }}
-                      />
-                    ))}
-                </div>
-                {items.length === 0 ? (
-                  <p className="calendar-none">{text.year.none}</p>
-                ) : (
-                  <ul>
-                    {items.map((h) => (
-                      <li
-                        key={h.id}
-                        className={h.active ? "" : "calendar-inactive"}
-                      >
-                        <span className="calendar-day">
-                          <strong>{at(h.date).getUTCDate()}</strong>
-                          {fmt(h.date, { weekday: "short" })}
-                        </span>
-                        <span className="calendar-name">
-                          <strong>{h.name}</strong>
-                          <small>
-                            {h.locationName ?? text.year.wholeOrganization}
-                            {h.active ? "" : text.year.notObserved}
-                          </small>
-                        </span>
-                        {data.canManage && (
-                          <Button
-                            variant="icon"
-                            aria-label={text.year.edit(h.name)}
-                            onPress={() =>
-                              setEditing({ kind: "edit", holiday: h })
-                            }
-                          >
-                            <PencilSimple size={17} />
-                          </Button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        {listView ? (
+          <HolidayList
+            holidays={[...data.holidays].sort((a, b) =>
+              a.date < b.date ? -1 : 1,
+            )}
+            canManage={data.canManage}
+            onEdit={(holiday) => setEditing({ kind: "edit", holiday })}
+            year={data.year}
+          />
+        ) : (
+          <ol className="calendar-months">
+            {Array.from({ length: 12 }, (_, month) => {
+              const items = data.holidays.filter(
+                (h) => at(h.date).getUTCMonth() === month,
+              );
+              const length = new Date(
+                Date.UTC(data.year, month + 1, 0),
+              ).getUTCDate();
+              const label = new Date(
+                Date.UTC(data.year, month, 1),
+              ).toLocaleString("en-IN", { month: "long", timeZone: "UTC" });
+              return (
+                <li
+                  key={month}
+                  className={`calendar-month ${items.length ? "" : "is-quiet"}`}
+                >
+                  <h3>{label}</h3>
+                  <div className="calendar-thread" aria-hidden="true">
+                    {items
+                      .filter((h) => h.active)
+                      .map((h) => (
+                        <span
+                          key={h.id}
+                          style={{
+                            left: `${((at(h.date).getUTCDate() - 1) / (length - 1)) * 100}%`,
+                          }}
+                        />
+                      ))}
+                  </div>
+                  {items.length === 0 ? (
+                    <p className="calendar-none">{text.year.none}</p>
+                  ) : (
+                    <ul>
+                      {items.map((h) => (
+                        <li
+                          key={h.id}
+                          className={h.active ? "" : "calendar-inactive"}
+                        >
+                          <span className="calendar-day">
+                            <strong>{at(h.date).getUTCDate()}</strong>
+                            {fmt(h.date, { weekday: "short" })}
+                          </span>
+                          <span className="calendar-name">
+                            <strong>{h.name}</strong>
+                            <small>
+                              {h.locationName ?? text.year.wholeOrganization}
+                              {h.active ? "" : text.year.notObserved}
+                            </small>
+                          </span>
+                          {data.canManage && (
+                            <Button
+                              variant="icon"
+                              aria-label={text.year.edit(h.name)}
+                              onPress={() =>
+                                setEditing({ kind: "edit", holiday: h })
+                              }
+                            >
+                              <PencilSimple size={17} />
+                            </Button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        )}
       </section>
       {data.canManage && (
         <HolidayDialog
@@ -202,6 +224,127 @@ export default function CalendarPage() {
           refresh={refresh}
         />
       )}
+    </div>
+  );
+}
+
+type HolidayItem = Holiday;
+function HolidayList({
+  holidays,
+  canManage,
+  onEdit,
+  year,
+}: {
+  holidays: HolidayItem[];
+  canManage: boolean;
+  onEdit: (holiday: HolidayItem) => void;
+  year: number;
+}) {
+  const scope = (h: HolidayItem) =>
+    h.locationName ?? text.year.wholeOrganization;
+  const columns: Column<HolidayItem>[] = [
+    {
+      id: "date",
+      label: "Date",
+      isRowHeader: true,
+      sortValue: (h) => h.date,
+      render: (h) => (
+        <span className="text-sm font-medium">
+          {fmt(h.date, { weekday: "short", day: "numeric", month: "short" })}
+        </span>
+      ),
+    },
+    {
+      id: "name",
+      label: "Holiday",
+      sortValue: (h) => h.name,
+      render: (h) => <span className="text-sm">{h.name}</span>,
+    },
+    {
+      id: "scope",
+      label: "Applies to",
+      sortValue: scope,
+      render: (h) => <span className="text-sm">{scope(h)}</span>,
+    },
+    {
+      id: "observed",
+      label: "Observed",
+      render: (h) => (
+        <span className="text-sm">
+          {h.active ? "Yes" : text.year.notObserved}
+        </span>
+      ),
+    },
+    {
+      id: "edit",
+      label: "",
+      render: (h) =>
+        canManage ? (
+          <Button
+            variant="icon"
+            aria-label={text.year.edit(h.name)}
+            onPress={() => onEdit(h)}
+          >
+            <PencilSimple size={17} />
+          </Button>
+        ) : null,
+    },
+  ];
+  return (
+    <div className="calendar-list">
+      <CollectionView
+        id="calendar-holidays"
+        label={text.year.title(year)}
+        noun="holidays"
+        items={holidays}
+        getKey={(h) => h.id}
+        columns={columns}
+        defaultView="table"
+        renderCard={(h) => (
+          <div className="flex min-w-0 flex-col gap-1">
+            <strong className="text-sm">{h.name}</strong>
+            <span className="text-sm text-tertiary">
+              {fmt(h.date, { weekday: "long", day: "numeric", month: "long" })}
+            </span>
+            <span className="text-sm text-tertiary">
+              {scope(h)}
+              {h.active ? "" : text.year.notObserved}
+            </span>
+          </div>
+        )}
+        detail={{
+          title: (h) => h.name,
+          subtitle: (h) =>
+            fmt(h.date, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+          body: (h) => (
+            <DetailFields
+              fields={[
+                { label: "Applies to", value: scope(h) },
+                { label: "Observed", value: h.active ? "Yes" : "No" },
+                { label: "Weekday", value: fmt(h.date, { weekday: "long" }) },
+              ]}
+            />
+          ),
+          footer: canManage
+            ? (h, close) => (
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    close();
+                    onEdit(h);
+                  }}
+                >
+                  Edit holiday
+                </Button>
+              )
+            : undefined,
+        }}
+      />
     </div>
   );
 }

@@ -291,11 +291,11 @@ function Card({
             </StatusBadge>
           )}
         </p>
-        <p className="chart-title">
+        <p className="chart-title" title={node.title || text.noTitle}>
           <Highlight value={node.title || text.noTitle} needle={needle} />
         </p>
         <p className="chart-meta">
-          <span>
+          <span title={node.department || text.noDepartment}>
             <Highlight
               value={node.department || text.noDepartment}
               needle={needle}

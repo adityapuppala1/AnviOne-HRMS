@@ -8,8 +8,7 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Badge,
   Button,
-  DataCard,
-  DialogPanel,
+  CollectionView,
   EmptyBlock,
   ErrorState,
   Input,
@@ -48,7 +47,6 @@ function ActivityLog() {
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
-  const event = data?.find((item) => item.id === selected);
   return (
     <div className="page-enter">
       <PageHeader
@@ -98,7 +96,6 @@ function ActivityLog() {
               <X size={14} />
             </Button>
           )}
-          <Badge>{text.latestOnly}</Badge>
         </div>
         {error ? (
           <ErrorState message={error.message} onRetry={() => void refetch()} />
@@ -111,13 +108,16 @@ function ActivityLog() {
             description={data.length ? text.noMatchDetail : text.emptyDetail}
           />
         ) : (
-          <DataCard
-            title={text.tableTitle}
+          <CollectionView
+            id="activity"
             label={text.tableLabel}
-            rows={events}
+            noun="events"
+            items={events}
             getKey={(item) => item.id}
-            pageSize={10}
-            empty={null}
+            defaultView="table"
+            openKey={selected}
+            onOpenKeyChange={setSelected}
+            note={text.latestOnly}
             columns={[
               {
                 id: "action",
@@ -133,6 +133,7 @@ function ActivityLog() {
               {
                 id: "actor",
                 label: text.columns.actor,
+                sortValue: (item) => item.actor,
                 render: (item) => (
                   <span className="text-sm text-tertiary">
                     {item.actor} · {item.role.replaceAll("_", " ")}
@@ -170,68 +171,55 @@ function ActivityLog() {
                 ),
               },
             ]}
-            mobileRow={(item) => (
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-medium text-primary">
-                    {actionNames[item.action] ?? item.action}
-                  </h2>
-                  <p className="text-sm text-tertiary">
-                    {item.actor} · {item.role.replaceAll("_", " ")}
-                  </p>
-                  <small className="block break-words text-tertiary">
-                    {item.target}
-                  </small>
-                  <time dateTime={item.occurredAt} className="text-xs">
-                    {formatDate(item.occurredAt)}
-                  </time>
-                </div>
-                <Button
-                  variant="icon"
-                  aria-label={text.viewEvent(item.id)}
-                  onPress={() => setSelected(item.id)}
-                >
-                  <ArrowUpRight size={18} />
-                </Button>
+            renderCard={(item) => (
+              <div className="min-w-0">
+                <h2 className="text-sm font-medium text-primary">
+                  {actionNames[item.action] ?? item.action}
+                </h2>
+                <p className="text-sm text-tertiary">
+                  {item.actor} · {item.role.replaceAll("_", " ")}
+                </p>
+                <small className="block break-words text-tertiary">
+                  {item.target}
+                </small>
+                <time dateTime={item.occurredAt} className="text-xs">
+                  {formatDate(item.occurredAt)}
+                </time>
               </div>
             )}
+            detail={{
+              title: () => text.details,
+              subtitle: (item) => actionNames[item.action] ?? item.action,
+              body: (item) => (
+                <dl className="event-details">
+                  {[
+                    { name: text.fields.actor, value: item.actor },
+                    {
+                      name: text.fields.role,
+                      value: item.role.replaceAll("_", " "),
+                    },
+                    { name: text.fields.record, value: item.target },
+                    {
+                      name: text.fields.when,
+                      value: formatDate(item.occurredAt),
+                    },
+                    { name: text.fields.eventId, value: item.id },
+                    { name: text.fields.requestId, value: item.requestId },
+                    ...(item.reason
+                      ? [{ name: text.fields.reason, value: item.reason }]
+                      : []),
+                  ].map((field) => (
+                    <div key={field.name}>
+                      <dt>{field.name}</dt>
+                      <dd>{field.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ),
+            }}
           />
         )}
       </section>
-      <DialogPanel
-        open={Boolean(event)}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null);
-        }}
-        title={text.details}
-      >
-        {event && (
-          <>
-            <Badge>{actionNames[event.action] ?? event.action}</Badge>
-            <dl className="event-details">
-              {[
-                { name: text.fields.actor, value: event.actor },
-                {
-                  name: text.fields.role,
-                  value: event.role.replaceAll("_", " "),
-                },
-                { name: text.fields.record, value: event.target },
-                { name: text.fields.when, value: formatDate(event.occurredAt) },
-                { name: text.fields.eventId, value: event.id },
-                { name: text.fields.requestId, value: event.requestId },
-                ...(event.reason
-                  ? [{ name: text.fields.reason, value: event.reason }]
-                  : []),
-              ].map((field) => (
-                <div key={field.name}>
-                  <dt>{field.name}</dt>
-                  <dd>{field.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </>
-        )}
-      </DialogPanel>
     </div>
   );
 }

@@ -314,3 +314,11 @@
     flex: 1 1 100%;
   }
 }
+
+/* Inside a CollectionView card the row stacks. */
+[data-collection] .policies-row {
+  flex-direction: column;
+  align-items: stretch;
+  border-top: 0;
+  padding: 0;
+}

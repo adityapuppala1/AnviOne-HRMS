@@ -288,3 +288,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Inside a CollectionView card the row stacks. */
+[data-collection] .assets-row {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: none;
+  border-top: 0;
+  padding: 0;
+  margin: 0;
+  gap: 8px;
+}
+[data-collection] .assets-row > * {
+  grid-area: auto;
+}

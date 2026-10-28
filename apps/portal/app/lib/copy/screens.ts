@@ -198,6 +198,13 @@ export const loginCopy = {
   preparing: "Preparing sign-in…",
   openingDemo: "Opening your workspace…",
   exploreDemo: "Explore demo workspace",
+  personas: {
+    title: "Or sign in as",
+    body: "Synthetic people, each with only their own roles.",
+    allRoles: "All roles",
+    signInAs: (name: string, role: string) => `Sign in as ${name} (${role})`,
+    opening: (name: string) => `Opening ${name}’s workspace…`,
+  },
   microsoft: "Sign in with Microsoft",
   helpIdentity: "Use the company identity approved by your HR team.",
   helpInvite: "New here? Your account starts with an invitation.",

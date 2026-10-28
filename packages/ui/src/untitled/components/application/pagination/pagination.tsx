@@ -83,6 +83,7 @@ const MobilePagination = ({
         iconLeading={ArrowLeft}
         color="secondary"
         size="sm"
+        className="min-h-11 min-w-11"
         onClick={() => onPageChange?.(Math.max(0, page - 1))}
       />
 
@@ -96,6 +97,7 @@ const MobilePagination = ({
         iconLeading={ArrowRight}
         color="secondary"
         size="sm"
+        className="min-h-11 min-w-11"
         onClick={() => onPageChange?.(Math.min(total, page + 1))}
       />
     </nav>

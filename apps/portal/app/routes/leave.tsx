@@ -8,6 +8,11 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
   Button,
+  CollectionView,
+  DetailFields,
+  StatusBadge,
+  type CollectionDetail,
+  type Column,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -381,6 +386,117 @@ function BalanceThread({ balance }: { balance: LeaveBalance }) {
   );
 }
 
+const stamp = (iso: string) =>
+  new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  });
+const stateColor = (state: LeaveState) =>
+  state === "approved"
+    ? "success"
+    : state === "pending"
+      ? "warning"
+      : state === "rejected"
+        ? "error"
+        : "gray";
+const requestDetail: CollectionDetail<LeaveRequest> = {
+  title: (r) => `${r.leaveType.name}, ${range(r.startDate, r.endDate)}`,
+  subtitle: (r) => (
+    <StatusBadge color={stateColor(r.state)} size="sm" type="pill-color">
+      {text.states[r.state]}
+    </StatusBadge>
+  ),
+  body: (r) => (
+    <>
+      <DetailFields
+        title="Request"
+        fields={[
+          { label: "Person", value: r.employeeName },
+          { label: "Department", value: r.department },
+          { label: "Leave type", value: r.leaveType.name },
+          { label: "From", value: range(r.startDate, r.startDate) },
+          { label: "To", value: range(r.endDate, r.endDate) },
+          { label: "Days", value: String(r.days) },
+          { label: "Reason", value: r.reason },
+          {
+            label: "Decided by",
+            value: r.approver === "manager" ? "Team manager" : "HR",
+          },
+        ]}
+      />
+      <DetailFields
+        title="History"
+        fields={[
+          { label: "Requested", value: stamp(r.createdAt) },
+          { label: "Status", value: text.states[r.state] },
+          { label: "Decided by", value: r.decidedBy },
+          { label: "Decided", value: r.decidedAt && stamp(r.decidedAt) },
+          { label: "Note", value: r.decisionNote },
+        ]}
+      />
+    </>
+  ),
+};
+const requestColumns = (
+  onCancel?: (r: LeaveRequest) => void,
+  showPerson = false,
+): Column<LeaveRequest>[] => [
+  {
+    id: "type",
+    label: showPerson ? "Person and type" : "Leave type",
+    isRowHeader: true,
+    sortValue: (r) => (showPerson ? r.employeeName : r.leaveType.name),
+    render: (r) => (
+      <span className="flex flex-col">
+        <strong className="text-sm text-primary">
+          {showPerson ? r.employeeName : r.leaveType.name}
+        </strong>
+        {showPerson && (
+          <span className="text-sm text-tertiary">{r.leaveType.name}</span>
+        )}
+      </span>
+    ),
+  },
+  {
+    id: "dates",
+    label: "Dates",
+    sortValue: (r) => r.startDate,
+    render: (r) => (
+      <span className="text-sm">{range(r.startDate, r.endDate)}</span>
+    ),
+  },
+  {
+    id: "days",
+    label: "Days",
+    sortValue: (r) => r.days,
+    render: (r) => <span className="text-sm">{r.days}</span>,
+  },
+  {
+    id: "state",
+    label: "Status",
+    sortValue: (r) => r.state,
+    render: (r) => <StateBadge state={r.state} />,
+  },
+  {
+    id: "actions",
+    label: "",
+    render: (r) =>
+      onCancel && r.canCancel ? (
+        <Button
+          variant="secondary"
+          onPress={() => onCancel(r)}
+          aria-label={text.list.cancelAria(
+            r.leaveType.name,
+            range(r.startDate, r.endDate),
+          )}
+        >
+          {text.list.cancel}
+        </Button>
+      ) : null,
+  },
+];
+
 function RequestList({
   title,
   items,
@@ -393,9 +509,17 @@ function RequestList({
   return (
     <div className="leave-group">
       <h3>{title}</h3>
-      <ol className="leave-list">
-        {items.map((r) => (
-          <li key={r.id} className={`leave-item leave-${r.state}`}>
+      <CollectionView
+        id="leave-requests"
+        label={title}
+        noun="requests"
+        items={items}
+        getKey={(r) => r.id}
+        columns={requestColumns(onCancel)}
+        detail={requestDetail}
+        defaultView="cards"
+        renderCard={(r) => (
+          <div className={`leave-item leave-${r.state}`}>
             <DateBlock request={r} />
             <div className="leave-item-body">
               <div className="leave-item-head">
@@ -432,9 +556,9 @@ function RequestList({
                 {text.list.cancel}
               </Button>
             )}
-          </li>
-        ))}
-      </ol>
+          </div>
+        )}
+      />
     </div>
   );
 }
@@ -531,9 +655,17 @@ function Approvals({
             />
           </div>
         ) : (
-          <ul className="leave-cards">
-            {pending.map((r) => (
-              <li key={r.id} className="panel leave-card">
+          <CollectionView
+            id="leave-pending"
+            label={text.approvals.awaitingTitle}
+            noun="requests"
+            items={pending}
+            getKey={(r) => r.id}
+            columns={requestColumns(undefined, true)}
+            detail={requestDetail}
+            defaultView="cards"
+            renderCard={(r) => (
+              <div className="leave-card">
                 <div className="leave-card-person">
                   <Avatar initials={r.initials} />
                   <div>
@@ -578,9 +710,9 @@ function Approvals({
                     {text.approvals.routed(r.approver === "manager")}
                   </p>
                 )}
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+          />
         )}
       </section>
       {decided.length > 0 && (
@@ -591,9 +723,17 @@ function Approvals({
               <p>{text.approvals.decidedHint}</p>
             </div>
           </div>
-          <ol className="leave-list">
-            {decided.map((r) => (
-              <li key={r.id} className={`leave-item leave-${r.state}`}>
+          <CollectionView
+            id="leave-decided"
+            label={text.approvals.decidedTitle}
+            noun="decisions"
+            items={decided}
+            getKey={(r) => r.id}
+            columns={requestColumns(undefined, true)}
+            detail={requestDetail}
+            defaultView="table"
+            renderCard={(r) => (
+              <div className={`leave-item leave-${r.state}`}>
                 <DateBlock request={r} />
                 <div className="leave-item-body">
                   <div className="leave-item-head">
@@ -613,9 +753,9 @@ function Approvals({
                     </p>
                   )}
                 </div>
-              </li>
-            ))}
-          </ol>
+              </div>
+            )}
+          />
         </section>
       )}
       <DialogPanel

@@ -40,6 +40,8 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "expense.approve": "team",
     "insights.read": "team",
     "profile.self": "self",
+    // Managers report on their team on screen only; exporting is HR's.
+    "report.run": "team",
   },
   hr_admin: {
     "directory.read": "entity",
@@ -56,6 +58,8 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "expense.approve": "entity",
     "expense.manage": "entity",
     "profile.review": "entity",
+    "report.run": "entity",
+    "report.export": "entity",
   },
   platform_admin: { "branding.write": "entity" },
   auditor: { "audit.read": "entity" },

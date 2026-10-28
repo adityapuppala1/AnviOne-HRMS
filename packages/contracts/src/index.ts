@@ -41,6 +41,8 @@ export const permissionSchema = z.enum([
   "expense.manage",
   "profile.self",
   "profile.review",
+  "report.run",
+  "report.export",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -1761,3 +1763,183 @@ export {
   onboardingStarter,
   submissionChanges,
 } from "./onboarding";
+
+// RPT-01 reports: a fixed catalog of datasets; a definition only names whitelisted
+// columns, operators and a sort, never SQL. The server checks every key against the
+// catalog and the caller's field authorization.
+export const reportDatasetSchema = z.enum([
+  "people",
+  "leave",
+  "attendance",
+  "expenses",
+  "assets",
+  "policyAcknowledgements",
+  "exits",
+]);
+export type ReportDataset = z.infer<typeof reportDatasetSchema>;
+export const reportColumnTypeSchema = z.enum([
+  "text",
+  "enum",
+  "number",
+  "money",
+  "date",
+]);
+export const reportOperatorSchema = z.enum([
+  "eq",
+  "in",
+  "between",
+  "contains",
+  "gte",
+  "lte",
+]);
+export type ReportOperator = z.infer<typeof reportOperatorSchema>;
+const reportColumnKey = z.string().regex(/^[a-z][A-Za-z0-9]{0,39}$/);
+const reportScalar = z.union([
+  z.string().max(120),
+  z.number().finite().min(-1e12).max(1e12),
+]);
+export const reportFilterSchema = z.discriminatedUnion("op", [
+  z.strictObject({
+    column: reportColumnKey,
+    op: z.literal("eq"),
+    value: reportScalar,
+  }),
+  z.strictObject({
+    column: reportColumnKey,
+    op: z.literal("in"),
+    values: z.array(z.string().max(120)).min(1).max(50),
+  }),
+  z.strictObject({
+    column: reportColumnKey,
+    op: z.literal("between"),
+    from: reportScalar,
+    to: reportScalar,
+  }),
+  z.strictObject({
+    column: reportColumnKey,
+    op: z.literal("contains"),
+    value: z.string().trim().min(1).max(80),
+  }),
+  z.strictObject({
+    column: reportColumnKey,
+    op: z.enum(["gte", "lte"]),
+    value: reportScalar,
+  }),
+]);
+export type ReportFilter = z.infer<typeof reportFilterSchema>;
+export const reportSortSchema = z.strictObject({
+  column: reportColumnKey,
+  direction: z.enum(["asc", "desc"]),
+});
+export const reportDefinitionSchema = z
+  .strictObject({
+    dataset: reportDatasetSchema,
+    columns: z.array(reportColumnKey).min(1).max(20),
+    filters: z.array(reportFilterSchema).max(10).default([]),
+    sort: reportSortSchema.optional(),
+    // On-screen rows; exports use their own cap.
+    limit: z.number().int().min(1).max(1000).default(100),
+  })
+  .superRefine((value, ctx) => {
+    if (new Set(value.columns).size !== value.columns.length)
+      ctx.addIssue({
+        code: "custom",
+        message: "Each column may appear only once",
+        path: ["columns"],
+      });
+    if (new TextEncoder().encode(JSON.stringify(value)).length > 8000)
+      ctx.addIssue({
+        code: "custom",
+        message: "This report definition is too large (8,000 bytes at most)",
+        path: [],
+      });
+  });
+export type ReportDefinition = z.infer<typeof reportDefinitionSchema>;
+export const reportRunSchema = z.strictObject({
+  definition: reportDefinitionSchema,
+});
+export const reportExportSchema = z.strictObject({
+  definition: reportDefinitionSchema,
+  // Used only to name the downloaded file; reduced to [a-z0-9-].
+  fileName: z.string().trim().min(1).max(80).optional(),
+});
+export const reportColumnSchema = z.strictObject({
+  key: z.string(),
+  label: z.string(),
+  type: reportColumnTypeSchema,
+  sensitive: z.boolean(),
+  operators: z.array(reportOperatorSchema),
+  options: z.array(z.string()).optional(),
+});
+export const reportCatalogSchema = z.strictObject({
+  scope: z.enum(["team", "entity"]),
+  canExport: z.boolean(),
+  limits: z.strictObject({
+    maxColumns: z.number().int(),
+    maxFilters: z.number().int(),
+    runRows: z.number().int(),
+    exportRows: z.number().int(),
+    savedReports: z.number().int(),
+    exportsPerMinute: z.number().int(),
+    runsPerMinute: z.number().int(),
+  }),
+  datasets: z.array(
+    z.strictObject({
+      key: reportDatasetSchema,
+      label: z.string(),
+      description: z.string(),
+      columns: z.array(reportColumnSchema),
+    }),
+  ),
+});
+export type ReportCatalog = z.infer<typeof reportCatalogSchema>;
+export const reportResultSchema = z.strictObject({
+  dataset: reportDatasetSchema,
+  scope: z.enum(["team", "entity"]),
+  // Money cells are integer paise (INR); dates are YYYY-MM-DD.
+  columns: z.array(
+    z.strictObject({
+      key: z.string(),
+      label: z.string(),
+      type: reportColumnTypeSchema,
+    }),
+  ),
+  rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
+  total: z.number().int().min(0),
+  truncated: z.boolean(),
+  // The count stops at 10,001; true means "more than 10,000".
+  totalCapped: z.boolean(),
+});
+export type ReportResult = z.infer<typeof reportResultSchema>;
+const savedReportName = z.string().trim().min(3).max(80);
+export const savedReportSchema = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+  dataset: reportDatasetSchema,
+  // Null when the caller's current role may not run it, so filter values stay hidden.
+  definition: reportDefinitionSchema.nullable(),
+  // False when the caller's current role may no longer run this definition.
+  runnable: z.boolean(),
+  archived: z.boolean(),
+  version: z.number().int().positive(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type SavedReport = z.infer<typeof savedReportSchema>;
+export const savedReportListSchema = z.strictObject({
+  items: z.array(savedReportSchema),
+  limit: z.number().int(),
+});
+export type SavedReportList = z.infer<typeof savedReportListSchema>;
+export const savedReportCreateSchema = z.strictObject({
+  name: savedReportName,
+  definition: reportDefinitionSchema,
+});
+export const savedReportUpdateSchema = z.strictObject({
+  name: savedReportName,
+  definition: reportDefinitionSchema,
+  version: z.number().int().positive(),
+});
+export const savedReportArchiveSchema = z.strictObject({
+  version: z.number().int().positive(),
+});

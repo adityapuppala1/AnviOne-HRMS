@@ -25,6 +25,7 @@ export default [
     route("expenses", "routes/expenses.tsx"),
     route("details", "routes/details.tsx"),
     route("chart", "routes/chart.tsx"),
+    route("reports", "routes/reports.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),
     route("activity", "routes/activity.tsx"),

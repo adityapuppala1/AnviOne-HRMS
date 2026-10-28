@@ -19,6 +19,7 @@ import { Laptop } from "@phosphor-icons/react/dist/csr/Laptop";
 import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
+import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -68,6 +69,12 @@ export function Command({
           <LayoutDashboard size={18} />
           {copy.nav.overview}
         </Button>
+        {me.permissions.includes("report.run") && (
+          <Button variant="ghost" onPress={() => go("/reports")}>
+            <TableIcon size={18} />
+            {copy.nav.reports}
+          </Button>
+        )}
         {me.permissions.includes("directory.read") && (
           <Button variant="ghost" onPress={() => go("/people")}>
             <Users size={18} />

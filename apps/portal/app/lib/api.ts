@@ -27,6 +27,8 @@ import {
   expenseListSchema,
   myExpensesSchema,
   organizationChartSchema,
+  reportCatalogSchema,
+  savedReportListSchema,
   organizationDetailSchema,
   myProfileSchema,
   profileEmployeeSchema,
@@ -356,4 +358,19 @@ export const useOrganizationDetail = (id: string | null) =>
     enabled: Boolean(id),
     queryFn: ({ signal }) =>
       api(`/organization/${id}`, organizationDetailSchema, { signal }),
+  });
+
+export const useReportCatalog = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["reports", "datasets"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/reports/datasets", reportCatalogSchema, { signal }),
+  });
+export const useSavedReports = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["reports", "saved"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/reports/saved", savedReportListSchema, { signal }),
   });

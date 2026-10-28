@@ -23,6 +23,7 @@ import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -229,6 +230,12 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("policy.self") ||
         me.permissions.includes("policy.manage"),
+    },
+    {
+      to: "/reports",
+      label: copy.nav.reports,
+      icon: TableIcon,
+      visible: me.permissions.includes("report.run"),
     },
     {
       to: "/chart",

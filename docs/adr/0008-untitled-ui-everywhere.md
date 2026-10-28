@@ -32,6 +32,10 @@ Only the open-source, MIT-licensed Untitled UI React components are used. They c
 
 `organization` was rebuilt on the kit with the ORG-02 features (tabs for five kinds, effective dates, merge dialog, row menus) and the new `chart` screen is built on it too.
 
+## Reports
+
+The Reports screen is built on the kit from the start (radio cards, checkboxes, selects, tabs, the Untitled table).
+
 ## Not done yet
 
 `Dropdown` row-action menus, `ComboBox` for the exit picker, `ButtonGroup`, and the extra free components available in the starter kit but not yet vendored (`tags`, `slider`, `progress-indicators`, `file-upload`, `modals`, `slideout-menus`, `date-picker`, `loading-indicator`, `charts`).

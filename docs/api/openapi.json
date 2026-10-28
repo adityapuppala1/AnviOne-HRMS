@@ -897,7 +897,9 @@
                           "expense.approve",
                           "expense.manage",
                           "profile.self",
-                          "profile.review"
+                          "profile.review",
+                          "report.run",
+                          "report.export"
                         ]
                       }
                     },
@@ -17350,6 +17352,3557 @@
                     "department",
                     "location",
                     "manager"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/datasets": {
+      "get": {
+        "summary": "Report catalog limited to what the caller may run: managers see team datasets (people, leave, attendance, expenses) without sensitive columns; HR sees every dataset and column",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "scope": {
+                      "type": "string",
+                      "enum": ["team", "entity"]
+                    },
+                    "canExport": {
+                      "type": "boolean"
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "maxColumns": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "maxFilters": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "runRows": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "exportRows": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "savedReports": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "exportsPerMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "runsPerMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "maxColumns",
+                        "maxFilters",
+                        "runRows",
+                        "exportRows",
+                        "savedReports",
+                        "exportsPerMinute",
+                        "runsPerMinute"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "datasets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "people",
+                              "leave",
+                              "attendance",
+                              "expenses",
+                              "assets",
+                              "policyAcknowledgements",
+                              "exits"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "columns": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "text",
+                                    "enum",
+                                    "number",
+                                    "money",
+                                    "date"
+                                  ]
+                                },
+                                "sensitive": {
+                                  "type": "boolean"
+                                },
+                                "operators": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "eq",
+                                      "in",
+                                      "between",
+                                      "contains",
+                                      "gte",
+                                      "lte"
+                                    ]
+                                  }
+                                },
+                                "options": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "label",
+                                "type",
+                                "sensitive",
+                                "operators"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": ["key", "label", "description", "columns"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["scope", "canExport", "limits", "datasets"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/run": {
+      "post": {
+        "summary": "Run a whitelisted report definition under the caller's row-level security; at most 1000 rows, with the total count and a truncated flag; money cells are integer paise",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "definition": {
+                    "type": "object",
+                    "properties": {
+                      "dataset": {
+                        "type": "string",
+                        "enum": [
+                          "people",
+                          "leave",
+                          "attendance",
+                          "expenses",
+                          "assets",
+                          "policyAcknowledgements",
+                          "exits"
+                        ]
+                      },
+                      "columns": {
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                        }
+                      },
+                      "filters": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "eq"
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "in"
+                                },
+                                "values": {
+                                  "minItems": 1,
+                                  "maxItems": 50,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 120
+                                  }
+                                }
+                              },
+                              "required": ["column", "op", "values"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "between"
+                                },
+                                "from": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                },
+                                "to": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "from", "to"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "contains"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "enum": ["gte", "lte"]
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "sort": {
+                        "type": "object",
+                        "properties": {
+                          "column": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": ["asc", "desc"]
+                          }
+                        },
+                        "required": ["column", "direction"],
+                        "additionalProperties": false
+                      },
+                      "limit": {
+                        "default": 100,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000
+                      }
+                    },
+                    "required": ["dataset", "columns", "filters", "limit"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["definition"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "dataset": {
+                      "type": "string",
+                      "enum": [
+                        "people",
+                        "leave",
+                        "attendance",
+                        "expenses",
+                        "assets",
+                        "policyAcknowledgements",
+                        "exits"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": ["team", "entity"]
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": ["text", "enum", "number", "money", "date"]
+                          }
+                        },
+                        "required": ["key", "label", "type"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": ["string", "number", "null"]
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "totalCapped": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "dataset",
+                    "scope",
+                    "columns",
+                    "rows",
+                    "total",
+                    "truncated",
+                    "totalCapped"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/export": {
+      "post": {
+        "summary": "HR-only CSV export",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "definition": {
+                    "type": "object",
+                    "properties": {
+                      "dataset": {
+                        "type": "string",
+                        "enum": [
+                          "people",
+                          "leave",
+                          "attendance",
+                          "expenses",
+                          "assets",
+                          "policyAcknowledgements",
+                          "exits"
+                        ]
+                      },
+                      "columns": {
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                        }
+                      },
+                      "filters": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "eq"
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "in"
+                                },
+                                "values": {
+                                  "minItems": 1,
+                                  "maxItems": 50,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 120
+                                  }
+                                }
+                              },
+                              "required": ["column", "op", "values"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "between"
+                                },
+                                "from": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                },
+                                "to": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "from", "to"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "contains"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "enum": ["gte", "lte"]
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "sort": {
+                        "type": "object",
+                        "properties": {
+                          "column": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": ["asc", "desc"]
+                          }
+                        },
+                        "required": ["column", "direction"],
+                        "additionalProperties": false
+                      },
+                      "limit": {
+                        "default": 100,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000
+                      }
+                    },
+                    "required": ["dataset", "columns", "filters", "limit"],
+                    "additionalProperties": false
+                  },
+                  "fileName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                },
+                "required": ["definition"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CSV attachment",
+            "headers": {
+              "X-Report-Truncated": {
+                "schema": {
+                  "type": "string",
+                  "enum": ["true", "false"]
+                }
+              },
+              "X-Report-Row-Count": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-Report-Export-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "UTF-8 CSV with BOM, CRLF and RFC 4180 quoting; text starting with = + - @ tab, CR or LF is prefixed with an apostrophe; money in rupees with two decimals. At most 10,000 rows: X-Report-Truncated says whether rows were left out and X-Report-Row-Count gives the rows written (no note row is added). Each export writes one audit row and outbox event with the dataset, column keys and filter operators only. Limited to 10 exports per minute per person."
+      }
+    },
+    "/reports/saved": {
+      "get": {
+        "summary": "The caller's own saved report definitions (archived ones are hidden)",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "dataset": {
+                            "type": "string",
+                            "enum": [
+                              "people",
+                              "leave",
+                              "attendance",
+                              "expenses",
+                              "assets",
+                              "policyAcknowledgements",
+                              "exits"
+                            ]
+                          },
+                          "definition": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "dataset": {
+                                    "type": "string",
+                                    "enum": [
+                                      "people",
+                                      "leave",
+                                      "attendance",
+                                      "expenses",
+                                      "assets",
+                                      "policyAcknowledgements",
+                                      "exits"
+                                    ]
+                                  },
+                                  "columns": {
+                                    "minItems": 1,
+                                    "maxItems": 20,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                    }
+                                  },
+                                  "filters": {
+                                    "default": [],
+                                    "maxItems": 10,
+                                    "type": "array",
+                                    "items": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "column": {
+                                              "type": "string",
+                                              "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                            },
+                                            "op": {
+                                              "type": "string",
+                                              "const": "eq"
+                                            },
+                                            "value": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "maxLength": 120
+                                                },
+                                                {
+                                                  "type": "number",
+                                                  "minimum": -1000000000000,
+                                                  "maximum": 1000000000000
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": ["column", "op", "value"],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "column": {
+                                              "type": "string",
+                                              "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                            },
+                                            "op": {
+                                              "type": "string",
+                                              "const": "in"
+                                            },
+                                            "values": {
+                                              "minItems": 1,
+                                              "maxItems": 50,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string",
+                                                "maxLength": 120
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "column",
+                                            "op",
+                                            "values"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "column": {
+                                              "type": "string",
+                                              "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                            },
+                                            "op": {
+                                              "type": "string",
+                                              "const": "between"
+                                            },
+                                            "from": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "maxLength": 120
+                                                },
+                                                {
+                                                  "type": "number",
+                                                  "minimum": -1000000000000,
+                                                  "maximum": 1000000000000
+                                                }
+                                              ]
+                                            },
+                                            "to": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "maxLength": 120
+                                                },
+                                                {
+                                                  "type": "number",
+                                                  "minimum": -1000000000000,
+                                                  "maximum": 1000000000000
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "column",
+                                            "op",
+                                            "from",
+                                            "to"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "column": {
+                                              "type": "string",
+                                              "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                            },
+                                            "op": {
+                                              "type": "string",
+                                              "const": "contains"
+                                            },
+                                            "value": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "required": ["column", "op", "value"],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "column": {
+                                              "type": "string",
+                                              "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                            },
+                                            "op": {
+                                              "type": "string",
+                                              "enum": ["gte", "lte"]
+                                            },
+                                            "value": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "maxLength": 120
+                                                },
+                                                {
+                                                  "type": "number",
+                                                  "minimum": -1000000000000,
+                                                  "maximum": 1000000000000
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": ["column", "op", "value"],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "sort": {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "direction": {
+                                        "type": "string",
+                                        "enum": ["asc", "desc"]
+                                      }
+                                    },
+                                    "required": ["column", "direction"],
+                                    "additionalProperties": false
+                                  },
+                                  "limit": {
+                                    "default": 100,
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 1000
+                                  }
+                                },
+                                "required": [
+                                  "dataset",
+                                  "columns",
+                                  "filters",
+                                  "limit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "runnable": {
+                            "type": "boolean"
+                          },
+                          "archived": {
+                            "type": "boolean"
+                          },
+                          "version": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "dataset",
+                          "definition",
+                          "runnable",
+                          "archived",
+                          "version",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["items", "limit"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Save a report definition for yourself (up to 50, unique names)",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80
+                  },
+                  "definition": {
+                    "type": "object",
+                    "properties": {
+                      "dataset": {
+                        "type": "string",
+                        "enum": [
+                          "people",
+                          "leave",
+                          "attendance",
+                          "expenses",
+                          "assets",
+                          "policyAcknowledgements",
+                          "exits"
+                        ]
+                      },
+                      "columns": {
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                        }
+                      },
+                      "filters": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "eq"
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "in"
+                                },
+                                "values": {
+                                  "minItems": 1,
+                                  "maxItems": 50,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 120
+                                  }
+                                }
+                              },
+                              "required": ["column", "op", "values"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "between"
+                                },
+                                "from": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                },
+                                "to": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "from", "to"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "contains"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "enum": ["gte", "lte"]
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "sort": {
+                        "type": "object",
+                        "properties": {
+                          "column": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": ["asc", "desc"]
+                          }
+                        },
+                        "required": ["column", "direction"],
+                        "additionalProperties": false
+                      },
+                      "limit": {
+                        "default": 100,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000
+                      }
+                    },
+                    "required": ["dataset", "columns", "filters", "limit"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["name", "definition"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "dataset": {
+                      "type": "string",
+                      "enum": [
+                        "people",
+                        "leave",
+                        "attendance",
+                        "expenses",
+                        "assets",
+                        "policyAcknowledgements",
+                        "exits"
+                      ]
+                    },
+                    "definition": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "dataset": {
+                              "type": "string",
+                              "enum": [
+                                "people",
+                                "leave",
+                                "attendance",
+                                "expenses",
+                                "assets",
+                                "policyAcknowledgements",
+                                "exits"
+                              ]
+                            },
+                            "columns": {
+                              "minItems": 1,
+                              "maxItems": 20,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                              }
+                            },
+                            "filters": {
+                              "default": [],
+                              "maxItems": 10,
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "eq"
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "in"
+                                      },
+                                      "values": {
+                                        "minItems": 1,
+                                        "maxItems": 50,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "maxLength": 120
+                                        }
+                                      }
+                                    },
+                                    "required": ["column", "op", "values"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "between"
+                                      },
+                                      "from": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      },
+                                      "to": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "from", "to"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "contains"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 80
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "enum": ["gte", "lte"]
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "sort": {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "direction": {
+                                  "type": "string",
+                                  "enum": ["asc", "desc"]
+                                }
+                              },
+                              "required": ["column", "direction"],
+                              "additionalProperties": false
+                            },
+                            "limit": {
+                              "default": 100,
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "dataset",
+                            "columns",
+                            "filters",
+                            "limit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "runnable": {
+                      "type": "boolean"
+                    },
+                    "archived": {
+                      "type": "boolean"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "dataset",
+                    "definition",
+                    "runnable",
+                    "archived",
+                    "version",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/saved/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "put": {
+        "summary": "Change your saved report with its current version",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80
+                  },
+                  "definition": {
+                    "type": "object",
+                    "properties": {
+                      "dataset": {
+                        "type": "string",
+                        "enum": [
+                          "people",
+                          "leave",
+                          "attendance",
+                          "expenses",
+                          "assets",
+                          "policyAcknowledgements",
+                          "exits"
+                        ]
+                      },
+                      "columns": {
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                        }
+                      },
+                      "filters": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "eq"
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "in"
+                                },
+                                "values": {
+                                  "minItems": 1,
+                                  "maxItems": 50,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 120
+                                  }
+                                }
+                              },
+                              "required": ["column", "op", "values"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "between"
+                                },
+                                "from": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                },
+                                "to": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "from", "to"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "const": "contains"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "op": {
+                                  "type": "string",
+                                  "enum": ["gte", "lte"]
+                                },
+                                "value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "maxLength": 120
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["column", "op", "value"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "sort": {
+                        "type": "object",
+                        "properties": {
+                          "column": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": ["asc", "desc"]
+                          }
+                        },
+                        "required": ["column", "direction"],
+                        "additionalProperties": false
+                      },
+                      "limit": {
+                        "default": 100,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000
+                      }
+                    },
+                    "required": ["dataset", "columns", "filters", "limit"],
+                    "additionalProperties": false
+                  },
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["name", "definition", "version"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "dataset": {
+                      "type": "string",
+                      "enum": [
+                        "people",
+                        "leave",
+                        "attendance",
+                        "expenses",
+                        "assets",
+                        "policyAcknowledgements",
+                        "exits"
+                      ]
+                    },
+                    "definition": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "dataset": {
+                              "type": "string",
+                              "enum": [
+                                "people",
+                                "leave",
+                                "attendance",
+                                "expenses",
+                                "assets",
+                                "policyAcknowledgements",
+                                "exits"
+                              ]
+                            },
+                            "columns": {
+                              "minItems": 1,
+                              "maxItems": 20,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                              }
+                            },
+                            "filters": {
+                              "default": [],
+                              "maxItems": 10,
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "eq"
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "in"
+                                      },
+                                      "values": {
+                                        "minItems": 1,
+                                        "maxItems": 50,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "maxLength": 120
+                                        }
+                                      }
+                                    },
+                                    "required": ["column", "op", "values"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "between"
+                                      },
+                                      "from": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      },
+                                      "to": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "from", "to"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "contains"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 80
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "enum": ["gte", "lte"]
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "sort": {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "direction": {
+                                  "type": "string",
+                                  "enum": ["asc", "desc"]
+                                }
+                              },
+                              "required": ["column", "direction"],
+                              "additionalProperties": false
+                            },
+                            "limit": {
+                              "default": 100,
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "dataset",
+                            "columns",
+                            "filters",
+                            "limit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "runnable": {
+                      "type": "boolean"
+                    },
+                    "archived": {
+                      "type": "boolean"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "dataset",
+                    "definition",
+                    "runnable",
+                    "archived",
+                    "version",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "HTTP 400",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "HTTP 401",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "HTTP 403",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "HTTP 404",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "HTTP 429",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "HTTP 500",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/saved/{id}/archive": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Archive your saved report (final; reports are never deleted)",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["version"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "dataset": {
+                      "type": "string",
+                      "enum": [
+                        "people",
+                        "leave",
+                        "attendance",
+                        "expenses",
+                        "assets",
+                        "policyAcknowledgements",
+                        "exits"
+                      ]
+                    },
+                    "definition": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "dataset": {
+                              "type": "string",
+                              "enum": [
+                                "people",
+                                "leave",
+                                "attendance",
+                                "expenses",
+                                "assets",
+                                "policyAcknowledgements",
+                                "exits"
+                              ]
+                            },
+                            "columns": {
+                              "minItems": 1,
+                              "maxItems": 20,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                              }
+                            },
+                            "filters": {
+                              "default": [],
+                              "maxItems": 10,
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "eq"
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "in"
+                                      },
+                                      "values": {
+                                        "minItems": 1,
+                                        "maxItems": 50,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "maxLength": 120
+                                        }
+                                      }
+                                    },
+                                    "required": ["column", "op", "values"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "between"
+                                      },
+                                      "from": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      },
+                                      "to": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "from", "to"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "const": "contains"
+                                      },
+                                      "value": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 80
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "column": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                      },
+                                      "op": {
+                                        "type": "string",
+                                        "enum": ["gte", "lte"]
+                                      },
+                                      "value": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "maxLength": 120
+                                          },
+                                          {
+                                            "type": "number",
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": ["column", "op", "value"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "sort": {
+                              "type": "object",
+                              "properties": {
+                                "column": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]{0,39}$"
+                                },
+                                "direction": {
+                                  "type": "string",
+                                  "enum": ["asc", "desc"]
+                                }
+                              },
+                              "required": ["column", "direction"],
+                              "additionalProperties": false
+                            },
+                            "limit": {
+                              "default": 100,
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000
+                            }
+                          },
+                          "required": [
+                            "dataset",
+                            "columns",
+                            "filters",
+                            "limit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "runnable": {
+                      "type": "boolean"
+                    },
+                    "archived": {
+                      "type": "boolean"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "dataset",
+                    "definition",
+                    "runnable",
+                    "archived",
+                    "version",
+                    "createdAt",
+                    "updatedAt"
                   ],
                   "additionalProperties": false
                 }

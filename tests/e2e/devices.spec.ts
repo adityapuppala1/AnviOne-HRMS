@@ -28,6 +28,7 @@ const ROUTES = [
   "/expenses",
   "/details",
   "/chart",
+  "/reports",
   "/preferences",
   "/settings",
   "/tasks",

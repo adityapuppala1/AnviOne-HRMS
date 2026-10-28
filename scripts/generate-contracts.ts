@@ -66,6 +66,15 @@ import {
   documentReviewSchema,
   documentWithdrawSchema,
   documentDecisionSchema,
+  reportCatalogSchema,
+  reportRunSchema,
+  reportResultSchema,
+  reportExportSchema,
+  savedReportSchema,
+  savedReportListSchema,
+  savedReportCreateSchema,
+  savedReportUpdateSchema,
+  savedReportArchiveSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -731,6 +740,73 @@ Object.assign(spec.paths, {
       "Review form only; does not activate employment",
       candidateReviewSchema,
       candidateSchema,
+    ),
+  },
+});
+Object.assign(spec.paths, {
+  "/reports/datasets": {
+    get: read(
+      "Report catalog limited to what the caller may run: managers see team datasets (people, leave, attendance, expenses) without sensitive columns; HR sees every dataset and column",
+      reportCatalogSchema,
+    ),
+  },
+  "/reports/run": {
+    post: write(
+      "Run a whitelisted report definition under the caller's row-level security; at most 1000 rows, with the total count and a truncated flag; money cells are integer paise",
+      reportRunSchema,
+      reportResultSchema,
+      "200",
+    ),
+  },
+  "/reports/export": {
+    post: {
+      ...write("HR-only CSV export", reportExportSchema),
+      description:
+        "UTF-8 CSV with BOM, CRLF and RFC 4180 quoting; text starting with = + - @ tab, CR or LF is prefixed with an apostrophe; money in rupees with two decimals. At most 10,000 rows: X-Report-Truncated says whether rows were left out and X-Report-Row-Count gives the rows written (no note row is added). Each export writes one audit row and outbox event with the dataset, column keys and filter operators only. Limited to 10 exports per minute per person.",
+      responses: {
+        "200": {
+          description: "CSV attachment",
+          headers: {
+            "X-Report-Truncated": {
+              schema: { type: "string", enum: ["true", "false"] },
+            },
+            "X-Report-Row-Count": { schema: { type: "integer" } },
+            "X-Report-Export-Id": {
+              schema: { type: "string", format: "uuid" },
+            },
+          },
+          content: { "text/csv": { schema: { type: "string" } } },
+        },
+        ...errors,
+      },
+    },
+  },
+  "/reports/saved": {
+    get: read(
+      "The caller's own saved report definitions (archived ones are hidden)",
+      savedReportListSchema,
+    ),
+    post: write(
+      "Save a report definition for yourself (up to 50, unique names)",
+      savedReportCreateSchema,
+      savedReportSchema,
+    ),
+  },
+  "/reports/saved/{id}": {
+    parameters: idParameter,
+    put: write(
+      "Change your saved report with its current version",
+      savedReportUpdateSchema,
+      savedReportSchema,
+      "200",
+    ),
+  },
+  "/reports/saved/{id}/archive": {
+    parameters: idParameter,
+    post: write(
+      "Archive your saved report (final; reports are never deleted)",
+      savedReportArchiveSchema,
+      savedReportSchema,
     ),
   },
 });

@@ -62,6 +62,25 @@ describe("deny-by-default role contexts", () => {
         scopeFor({ ...actor, role, roles: [role] }, "insights.read"),
       ).toBeUndefined();
   });
+  it("lets managers run team reports, and only HR export them", () => {
+    const manager = {
+      ...actor,
+      role: "manager" as const,
+      roles: ["manager" as const],
+    };
+    expect(scopeFor(actor, "report.run")).toBe("entity");
+    expect(scopeFor(actor, "report.export")).toBe("entity");
+    expect(scopeFor(manager, "report.run")).toBe("team");
+    expect(scopeFor(manager, "report.export")).toBeUndefined();
+    for (const role of ["employee", "platform_admin", "auditor"] as const) {
+      expect(
+        scopeFor({ ...actor, role, roles: [role] }, "report.run"),
+      ).toBeUndefined();
+      expect(
+        scopeFor({ ...actor, role, roles: [role] }, "report.export"),
+      ).toBeUndefined();
+    }
+  });
   it("grants only self-scoped onboarding work to employee contexts", () => {
     for (const role of ["employee", "manager"] as const)
       expect(

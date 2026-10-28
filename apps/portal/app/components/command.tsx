@@ -20,6 +20,7 @@ import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -74,6 +75,13 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/configuration")}>
             <SlidersHorizontal size={18} />
             {copy.nav.configuration}
+          </Button>
+        )}
+        {(me.permissions.includes("project.self") ||
+          me.permissions.includes("project.manage")) && (
+          <Button variant="ghost" onPress={() => go("/projects")}>
+            <Briefcase size={18} />
+            {copy.nav.projects}
           </Button>
         )}
         {me.permissions.includes("report.run") && (

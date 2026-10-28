@@ -26,6 +26,7 @@ export default [
     route("details", "routes/details.tsx"),
     route("chart", "routes/chart.tsx"),
     route("reports", "routes/reports.tsx"),
+    route("projects", "routes/projects.tsx"),
     route("configuration", "routes/configuration.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),

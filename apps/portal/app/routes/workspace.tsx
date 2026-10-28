@@ -24,6 +24,7 @@ import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
+import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -238,6 +239,14 @@ function Shell({ me }: { me: Me }) {
       visible:
         me.permissions.includes("admin.read") ||
         me.permissions.includes("branding.write"),
+    },
+    {
+      to: "/projects",
+      label: copy.nav.projects,
+      icon: Briefcase,
+      visible:
+        me.permissions.includes("project.self") ||
+        me.permissions.includes("project.manage"),
     },
     {
       to: "/reports",

@@ -29,7 +29,13 @@ import {
   myExpensesSchema,
   brandingHistorySchema,
   integrationReadinessSchema,
+  myTimeSchema,
   organizationChartSchema,
+  projectListSchema,
+  projectMemberListSchema,
+  projectSchema,
+  projectTaskListSchema,
+  timeReviewSchema,
   permissionMatrixSchema,
   orgChartNeighborhoodSchema,
   orgChartSearchSchema,
@@ -450,4 +456,49 @@ export const useIntegrations = (enabled: boolean) =>
     enabled,
     queryFn: ({ signal }) =>
       api("/admin/integrations", integrationReadinessSchema, { signal }),
+  });
+
+export const useProjects = (enabled: boolean, query = "") =>
+  useQuery({
+    queryKey: ["projects", "list", query],
+    enabled,
+    queryFn: ({ signal }) =>
+      api(`/projects${query ? `?${query}` : ""}`, projectListSchema, {
+        signal,
+      }),
+  });
+export const useProject = (id: string | null) =>
+  useQuery({
+    queryKey: ["projects", "detail", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) => api(`/projects/${id}`, projectSchema, { signal }),
+  });
+export const useProjectMembers = (id: string | null) =>
+  useQuery({
+    queryKey: ["projects", "members", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/projects/${id}/members`, projectMemberListSchema, { signal }),
+  });
+export const useProjectTasks = (id: string | null) =>
+  useQuery({
+    queryKey: ["projects", "tasks", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      api(`/projects/${id}/tasks`, projectTaskListSchema, { signal }),
+  });
+export const useMyTime = (enabled: boolean, weekOf?: string) =>
+  useQuery({
+    queryKey: ["time", "mine", weekOf ?? null],
+    enabled,
+    queryFn: ({ signal }) =>
+      api(`/time/mine${weekOf ? `?weekOf=${weekOf}` : ""}`, myTimeSchema, {
+        signal,
+      }),
+  });
+export const useTimeReview = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["time", "review"],
+    enabled,
+    queryFn: ({ signal }) => api("/time/review", timeReviewSchema, { signal }),
   });

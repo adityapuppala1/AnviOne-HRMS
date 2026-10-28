@@ -26,6 +26,7 @@ const ROUTES = [
   "/policies",
   "/exit",
   "/expenses",
+  "/projects",
   "/details",
   "/chart",
   "/reports",

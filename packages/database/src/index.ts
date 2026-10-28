@@ -43,7 +43,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.expense_scope',$16,true),
     set_config('app.profile_scope',$17,true),
     set_config('app.report_scope',$18,true),
-    set_config('app.branding_scope',$19,true)`,
+    set_config('app.branding_scope',$19,true),
+    set_config('app.project_scope',$20,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -87,6 +88,10 @@ export async function setContext(client: PoolClient, actor: Principal) {
       scopeFor(actor, "report.run") ?? "none",
       // Branding history is visible only to roles that may publish branding.
       scopeFor(actor, "branding.write") ?? "none",
+      // Owners (team) and HR (entity) manage; members see only their own projects.
+      scopeFor(actor, "project.manage") ??
+        scopeFor(actor, "project.self") ??
+        "none",
     ],
   );
 }

@@ -23,6 +23,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "policy.self": "self",
     "exit.self": "self",
     "expense.self": "self",
+    "project.self": "self",
     "profile.self": "self",
   },
   manager: {
@@ -38,6 +39,9 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "exit.self": "self",
     "expense.self": "self",
     "expense.approve": "team",
+    "project.self": "self",
+    // Managers own the projects they create; HR manages every project.
+    "project.manage": "team",
     "insights.read": "team",
     "profile.self": "self",
     // Managers report on their team on screen only; exporting is HR's.
@@ -57,6 +61,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "exit.manage": "entity",
     "expense.approve": "entity",
     "expense.manage": "entity",
+    "project.manage": "entity",
     "profile.review": "entity",
     "report.run": "entity",
     "report.export": "entity",
@@ -89,6 +94,10 @@ export const permissionDescriptions: Record<Permission, string> = {
   "expense.self": "Submit and cancel my own expense claims",
   "expense.approve": "Approve or reject expense claims",
   "expense.manage": "Mark claims paid and manage expense categories",
+  "project.self":
+    "See my projects and tasks, log and withdraw my own time, update my tasks' status",
+  "project.manage":
+    "Create projects, manage their members and tasks, and approve their time",
   "profile.self": "Read and request changes to my own profile",
   "profile.review": "Review profile change requests",
   "report.run": "Run reports on screen",

@@ -39,6 +39,8 @@ export const permissionSchema = z.enum([
   "expense.self",
   "expense.approve",
   "expense.manage",
+  "project.self",
+  "project.manage",
   "profile.self",
   "profile.review",
   "report.run",
@@ -2105,4 +2107,273 @@ export const savedReportUpdateSchema = z.strictObject({
 });
 export const savedReportArchiveSchema = z.strictObject({
   version: z.number().int().positive(),
+});
+
+// Projects, tasks and time tracking (no money). Owners and HR manage; members log time.
+export const projectStatusSchema = z.enum([
+  "planned",
+  "active",
+  "on_hold",
+  "completed",
+  "cancelled",
+]);
+export type ProjectStatus = z.infer<typeof projectStatusSchema>;
+export const projectMemberRoleSchema = z.enum(["member", "lead"]);
+export const projectTaskStatusSchema = z.enum([
+  "todo",
+  "in_progress",
+  "blocked",
+  "done",
+]);
+export type ProjectTaskStatus = z.infer<typeof projectTaskStatusSchema>;
+export const projectTaskPrioritySchema = z.enum(["low", "normal", "high"]);
+export const timeEntryStatusSchema = z.enum([
+  "submitted",
+  "approved",
+  "rejected",
+  "withdrawn",
+]);
+export type TimeEntryStatus = z.infer<typeof timeEntryStatusSchema>;
+const projectVersion = z.number().int().positive();
+const projectText = (min: number, max: number) =>
+  z.string().trim().min(min).max(max).nullable().optional();
+const optionalDate = z.iso.date().nullable().optional();
+const optionalId = z.uuid().nullable().optional();
+
+export const projectSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  ownerEmployeeId: z.uuid(),
+  ownerName: z.string(),
+  status: projectStatusSchema,
+  startDate: z.string(),
+  endDate: z.string().nullable(),
+  memberCount: z.number().int(),
+  openTaskCount: z.number().int(),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  // UI flags: what the caller may do now; the database decides again on every write.
+  canManage: z.boolean(),
+  canLogTime: z.boolean(),
+  canReopen: z.boolean(),
+});
+export type Project = z.infer<typeof projectSchema>;
+export const projectListSchema = z.strictObject({
+  items: z.array(projectSchema),
+  counts: z.strictObject({
+    planned: z.number().int(),
+    active: z.number().int(),
+    on_hold: z.number().int(),
+    completed: z.number().int(),
+    cancelled: z.number().int(),
+  }),
+  total: z.number().int(),
+  limit: z.number().int(),
+  canCreate: z.boolean(),
+});
+export type ProjectList = z.infer<typeof projectListSchema>;
+export const projectQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  status: projectStatusSchema.optional(),
+});
+export const projectCreateSchema = z
+  .strictObject({
+    code: z.string().regex(/^[A-Z][A-Z0-9_-]{1,19}$/),
+    name: z.string().trim().min(2).max(80),
+    description: projectText(1, 500),
+    // HR may name another owner; a manager always owns what they create.
+    ownerEmployeeId: optionalId,
+    status: z.enum(["planned", "active"]).default("planned"),
+    startDate: z.iso.date(),
+    endDate: optionalDate,
+  })
+  .refine((v) => !v.endDate || v.endDate >= v.startDate, {
+    message: "The end date cannot be before the start date",
+    path: ["endDate"],
+  });
+export const projectUpdateSchema = z
+  .strictObject({
+    version: projectVersion,
+    name: z.string().trim().min(2).max(80),
+    description: projectText(1, 500),
+    ownerEmployeeId: z.uuid(),
+    startDate: z.iso.date(),
+    endDate: optionalDate,
+  })
+  .refine((v) => !v.endDate || v.endDate >= v.startDate, {
+    message: "The end date cannot be before the start date",
+    path: ["endDate"],
+  });
+export const projectStatusChangeSchema = z.strictObject({
+  version: projectVersion,
+  status: projectStatusSchema,
+});
+
+export const projectMemberSchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  employeeCode: z.string(),
+  role: projectMemberRoleSchema,
+  addedBy: z.string(),
+  addedAt: z.string(),
+  removedAt: z.string().nullable(),
+  removedBy: z.string().nullable(),
+  version: z.number().int(),
+  canRemove: z.boolean(),
+});
+export type ProjectMember = z.infer<typeof projectMemberSchema>;
+export const projectMemberListSchema = z.strictObject({
+  items: z.array(projectMemberSchema),
+  counts: z.strictObject({
+    active: z.number().int(),
+    removed: z.number().int(),
+  }),
+  limit: z.number().int(),
+  canAdd: z.boolean(),
+});
+export type ProjectMemberList = z.infer<typeof projectMemberListSchema>;
+export const projectMemberAddSchema = z.strictObject({
+  employeeId: z.uuid(),
+  role: projectMemberRoleSchema.default("member"),
+});
+export const projectMemberRemoveSchema = z.strictObject({
+  version: projectVersion,
+});
+
+export const projectTaskSchema = z.strictObject({
+  id: z.uuid(),
+  projectId: z.uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  assigneeEmployeeId: z.uuid().nullable(),
+  assigneeName: z.string().nullable(),
+  status: projectTaskStatusSchema,
+  priority: projectTaskPrioritySchema,
+  dueDate: z.string().nullable(),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  canEdit: z.boolean(),
+  canChangeStatus: z.boolean(),
+});
+export type ProjectTask = z.infer<typeof projectTaskSchema>;
+export const projectTaskListSchema = z.strictObject({
+  items: z.array(projectTaskSchema),
+  counts: z.strictObject({
+    todo: z.number().int(),
+    in_progress: z.number().int(),
+    blocked: z.number().int(),
+    done: z.number().int(),
+  }),
+  limit: z.number().int(),
+  canAdd: z.boolean(),
+});
+export type ProjectTaskList = z.infer<typeof projectTaskListSchema>;
+export const projectTaskCreateSchema = z.strictObject({
+  title: z.string().trim().min(3).max(120),
+  description: projectText(1, 1000),
+  assigneeEmployeeId: optionalId,
+  priority: projectTaskPrioritySchema.default("normal"),
+  dueDate: optionalDate,
+});
+export const projectTaskUpdateSchema = z.strictObject({
+  version: projectVersion,
+  title: z.string().trim().min(3).max(120),
+  description: projectText(1, 1000),
+  assigneeEmployeeId: z.uuid().nullable(),
+  priority: projectTaskPrioritySchema,
+  dueDate: optionalDate,
+});
+export const projectTaskStatusChangeSchema = z.strictObject({
+  version: projectVersion,
+  status: projectTaskStatusSchema,
+});
+
+export const timeEntrySchema = z.strictObject({
+  id: z.uuid(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  projectId: z.uuid(),
+  projectCode: z.string(),
+  projectName: z.string().nullable(),
+  taskId: z.uuid().nullable(),
+  taskTitle: z.string().nullable(),
+  workDate: z.string(),
+  minutes: z.number().int(),
+  note: z.string().nullable(),
+  status: timeEntryStatusSchema,
+  decisionNote: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+  approvedBy: z.string().nullable(),
+  withdrawnAt: z.string().nullable(),
+  version: z.number().int(),
+  createdAt: z.string(),
+  canWithdraw: z.boolean(),
+  canDecide: z.boolean(),
+});
+export type TimeEntry = z.infer<typeof timeEntrySchema>;
+export const myTimeSchema = z.strictObject({
+  items: z.array(timeEntrySchema),
+  limit: z.number().int(),
+  // Monday to Sunday of the requested week; submitted and approved time only.
+  week: z.strictObject({
+    start: z.string(),
+    end: z.string(),
+    totalMinutes: z.number().int(),
+    projects: z.array(
+      z.strictObject({
+        projectId: z.uuid(),
+        projectCode: z.string(),
+        projectName: z.string().nullable(),
+        minutes: z.number().int(),
+      }),
+    ),
+  }),
+  counts: z.strictObject({
+    submitted: z.number().int(),
+    approved: z.number().int(),
+    rejected: z.number().int(),
+    withdrawn: z.number().int(),
+  }),
+  // Active projects the caller can log time on now.
+  projects: z.array(
+    z.strictObject({ id: z.uuid(), code: z.string(), name: z.string() }),
+  ),
+});
+export type MyTime = z.infer<typeof myTimeSchema>;
+export const myTimeQuerySchema = z.strictObject({
+  weekOf: z.iso.date().optional(),
+});
+export const timeReviewSchema = z.strictObject({
+  items: z.array(timeEntrySchema),
+  total: z.number().int(),
+  awaitingMinutes: z.number().int(),
+  limit: z.number().int(),
+});
+export type TimeReview = z.infer<typeof timeReviewSchema>;
+export const timeEntryCreateSchema = z.strictObject({
+  projectId: z.uuid(),
+  taskId: optionalId,
+  workDate: z.iso.date(),
+  minutes: z.number().int().min(15).max(720).multipleOf(15),
+  note: projectText(1, 300),
+});
+export const timeEntryWithdrawSchema = z.strictObject({
+  version: projectVersion,
+});
+export const timeEntryApproveSchema = z.strictObject({
+  version: projectVersion,
+  note: z.string().trim().min(3).max(500).optional(),
+});
+export const timeEntryRejectSchema = z.strictObject({
+  version: projectVersion,
+  note: z.string().trim().min(3).max(500),
 });

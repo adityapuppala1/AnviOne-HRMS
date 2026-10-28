@@ -83,6 +83,26 @@ import {
   savedReportCreateSchema,
   savedReportUpdateSchema,
   savedReportArchiveSchema,
+  projectSchema,
+  projectListSchema,
+  projectCreateSchema,
+  projectUpdateSchema,
+  projectStatusChangeSchema,
+  projectMemberListSchema,
+  projectMemberAddSchema,
+  projectMemberRemoveSchema,
+  projectTaskSchema,
+  projectTaskListSchema,
+  projectTaskCreateSchema,
+  projectTaskUpdateSchema,
+  projectTaskStatusChangeSchema,
+  timeEntrySchema,
+  myTimeSchema,
+  timeReviewSchema,
+  timeEntryCreateSchema,
+  timeEntryWithdrawSchema,
+  timeEntryApproveSchema,
+  timeEntryRejectSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -911,6 +931,149 @@ Object.assign(spec.paths, {
       "Archive your saved report (final; reports are never deleted)",
       savedReportArchiveSchema,
       savedReportSchema,
+    ),
+  },
+});
+const uuidParameter = (name: string) => ({
+  name,
+  in: "path",
+  required: true,
+  schema: { type: "string", format: "uuid" },
+});
+Object.assign(spec.paths, {
+  "/projects": {
+    get: {
+      ...read(
+        "Projects the caller may see (members and owners their own; HR every project), up to 200 with status counts",
+        projectListSchema,
+      ),
+      parameters: [
+        { name: "q", in: "query", schema: { type: "string", maxLength: 80 } },
+        {
+          name: "status",
+          in: "query",
+          schema: {
+            type: "string",
+            enum: ["planned", "active", "on_hold", "completed", "cancelled"],
+          },
+        },
+      ],
+    },
+    post: write(
+      "Create a project; a manager owns it, HR may name another owner",
+      projectCreateSchema,
+      projectSchema,
+    ),
+  },
+  "/projects/{id}": {
+    parameters: idParameter,
+    get: read("One visible project", projectSchema),
+    put: write(
+      "Change a project's details with its current version (owner or HR; only HR changes the owner)",
+      projectUpdateSchema,
+      projectSchema,
+      "200",
+    ),
+  },
+  "/projects/{id}/status": {
+    parameters: idParameter,
+    post: write(
+      "Move a project's status; completed and cancelled projects are read-only until HR reopens them",
+      projectStatusChangeSchema,
+      projectSchema,
+    ),
+  },
+  "/projects/{id}/members": {
+    parameters: idParameter,
+    get: read("Current and former members, up to 200", projectMemberListSchema),
+    post: write(
+      "Add a current employee to an open project (owner or HR)",
+      projectMemberAddSchema,
+      projectMemberListSchema,
+    ),
+  },
+  "/projects/{id}/members/{employeeId}/remove": {
+    parameters: [...idParameter, uuidParameter("employeeId")],
+    post: write(
+      "Remove a member (kept as history); their open tasks must be reassigned first",
+      projectMemberRemoveSchema,
+      projectMemberListSchema,
+    ),
+  },
+  "/projects/{id}/tasks": {
+    parameters: idParameter,
+    get: read("Tasks of a visible project, up to 200", projectTaskListSchema),
+    post: write(
+      "Add a task, optionally assigned to a current member (owner or HR)",
+      projectTaskCreateSchema,
+      projectTaskSchema,
+    ),
+  },
+  "/projects/{id}/tasks/{taskId}": {
+    parameters: [...idParameter, uuidParameter("taskId")],
+    put: write(
+      "Change a task with its current version (owner or HR)",
+      projectTaskUpdateSchema,
+      projectTaskSchema,
+      "200",
+    ),
+  },
+  "/projects/{id}/tasks/{taskId}/status": {
+    parameters: [...idParameter, uuidParameter("taskId")],
+    post: write(
+      "Move a task's status (owner, HR, or the task's assignee)",
+      projectTaskStatusChangeSchema,
+      projectTaskSchema,
+    ),
+  },
+  "/time/mine": {
+    get: {
+      ...read(
+        "My time entries (latest 200) and the week's minutes per project",
+        myTimeSchema,
+      ),
+      parameters: [
+        {
+          name: "weekOf",
+          in: "query",
+          schema: { type: "string", format: "date" },
+        },
+      ],
+    },
+    post: write(
+      "Log time on a project I belong to: 15 to 720 minutes in steps of 15, within the last 60 days, at most 24 hours a day",
+      timeEntryCreateSchema,
+      myTimeSchema,
+    ),
+  },
+  "/time/mine/{id}/withdraw": {
+    parameters: idParameter,
+    post: write(
+      "Withdraw my own undecided time entry",
+      timeEntryWithdrawSchema,
+      myTimeSchema,
+    ),
+  },
+  "/time/review": {
+    get: read(
+      "Time awaiting a decision on projects I own (HR: every project), never my own, up to 200",
+      timeReviewSchema,
+    ),
+  },
+  "/time/{id}/approve": {
+    parameters: idParameter,
+    post: write(
+      "Approve someone else's time (project owner or HR)",
+      timeEntryApproveSchema,
+      timeEntrySchema,
+    ),
+  },
+  "/time/{id}/reject": {
+    parameters: idParameter,
+    post: write(
+      "Reject someone else's time with a reason (project owner or HR)",
+      timeEntryRejectSchema,
+      timeEntrySchema,
     ),
   },
 });

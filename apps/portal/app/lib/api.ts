@@ -63,6 +63,7 @@ import {
   recruitScorecardListSchema,
   recruitOfferListSchema,
   recruitFunnelSchema,
+  recruitLookupsSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -617,19 +618,16 @@ export const useRecruitFunnel = (enabled: boolean, requisitionId: string) =>
         signal,
       ),
   });
-// Departments, locations and designations for the requisition form (HR only today).
-export const useOrganizationOptions = (
-  kind: "department" | "location" | "designation",
-  enabled: boolean,
-) =>
+// Departments, locations and designations in effect today, for the requisition form. Served
+// by recruitment (id, code, name only) so hiring managers can raise without organization.read.
+export const useRecruitLookups = (enabled: boolean) =>
   useQuery({
-    queryKey: ["organization", "options", kind],
+    queryKey: ["recruit", "lookups"],
     enabled,
     retry: false,
+    staleTime: 5 * 60_000,
     queryFn: ({ signal }) =>
-      api(`/organization?kind=${kind}&limit=50`, organizationDirectorySchema, {
-        signal,
-      }),
+      recruitGet("lookups", "", recruitLookupsSchema, signal),
   });
 export const usePeopleSearch = (term: string) =>
   useQuery({

@@ -102,7 +102,8 @@ export const recruitmentCopy = {
     editNote:
       "Changing the headcount (upwards), hiring manager, title or placement of an approved requisition sends it back for approval.",
     lookupUnavailable:
-      "Department and location lists are not available to your role yet. Ask HR to raise it for you and name you as hiring manager.",
+      "We couldn't load the department and location lists. Close this and try again.",
+    selfManager: "You will be the hiring manager for this requisition.",
     empty: "No requisitions yet",
     emptyBody: "Raised requisitions appear here.",
     emptyFiltered: "No requisitions match",

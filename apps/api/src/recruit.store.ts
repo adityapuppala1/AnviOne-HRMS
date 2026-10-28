@@ -16,6 +16,7 @@ import {
   recruitFunnelSchema,
   recruitInterviewListSchema,
   recruitInterviewSchema,
+  recruitLookupsSchema,
   recruitOfferAcceptedSchema,
   recruitOfferListSchema,
   recruitOfferSchema,
@@ -32,6 +33,7 @@ import {
   type RecruitFunnel,
   type RecruitInterview,
   type RecruitInterviewList,
+  type RecruitLookups,
   type RecruitOffer,
   type RecruitOfferAccepted,
   type RecruitOfferList,
@@ -298,6 +300,34 @@ export class RecruitStore {
           ],
         ),
         canCreate: true,
+      });
+    });
+  }
+
+  // Pick-lists for the raise form. organization.read is HR-only, so requesters get just the
+  // id, code and name of units in effect today in their own tenant and entity (RLS-scoped).
+  async lookups(actor: Principal): Promise<RecruitLookups> {
+    this.follow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      const { rows } = await client.query<{
+        kind: "department" | "location" | "designation";
+        id: string;
+        code: string;
+        name: string;
+      }>(
+        `SELECT u.kind, u.id, u.code, u.name FROM org_unit u, recruit_entity_today() AS today
+         WHERE u.kind IN ('department','location','designation') AND u.active AND u.merged_into_id IS NULL
+           AND u.effective_from<=today AND (u.effective_to IS NULL OR u.effective_to>=today)
+         ORDER BY lower(u.name), u.id`,
+      );
+      const pick = (kind: string) =>
+        rows
+          .filter((row) => row.kind === kind)
+          .map(({ id, code, name }) => ({ id, code, name }));
+      return recruitLookupsSchema.parse({
+        departments: pick("department"),
+        locations: pick("location"),
+        designations: pick("designation"),
       });
     });
   }

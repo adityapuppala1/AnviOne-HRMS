@@ -9,6 +9,8 @@ import { ProhibitInset } from "@phosphor-icons/react/dist/csr/ProhibitInset";
 import { Timer } from "@phosphor-icons/react/dist/csr/Timer";
 import {
   Button,
+  CollectionView,
+  DetailFields,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -260,6 +262,13 @@ function MineView() {
     );
   const { profile, open, requests, history } = query.data;
   const recent = requests.filter((item) => item.id !== open?.id);
+  const changeText = (entry: (typeof history)[number]) =>
+    entry.unavailable
+      ? text.history.unavailable
+      : text.history.changed(
+          entry.oldValue ?? text.history.empty_value,
+          entry.newValue ?? text.history.empty_value,
+        );
   return (
     <div className="page-enter details-page">
       {header}
@@ -301,27 +310,68 @@ function MineView() {
           <div className="panel-heading">
             <h2 id="details-recent">{text.recent.heading}</h2>
           </div>
-          <ul className="details-rows">
-            {recent.map((item) => (
-              <li key={item.id}>
-                <div className="details-row-main">
-                  <strong>{labelList(item.fields)}</strong>
-                  <small className="details-muted">
-                    {text.recent.sent(day(item.createdAt))} ·{" "}
-                    {text.recent.effective(day(item.effectiveOn))}
-                  </small>
-                  {item.decisionNote &&
-                    (item.status === "rejected" ||
-                      item.status === "withdrawn") && (
-                      <small className="details-muted">
-                        {text.open.note}: {item.decisionNote}
-                      </small>
-                    )}
-                </div>
+          <CollectionView
+            id="details-recent"
+            label={text.recent.heading}
+            noun="requests"
+            items={recent}
+            getKey={(item) => item.id}
+            columns={[
+              {
+                id: "fields",
+                label: "Changing",
+                isRowHeader: true,
+                render: (item) => labelList(item.fields),
+              },
+              {
+                id: "sent",
+                label: "Sent",
+                sortValue: (item) => item.createdAt,
+                render: (item) => day(item.createdAt),
+              },
+              {
+                id: "effective",
+                label: "Effective",
+                sortValue: (item) => item.effectiveOn,
+                render: (item) => day(item.effectiveOn),
+              },
+              {
+                id: "status",
+                label: "Status",
+                render: (item) => <StatusPill status={item.status} />,
+              },
+            ]}
+            renderCard={(item) => (
+              <div className="details-row-main">
+                <strong>{labelList(item.fields)}</strong>
+                <small className="details-muted">
+                  {text.recent.sent(day(item.createdAt))} ·{" "}
+                  {text.recent.effective(day(item.effectiveOn))}
+                </small>
                 <StatusPill status={item.status} />
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+            detail={{
+              title: (item) => labelList(item.fields),
+              subtitle: (item) => <StatusPill status={item.status} />,
+              body: (item) => (
+                <DetailFields
+                  fields={[
+                    { label: "Sent", value: day(item.createdAt) },
+                    { label: "Effective", value: day(item.effectiveOn) },
+                    {
+                      label: text.open.note,
+                      value:
+                        item.status === "rejected" ||
+                        item.status === "withdrawn"
+                          ? item.decisionNote
+                          : undefined,
+                    },
+                  ]}
+                />
+              ),
+            }}
+          />
         </section>
       )}
       <section
@@ -337,30 +387,68 @@ function MineView() {
         {history.length === 0 ? (
           <p className="details-muted details-pad">{text.history.empty}</p>
         ) : (
-          <ul className="details-rows">
-            {history.map((entry) => (
-              <li key={entry.id}>
-                <div className="details-row-main">
-                  <strong>{text.fields[entry.field].label}</strong>
-                  <span className="details-change">
-                    {entry.unavailable
-                      ? text.history.unavailable
-                      : text.history.changed(
-                          entry.oldValue ?? text.history.empty_value,
-                          entry.newValue ?? text.history.empty_value,
-                        )}
-                  </span>
-                  <small className="details-muted">
-                    {text.history.effective(day(entry.effectiveOn))} ·{" "}
-                    {text.history.applied(
-                      day(entry.appliedAt),
-                      entry.approvedBy,
-                    )}
-                  </small>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <CollectionView
+            id="details-history"
+            label={text.history.heading}
+            noun="changes"
+            items={history}
+            getKey={(entry) => entry.id}
+            columns={[
+              {
+                id: "field",
+                label: "Field",
+                isRowHeader: true,
+                sortValue: (entry) => text.fields[entry.field].label,
+                render: (entry) => text.fields[entry.field].label,
+              },
+              {
+                id: "change",
+                label: "Change",
+                render: (entry) => changeText(entry),
+              },
+              {
+                id: "effective",
+                label: "Effective",
+                sortValue: (entry) => entry.effectiveOn,
+                render: (entry) => day(entry.effectiveOn),
+              },
+              {
+                id: "applied",
+                label: "Applied",
+                sortValue: (entry) => entry.appliedAt,
+                render: (entry) =>
+                  text.history.applied(day(entry.appliedAt), entry.approvedBy),
+              },
+            ]}
+            renderCard={(entry) => (
+              <div className="details-row-main">
+                <strong>{text.fields[entry.field].label}</strong>
+                <span className="details-change">{changeText(entry)}</span>
+                <small className="details-muted">
+                  {text.history.effective(day(entry.effectiveOn))} ·{" "}
+                  {text.history.applied(day(entry.appliedAt), entry.approvedBy)}
+                </small>
+              </div>
+            )}
+            detail={{
+              title: (entry) => text.fields[entry.field].label,
+              subtitle: (entry) => changeText(entry),
+              body: (entry) => (
+                <DetailFields
+                  fields={[
+                    { label: "Effective", value: day(entry.effectiveOn) },
+                    {
+                      label: "Applied",
+                      value: text.history.applied(
+                        day(entry.appliedAt),
+                        entry.approvedBy,
+                      ),
+                    },
+                  ]}
+                />
+              ),
+            }}
+          />
         )}
       </section>
       <RequestDialog
@@ -917,9 +1005,65 @@ function ReviewView() {
             />
           )
         ) : (
-          <ul className="details-list-rows">
-            {items.map((item) => (
-              <li key={item.id} className="details-request">
+          <CollectionView
+            id="details-review"
+            label={text.review.list.total(items.length)}
+            noun="requests"
+            items={items}
+            getKey={(item) => item.id}
+            onOpen={(item) => setOpenId(item.id)}
+            defaultView="table"
+            columns={[
+              {
+                id: "employee",
+                label: "Employee",
+                isRowHeader: true,
+                sortValue: (item) => item.employeeName.toLowerCase(),
+                render: (item) => (
+                  <div className="details-title">
+                    <strong>{item.employeeName}</strong>
+                    <small className="details-muted">{item.employeeCode}</small>
+                  </div>
+                ),
+              },
+              {
+                id: "changing",
+                label: "Changing",
+                render: (item) => labelList(item.fields),
+              },
+              {
+                id: "status",
+                label: "Status",
+                render: (item) => <StatusPill status={item.status} />,
+              },
+              {
+                id: "effective",
+                label: "Effective",
+                sortValue: (item) => item.effectiveOn,
+                render: (item) => day(item.effectiveOn),
+              },
+              {
+                id: "submitted",
+                label: "Submitted",
+                sortValue: (item) => item.createdAt,
+                render: (item) => day(item.createdAt),
+              },
+              {
+                id: "open",
+                label: "",
+                render: (item) => (
+                  <Button
+                    variant="secondary"
+                    onPress={() => setOpenId(item.id)}
+                    aria-label={text.review.list.openLabel(item.employeeName)}
+                  >
+                    {text.review.list.open}
+                  </Button>
+                ),
+              },
+            ]}
+            renderCard={(item) => (
+              <div className="details-request">
                 <div className="details-row-main">
                   <div className="details-title">
                     <strong>{item.employeeName}</strong>
@@ -945,9 +1089,9 @@ function ReviewView() {
                 >
                   {text.review.list.open}
                 </Button>
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+          />
         )}
       </section>
       <RequestDetails id={openId} onClose={() => setOpenId(null)} />

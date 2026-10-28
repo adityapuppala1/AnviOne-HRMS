@@ -1,11 +1,11 @@
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
 import { MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
 import {
-  EmptyBlock,
+  CollectionView,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -29,11 +29,16 @@ function Explorer() {
   const { me } = useWorkspace();
   const { data, error, refetch } = useDashboard();
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   if (error)
     return (
       <ErrorState message={error.message} onRetry={() => void refetch()} />
     );
   if (!data) return <LoadingState />;
+  const href = (kind: "departments" | "locations", name: string) =>
+    `/people?${kind === "departments" ? "department" : "location"}=${encodeURIComponent(name)}`;
+  const pct = (count: number) =>
+    data.total ? Math.round((count / data.total) * 100) : 0;
   return (
     <div className="page-enter">
       <PageHeader
@@ -76,14 +81,44 @@ function Explorer() {
             </UTabs.List>
             {(["departments", "locations"] as const).map((kind) => (
               <UTabs.Panel id={kind} key={kind} className="tab-panel">
-                <div className="team-grid">
-                  {data[kind].length ? (
-                    data[kind].map((group, index) => (
-                      <Link
-                        key={group.name}
-                        className="team-card"
-                        to={`/people?${kind === "departments" ? "department" : "location"}=${encodeURIComponent(group.name)}`}
-                      >
+                <CollectionView
+                  id={`teams-${kind}`}
+                  label={text.tabs[kind]}
+                  noun={kind}
+                  items={data[kind]}
+                  getKey={(group) => group.name}
+                  onOpen={(group) => void navigate(href(kind, group.name))}
+                  cardClassName="!bg-transparent !p-0 !shadow-none !ring-0"
+                  emptyIcon={kind === "departments" ? Buildings : MapPin}
+                  emptyTitle={text.empty.title(kind)}
+                  emptyDescription={text.empty.detail}
+                  columns={[
+                    {
+                      id: "name",
+                      label: kind === "departments" ? "Department" : "Location",
+                      isRowHeader: true,
+                      sortValue: (group) => group.name.toLowerCase(),
+                      render: (group) => (
+                        <Link to={href(kind, group.name)}>{group.name}</Link>
+                      ),
+                    },
+                    {
+                      id: "count",
+                      label: "People",
+                      sortValue: (group) => group.count,
+                      render: (group) => text.card.inWorkspace(group.count),
+                    },
+                    {
+                      id: "share",
+                      label: "Share",
+                      sortValue: (group) => group.count,
+                      render: (group) => text.card.share(pct(group.count)),
+                    },
+                  ]}
+                  renderCard={(group) => {
+                    const index = data[kind].indexOf(group);
+                    return (
+                      <Link className="team-card" to={href(kind, group.name)}>
                         <div className="team-card-top">
                           <span
                             style={{ background: `var(--chart-${index % 6})` }}
@@ -106,24 +141,12 @@ function Explorer() {
                               }}
                             />
                           </div>
-                          <span>
-                            {text.card.share(
-                              data.total
-                                ? Math.round((group.count / data.total) * 100)
-                                : 0,
-                            )}
-                          </span>
+                          <span>{text.card.share(pct(group.count))}</span>
                         </div>
                       </Link>
-                    ))
-                  ) : (
-                    <EmptyBlock
-                      icon={kind === "departments" ? Buildings : MapPin}
-                      title={text.empty.title(kind)}
-                      description={text.empty.detail}
-                    />
-                  )}
-                </div>
+                    );
+                  }}
+                />
               </UTabs.Panel>
             ))}
           </UTabs>

@@ -16,10 +16,11 @@ import {
   PageHeader,
   Select,
   StatusBadge,
-  Table,
   TextArea,
   UTabs,
-  useNarrow,
+  CollectionView,
+  DetailFields,
+  type Column,
 } from "@anvi/ui";
 import {
   brandingSchema,
@@ -548,7 +549,6 @@ function AccessTab() {
 }
 
 function Matrix({ matrix }: { matrix: PermissionMatrix }) {
-  const narrow = useNarrow(720);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
   const term = search.trim().toLowerCase();
@@ -581,15 +581,37 @@ function Matrix({ matrix }: { matrix: PermissionMatrix }) {
       first: index === 0 || filtered[index - 1]!.area !== entry.area,
     }));
   }, [matrix.permissions, term, role]);
-  const columns = useMemo(
+  const roleLabel = (id: string) =>
+    matrix.roles.find((r) => r.role === id)?.label ?? id;
+  const columns = useMemo<Column<Row>[]>(
     () => [
-      { id: "permission", label: text.access.permissionColumn },
-      ...roles.map((r) => ({ id: r.role, label: r.label })),
+      {
+        id: "permission",
+        label: text.access.permissionColumn,
+        isRowHeader: true,
+        sortValue: (row) => row.item.permission,
+        render: (row) => (
+          <>
+            {row.first && (
+              <span className="config-area">{humanize(row.area)}</span>
+            )}
+            <span className="config-perm">{row.item.permission}</span>
+            <span className="config-quiet">{row.item.description}</span>
+          </>
+        ),
+      },
+      ...roles.map((r) => ({
+        id: r.role,
+        label: r.label,
+        render: (row: Row) => (
+          <ScopeChips
+            grants={row.item.grants.filter((g) => g.role === r.role)}
+          />
+        ),
+      })),
     ],
     [roles],
   );
-  const roleLabel = (id: string) =>
-    matrix.roles.find((r) => r.role === id)?.label ?? id;
   return (
     <div className="config-stack">
       <p className="config-lead">{text.access.title}</p>
@@ -618,91 +640,63 @@ function Matrix({ matrix }: { matrix: PermissionMatrix }) {
           ]}
         </Select>
       </div>
-      <p className="config-quiet" role="status" aria-live="polite">
-        {text.access.showing(rows.length, matrix.permissions.length)}{" "}
-        {text.access.scopeHelp}
-      </p>
-      {!rows.length ? (
-        <EmptyBlock
-          icon={ShieldCheck}
-          title={text.access.emptyTitle}
-          description={text.access.emptyBody}
-        />
-      ) : narrow ? (
-        <ul className="config-cards" aria-label={text.access.listLabel}>
-          {rows.map((row) => {
-            const visible = row.item.grants.filter(
-              (g) => role === "all" || g.role === role,
-            );
-            return (
-              <li key={row.id} className="config-card">
-                <p className="config-area">{humanize(row.area)}</p>
-                <h3>{row.item.permission}</h3>
-                <p className="config-quiet">{row.item.description}</p>
-                {visible.length ? (
-                  <dl>
-                    {visible.map((g) => (
-                      <div key={g.role}>
-                        <dt>{roleLabel(g.role)}</dt>
-                        <dd>
-                          <ScopeChips grants={[g]} />
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : (
-                  <p className="config-quiet">{text.access.nobody}</p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="config-table-wrap">
-          <Table aria-label={text.access.tableLabel} size="sm">
-            <Table.Header columns={columns}>
-              {(column) => (
-                <Table.Head
-                  id={column.id}
-                  label={column.label}
-                  isRowHeader={column.id === "permission"}
-                />
+      <p className="config-quiet">{text.access.scopeHelp}</p>
+      <CollectionView
+        id="config-access"
+        label={text.access.tableLabel}
+        noun="permissions"
+        items={rows}
+        getKey={(row) => row.id}
+        defaultView="table"
+        urlState
+        columns={columns}
+        emptyIcon={ShieldCheck}
+        emptyTitle={text.access.emptyTitle}
+        emptyDescription={text.access.emptyBody}
+        renderCard={(row) => {
+          const visible = row.item.grants.filter(
+            (g) => role === "all" || g.role === role,
+          );
+          return (
+            <div className="config-card">
+              <p className="config-area">{humanize(row.area)}</p>
+              <h3>{row.item.permission}</h3>
+              <p className="config-quiet">{row.item.description}</p>
+              {visible.length ? (
+                <dl>
+                  {visible.map((g) => (
+                    <div key={g.role}>
+                      <dt>{roleLabel(g.role)}</dt>
+                      <dd>
+                        <ScopeChips grants={[g]} />
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p className="config-quiet">{text.access.nobody}</p>
               )}
-            </Table.Header>
-            <Table.Body items={rows}>
-              {(row) => (
-                <Table.Row id={row.id} columns={columns}>
-                  {(column) =>
-                    column.id === "permission" ? (
-                      <Table.Cell>
-                        {row.first && (
-                          <span className="config-area">
-                            {humanize(row.area)}
-                          </span>
-                        )}
-                        <span className="config-perm">
-                          {row.item.permission}
-                        </span>
-                        <span className="config-quiet">
-                          {row.item.description}
-                        </span>
-                      </Table.Cell>
-                    ) : (
-                      <Table.Cell>
-                        <ScopeChips
-                          grants={row.item.grants.filter(
-                            (g) => g.role === column.id,
-                          )}
-                        />
-                      </Table.Cell>
-                    )
-                  }
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
-        </div>
-      )}
+            </div>
+          );
+        }}
+        detail={{
+          title: (row) => row.item.permission,
+          subtitle: (row) => row.item.description,
+          body: (row) => (
+            <DetailFields
+              title={humanize(row.area)}
+              fields={matrix.roles.map((r) => ({
+                label: r.label,
+                value: (
+                  <ScopeChips
+                    grants={row.item.grants.filter((g) => g.role === r.role)}
+                  />
+                ),
+              }))}
+            />
+          ),
+        }}
+      />
     </div>
   );
 }

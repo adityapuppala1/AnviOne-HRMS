@@ -50,8 +50,10 @@ export const Modal = (props: ModalProps) => (
     className={(state) =>
       cx(
         "inset-y-0 right-0 h-full w-full max-w-100 shadow-xl transition",
-        state.isEntering && "duration-300 animate-in slide-in-from-right",
-        state.isExiting && "duration-500 animate-out slide-out-to-right",
+        state.isEntering &&
+          "duration-300 ease-out animate-in slide-in-from-right",
+        state.isExiting &&
+          "duration-200 ease-in animate-out slide-out-to-right",
         typeof props.className === "function"
           ? props.className(state)
           : props.className,

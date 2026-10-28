@@ -3,6 +3,7 @@ import {
   useId,
   useMemo,
   useState,
+  type CSSProperties,
   type FC,
   type ReactNode,
 } from "react";
@@ -160,6 +161,7 @@ export function CollectionView<T extends object>({
   cardClassName,
   openKey: controlledKey,
   onOpenKeyChange,
+  urlState = false,
   server,
   loading = false,
   defaultView = "cards",
@@ -190,6 +192,9 @@ export function CollectionView<T extends object>({
   // Optional control of the open record, so a screen can open it from its own button.
   openKey?: string | null;
   onOpenKeyChange?: (key: string | null) => void;
+  // Mirror the open record in the address bar as ?detail=<key> (one collection
+  // per screen should set this). A shared link reopens the same record.
+  urlState?: boolean;
   // Server mode: the API pages the data; items is the current page only.
   server?: CollectionServerPaging;
   loading?: boolean;
@@ -220,10 +225,25 @@ export function CollectionView<T extends object>({
   const [pageState, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]!);
   const [innerKey, setInnerKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (!urlState) return;
+    const fromUrl = new URLSearchParams(window.location.search).get("detail");
+    if (fromUrl) setInnerKey(fromUrl);
+  }, [urlState]);
   const openKey = controlledKey === undefined ? innerKey : controlledKey;
   const setOpenKey = (key: string | null) => {
     setInnerKey(key);
     onOpenKeyChange?.(key);
+    if (urlState) {
+      try {
+        const url = new URL(window.location.href);
+        if (key) url.searchParams.set("detail", key);
+        else url.searchParams.delete("detail");
+        window.history.replaceState(window.history.state, "", url);
+      } catch {
+        /* the address bar is a convenience only */
+      }
+    }
   };
 
   const sorted = useMemo(() => {
@@ -300,12 +320,7 @@ export function CollectionView<T extends object>({
   return (
     <div className="flex min-w-0 flex-col gap-3" data-collection={id}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p
-          role="status"
-          aria-live="polite"
-          id={labelId}
-          className="text-sm text-tertiary"
-        >
+        <p aria-live="polite" id={labelId} className="text-sm text-tertiary">
           {loading
             ? "Loading"
             : total === 0
@@ -330,10 +345,7 @@ export function CollectionView<T extends object>({
           role="group"
         >
           {Array.from({ length: 4 }, (_, i) => (
-            <div
-              key={i}
-              className="h-16 animate-pulse rounded-xl bg-secondary motion-reduce:animate-none"
-            />
+            <div key={i} className="cv-skeleton h-16 rounded-xl bg-secondary" />
           ))}
         </div>
       ) : total === 0 ? (
@@ -355,14 +367,16 @@ export function CollectionView<T extends object>({
       ) : view === "cards" ? (
         <ul
           aria-label={label}
-          className="grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-3 p-0"
+          className="cv-enter grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-3 p-0"
         >
-          {visible.map((item) => {
+          {visible.map((item, index) => {
             const key = getKey(item);
             return (
               <li
                 key={key}
-                className={`min-w-0 rounded-2xl bg-primary p-4 shadow-xs ring-1 ring-secondary ${
+                style={{ "--i": Math.min(index, 11) } as CSSProperties}
+                data-clickable={clickable ? "" : undefined}
+                className={`cv-card min-w-0 rounded-2xl bg-primary p-4 shadow-xs ring-1 ring-secondary ${
                   clickable ? "cursor-pointer hover:ring-brand" : ""
                 } ${cardClassName ?? ""}`}
                 onClick={
@@ -396,7 +410,7 @@ export function CollectionView<T extends object>({
           })}
         </ul>
       ) : (
-        <TableCard.Root className="data-card">
+        <TableCard.Root className="data-card cv-enter">
           <Table
             aria-label={label}
             sortDescriptor={sort}

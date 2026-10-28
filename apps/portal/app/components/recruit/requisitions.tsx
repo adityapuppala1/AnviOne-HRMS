@@ -14,7 +14,7 @@ import {
   type Column,
 } from "@anvi/ui";
 import type { RecruitRequisition } from "@anvi/contracts";
-import { useOrganizationOptions, useRecruitRequisitions } from "../../lib/api";
+import { useRecruitLookups, useRecruitRequisitions } from "../../lib/api";
 import { recruitmentCopy as text } from "../../lib/copy/recruitment";
 import {
   FormActions,
@@ -406,9 +406,7 @@ function RequisitionFields({
   canManage: boolean;
   onClose: () => void;
 }) {
-  const departments = useOrganizationOptions("department", true);
-  const locations = useOrganizationOptions("location", true);
-  const designations = useOrganizationOptions("designation", true);
+  const lookups = useRecruitLookups(true);
   const { send, busy, error } = useRecruitSend();
   const [title, setTitle] = useState(item?.title ?? "");
   const [departmentId, setDepartmentId] = useState(item?.departmentId ?? "");
@@ -425,8 +423,8 @@ function RequisitionFields({
       ? [{ id: item.hiringManagerId, name: item.hiringManagerName, title: "" }]
       : [],
   );
-  const unavailable = Boolean(departments.error || locations.error);
-  const loading = departments.isPending || locations.isPending;
+  const unavailable = Boolean(lookups.error);
+  const loading = lookups.isPending;
   const count = Number(headcount);
   const ready =
     title.trim().length >= 3 &&
@@ -468,9 +466,6 @@ function RequisitionFields({
         });
     if (done !== null) onClose();
   }
-  const options = (data?: {
-    items: { id: string; name: string; inEffect: boolean }[];
-  }) => (data?.items ?? []).filter((unit) => unit.inEffect);
   if (unavailable)
     return (
       <div className="leave-form">
@@ -501,7 +496,7 @@ function RequisitionFields({
           onSelectionChange={(key) => key && setDepartmentId(String(key))}
           isDisabled={loading}
         >
-          {options(departments.data).map((unit) => (
+          {(lookups.data?.departments ?? []).map((unit) => (
             <Select.Item key={unit.id} id={unit.id} label={unit.name} />
           ))}
         </Select>
@@ -511,7 +506,7 @@ function RequisitionFields({
           onSelectionChange={(key) => key && setLocationId(String(key))}
           isDisabled={loading}
         >
-          {options(locations.data).map((unit) => (
+          {(lookups.data?.locations ?? []).map((unit) => (
             <Select.Item key={unit.id} id={unit.id} label={unit.name} />
           ))}
         </Select>
@@ -524,7 +519,7 @@ function RequisitionFields({
         }
       >
         <Select.Item id="none" label={text.common.none} />
-        {options(designations.data).map((unit) => (
+        {(lookups.data?.designations ?? []).map((unit) => (
           <Select.Item key={unit.id} id={unit.id} label={unit.name} />
         ))}
       </Select>
@@ -553,6 +548,7 @@ function RequisitionFields({
         value={targetStart}
         onChange={setTargetStart}
       />
+      {!canManage && !item && <p>{copy.selfManager}</p>}
       {canManage && (
         <PersonPicker
           label={copy.fields.hiringManager}

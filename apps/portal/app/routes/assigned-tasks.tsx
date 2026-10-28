@@ -2,6 +2,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import { z } from "zod";
 import {
   Button,
+  CollectionView,
+  DetailFields,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -15,7 +17,6 @@ import {
 import { Prohibit } from "@phosphor-icons/react/dist/csr/Prohibit";
 import { ListChecks } from "@phosphor-icons/react/dist/csr/ListChecks";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
-import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { assignedTaskSchema } from "@anvi/contracts";
 import { api, useAssignedTasks } from "../lib/api";
@@ -55,6 +56,39 @@ function TaskDocket({ csrf }: { csrf: string }) {
     [filter, query.data],
   );
   const all = query.data?.items ?? [];
+  const dueText = (dueOn: string) =>
+    new Date(`${dueOn}T00:00:00`).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  const statusBadge = (task: AssignedTask) => (
+    <StatusBadge
+      color={
+        task.state === "completed"
+          ? "success"
+          : task.state === "blocked"
+            ? "error"
+            : "gray"
+      }
+      size="sm"
+      type="pill-color"
+    >
+      {statusNames[task.state]}
+    </StatusBadge>
+  );
+  const updateButton = (task: AssignedTask) => (
+    <Button
+      variant="secondary"
+      onPress={() => {
+        setError("");
+        setSelected(task);
+      }}
+      aria-label={text.updateLabel(task.label)}
+    >
+      {text.updateWork}
+    </Button>
+  );
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
@@ -155,78 +189,94 @@ function TaskDocket({ csrf }: { csrf: string }) {
             description={text.emptyBody}
           />
         ) : (
-          <ol className="docket-list">
-            {items.map((task, index) => (
-              <li
-                key={task.id}
-                className={`docket-entry docket-${task.state}`}
-                style={{ "--entry-index": index } as React.CSSProperties}
-              >
-                <div className="docket-date">
+          <CollectionView
+            id="assigned-tasks"
+            label={text.docketLabel}
+            noun="tasks"
+            items={items}
+            getKey={(task) => task.id}
+            urlState
+            columns={[
+              {
+                id: "task",
+                label: "Task",
+                isRowHeader: true,
+                sortValue: (task) => task.label.toLowerCase(),
+                render: (task) => task.label,
+              },
+              {
+                id: "candidate",
+                label: "Candidate",
+                sortValue: (task) => task.candidateName.toLowerCase(),
+                render: (task) =>
+                  `${task.candidateName} · ${task.candidateTitle}`,
+              },
+              {
+                id: "due",
+                label: "Due",
+                sortValue: (task) => task.dueOn,
+                render: (task) => dueText(task.dueOn),
+              },
+              {
+                id: "state",
+                label: "Status",
+                sortValue: (task) => task.state,
+                render: (task) => statusBadge(task),
+              },
+              {
+                id: "action",
+                label: "",
+                render: (task) => updateButton(task),
+              },
+            ]}
+            renderCard={(task) => (
+              <article className={`docket-card docket-${task.state}`}>
+                <div className="docket-entry-head">
+                  {statusBadge(task)}
                   <span>
-                    {new Date(`${task.dueOn}T00:00:00`).toLocaleDateString(
-                      "en-IN",
-                      { day: "2-digit" },
-                    )}
+                    {task.required ? text.required : text.optional} ·{" "}
+                    {task.owner}
                   </span>
-                  <small>
-                    {new Date(`${task.dueOn}T00:00:00`)
-                      .toLocaleDateString("en-IN", { month: "short" })
-                      .toUpperCase()}
-                  </small>
                 </div>
-                <span className="docket-node" aria-hidden="true">
-                  {task.state === "completed" ? (
-                    <CheckCircle weight="fill" />
-                  ) : (
-                    <Clock />
-                  )}
-                </span>
-                <article>
-                  <div className="docket-entry-head">
-                    <StatusBadge
-                      color={
-                        task.state === "completed"
-                          ? "success"
-                          : task.state === "blocked"
-                            ? "error"
-                            : "gray"
-                      }
-                      size="sm"
-                      type="pill-color"
-                    >
-                      {statusNames[task.state]}
-                    </StatusBadge>
-                    <span>
-                      {task.required ? text.required : text.optional} ·{" "}
-                      {task.owner}
-                    </span>
-                  </div>
-                  <h2>{task.label}</h2>
-                  <p className="docket-person">
-                    {text.forCandidate} <strong>{task.candidateName}</strong> ·{" "}
-                    {task.candidateTitle}
-                  </p>
-                  {task.waitingOn && (
-                    <p className="docket-warning">{text.waiting}</p>
-                  )}
-                  {task.note && (
-                    <p className="docket-note">{text.latestNote(task.note)}</p>
-                  )}
-                  <Button
-                    variant="secondary"
-                    onPress={() => {
-                      setError("");
-                      setSelected(task);
-                    }}
-                    aria-label={text.updateLabel(task.label)}
-                  >
-                    {text.updateWork}
-                  </Button>
-                </article>
-              </li>
-            ))}
-          </ol>
+                <h2>{task.label}</h2>
+                <p className="docket-person">
+                  {text.forCandidate} <strong>{task.candidateName}</strong> ·{" "}
+                  {task.candidateTitle}
+                </p>
+                <p className="docket-person">Due {dueText(task.dueOn)}</p>
+                {task.waitingOn && (
+                  <p className="docket-warning">{text.waiting}</p>
+                )}
+                {task.note && (
+                  <p className="docket-note">{text.latestNote(task.note)}</p>
+                )}
+                {updateButton(task)}
+              </article>
+            )}
+            detail={{
+              title: (task) => task.label,
+              subtitle: (task) => statusNames[task.state],
+              body: (task) => (
+                <DetailFields
+                  fields={[
+                    { label: "Candidate", value: task.candidateName },
+                    { label: "Role", value: task.candidateTitle },
+                    { label: "Owner", value: task.owner },
+                    { label: "Due", value: dueText(task.dueOn) },
+                    {
+                      label: "Required",
+                      value: task.required ? text.required : text.optional,
+                    },
+                    {
+                      label: "Waiting on",
+                      value: task.waitingOn ? text.waiting : undefined,
+                    },
+                    { label: "Latest note", value: task.note },
+                  ]}
+                />
+              ),
+            }}
+          />
         )}
       </section>
       <DialogPanel

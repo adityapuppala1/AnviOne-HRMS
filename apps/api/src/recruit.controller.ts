@@ -364,6 +364,10 @@ export class RecruitController {
     );
   }
 
+  @Get("lookups") lookups(@Req() req: AppRequest) {
+    return this.recruit.lookups(req.actor);
+  }
+
   @Get("funnel") funnel(@Req() req: AppRequest, @Query() query: unknown) {
     return this.recruit.funnel(
       req.actor,

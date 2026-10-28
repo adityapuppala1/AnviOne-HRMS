@@ -29,7 +29,9 @@ import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import {
   Button,
   Checkbox,
+  CollectionView,
   DataCard,
+  DetailFields,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -1280,6 +1282,55 @@ function SavedList({
     );
   if (query.isPending || !query.data) return <LoadingState />;
   const { items, limit } = query.data;
+  const labelOf = (item: SavedReport) =>
+    datasets.find((d) => d.key === item.dataset)?.label ?? item.dataset;
+  const summary = (item: SavedReport) => (
+    <>
+      <span className="reports-quiet">
+        {item.definition
+          ? text.saved.meta(
+              labelOf(item),
+              item.definition.columns.length,
+              item.definition.filters.length,
+              day(item.updatedAt),
+            )
+          : text.saved.metaLocked(labelOf(item), day(item.updatedAt))}
+      </span>
+      {!item.runnable && (
+        <span className="reports-saved-why">{text.saved.notRunnable}</span>
+      )}
+    </>
+  );
+  const actions = (item: SavedReport) => (
+    <div className="reports-saved-buttons">
+      <Button
+        variant="primary"
+        aria-label={text.saved.runName(item.name)}
+        isDisabled={!item.runnable}
+        onPress={() => onRun(item)}
+      >
+        <Play size={16} weight="fill" aria-hidden="true" />
+        {text.saved.run}
+      </Button>
+      <Button
+        variant="secondary"
+        aria-label={text.saved.renameName(item.name)}
+        isDisabled={!item.runnable}
+        onPress={() => onRename(item)}
+      >
+        <PencilSimple size={16} aria-hidden="true" />
+        {text.saved.rename}
+      </Button>
+      <Button
+        variant="ghost"
+        aria-label={text.saved.archiveName(item.name)}
+        onPress={() => onArchive(item)}
+      >
+        <Archive size={16} aria-hidden="true" />
+        {text.saved.archive}
+      </Button>
+    </div>
+  );
   return (
     <div className="reports-saved">
       <div className="reports-saved-head">
@@ -1306,67 +1357,73 @@ function SavedList({
           }
         />
       ) : (
-        <ul className="reports-saved-list" aria-label={text.saved.list}>
-          {items.map((item) => {
-            const label =
-              datasets.find((d) => d.key === item.dataset)?.label ??
-              item.dataset;
-            return (
-              <li
-                key={item.id}
-                className="reports-saved-row"
-                data-runnable={item.runnable}
-              >
-                <div className="reports-saved-main">
-                  <strong>{item.name}</strong>
-                  <span>
-                    {item.definition
-                      ? text.saved.meta(
-                          label,
-                          item.definition.columns.length,
-                          item.definition.filters.length,
-                          day(item.updatedAt),
-                        )
-                      : text.saved.metaLocked(label, day(item.updatedAt))}
-                  </span>
-                  {!item.runnable && (
-                    <span className="reports-saved-why">
-                      {text.saved.notRunnable}
-                    </span>
-                  )}
-                </div>
-                <div className="reports-saved-buttons">
-                  <Button
-                    variant="primary"
-                    aria-label={text.saved.runName(item.name)}
-                    isDisabled={!item.runnable}
-                    onPress={() => onRun(item)}
-                  >
-                    <Play size={16} weight="fill" aria-hidden="true" />
-                    {text.saved.run}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    aria-label={text.saved.renameName(item.name)}
-                    isDisabled={!item.runnable}
-                    onPress={() => onRename(item)}
-                  >
-                    <PencilSimple size={16} aria-hidden="true" />
-                    {text.saved.rename}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    aria-label={text.saved.archiveName(item.name)}
-                    onPress={() => onArchive(item)}
-                  >
-                    <Archive size={16} aria-hidden="true" />
-                    {text.saved.archive}
-                  </Button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <CollectionView
+          id="reports-saved"
+          label={text.saved.list}
+          noun="saved reports"
+          items={items}
+          getKey={(item) => item.id}
+          urlState
+          columns={[
+            {
+              id: "name",
+              label: "Report",
+              isRowHeader: true,
+              sortValue: (item) => item.name.toLowerCase(),
+              render: (item) => <strong>{item.name}</strong>,
+            },
+            {
+              id: "summary",
+              label: "Details",
+              render: (item) => summary(item),
+            },
+            {
+              id: "updated",
+              label: "Updated",
+              sortValue: (item) => item.updatedAt,
+              render: (item) => day(item.updatedAt),
+            },
+            {
+              id: "actions",
+              label: "Actions",
+              render: (item) => actions(item),
+            },
+          ]}
+          renderCard={(item) => (
+            <div className="reports-saved-row" data-runnable={item.runnable}>
+              <div className="reports-saved-main">
+                <strong>{item.name}</strong>
+                {summary(item)}
+              </div>
+              {actions(item)}
+            </div>
+          )}
+          detail={{
+            title: (item) => item.name,
+            subtitle: (item) => labelOf(item),
+            body: (item) => (
+              <DetailFields
+                fields={[
+                  { label: "Dataset", value: labelOf(item) },
+                  {
+                    label: "Columns",
+                    value: item.definition?.columns.length,
+                  },
+                  {
+                    label: "Filters",
+                    value: item.definition?.filters.length,
+                  },
+                  { label: "Updated", value: day(item.updatedAt) },
+                  {
+                    label: "Status",
+                    value: item.runnable ? undefined : text.saved.notRunnable,
+                  },
+                ]}
+              />
+            ),
+            footer: (item) => actions(item),
+          }}
+        />
       )}
     </div>
   );

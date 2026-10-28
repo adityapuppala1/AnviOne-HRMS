@@ -5,9 +5,9 @@ import { mkdirSync } from "node:fs";
 import { loginAs, type PersonaKey } from "./support/personas";
 
 // Behaviour under test: Recruitment (REC-01) as HR (Kabir and Maya), a hiring
-// manager (Neel) and an interviewer employee (Aarav). The manager cannot list
-// departments or locations yet (no organization.read), so HR raises the
-// requisition and names the manager; the spec documents that limit.
+// manager (Neel) and an interviewer employee (Aarav). The manager raises the
+// requisition from the recruitment lookups (no organization.read needed) and is
+// the hiring manager; two HR people then approve and open it.
 const evidence = "docs/acceptance-evidence/recruitment";
 
 async function resetRateLimits() {
@@ -140,7 +140,7 @@ test("recruitment runs from requisition to an accepted offer", async ({
       }
     });
 
-    await test.step("a manager sees Recruitment but cannot list org units yet", async () => {
+    await test.step("a hiring manager raises and submits a requisition", async () => {
       await openRecruitment(neel.page);
       const tabs = neel.page.getByRole("tablist", {
         name: "Recruitment views",
@@ -152,32 +152,30 @@ test("recruitment runs from requisition to an accepted offer", async ({
       await neel.page
         .getByRole("button", { name: "Raise requisition" })
         .click();
-      await expect(
-        neel.page.getByText("Department and location lists are not available"),
-      ).toBeVisible();
-      await neel.page
-        .getByRole("button", { name: "Close", exact: true })
-        .click();
-    });
-
-    await test.step("HR raises a requisition naming the manager, a second HR approves", async () => {
-      await openRecruitment(hr);
-      await accessible(hr);
-      await hr.getByRole("button", { name: "Raise requisition" }).click();
-      const form = hr.getByRole("dialog", { name: "Raise a requisition" });
+      const form = neel.page.getByRole("dialog", {
+        name: "Raise a requisition",
+      });
+      await expect(form).toContainText("You will be the hiring manager");
+      await expect(form.getByLabel("Hiring manager")).toHaveCount(0);
       await form.getByLabel("Job title").fill(jobTitle);
-      await pick(hr, form, /Department/, "Engineering");
-      await pick(hr, form, /Location/, "Bengaluru");
-      await person(form, "Hiring manager", "Neel Rao");
+      await pick(neel.page, form, /Department/, "Engineering");
+      await pick(neel.page, form, /Location/, "Bengaluru");
+      await accessible(neel.page);
+      await shot(neel.page, "manager-raise");
       await form.getByRole("button", { name: "Save" }).click();
-      await expect(hr.getByRole("dialog")).toHaveCount(0);
-      await hr.getByRole("button", { name: `Details: ${jobTitle}` }).click();
-      const detail = hr.getByRole("dialog", { name: jobTitle });
+      await expect(neel.page.getByRole("dialog")).toHaveCount(0);
+      await neel.page
+        .getByRole("button", { name: `Details: ${jobTitle}` })
+        .click();
+      const detail = neel.page.getByRole("dialog", { name: jobTitle });
+      await expect(detail).toContainText("Neel Rao");
       await detail.getByRole("button", { name: "Submit for approval" }).click();
       await expect(detail).toContainText("Waiting for approval");
-      await shot(hr, "requisition-pending");
-      await hr.keyboard.press("Escape");
+      await shot(neel.page, "requisition-pending");
+      await neel.page.keyboard.press("Escape");
+    });
 
+    await test.step("HR approves and opens the manager's requisition", async () => {
       await openRecruitment(maya.page);
       await maya.page
         .getByRole("button", { name: `Details: ${jobTitle}` })

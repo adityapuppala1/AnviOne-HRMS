@@ -260,6 +260,7 @@ await test("Recruitment: requisitions, candidates, applications, interviews, sco
           "/recruit/applications",
           "/recruit/interviews/mine",
           "/recruit/funnel",
+          "/recruit/lookups",
         ])
           assert.equal((await request(path)).status, 403, `${role} ${path}`);
       }
@@ -271,6 +272,7 @@ await test("Recruitment: requisitions, candidates, applications, interviews, sco
         "/recruit/applications",
         "/recruit/offers",
         "/recruit/funnel",
+        "/recruit/lookups",
       ])
         assert.equal((await request(path)).status, 403, `employee ${path}`);
       await changeRole("manager");
@@ -289,6 +291,74 @@ await test("Recruitment: requisitions, candidates, applications, interviews, sco
       ])
         assert.equal((await request(path)).status, 200, `hr ${path}`);
     });
+
+    await t.test(
+      "lookups give requesters id, code and name of in-effect units only",
+      async () => {
+        await changeRole("manager");
+        const response = await request("/recruit/lookups");
+        assert.equal(response.status, 200);
+        const body = (await response.json()) as Record<
+          string,
+          Array<Record<string, unknown>>
+        >;
+        assert.deepEqual(Object.keys(body).sort(), [
+          "departments",
+          "designations",
+          "locations",
+        ]);
+        const kinds = {
+          departments: "department",
+          locations: "location",
+          designations: "designation",
+        } as const;
+        for (const [key, kind] of Object.entries(kinds)) {
+          for (const item of body[key]!)
+            assert.deepEqual(Object.keys(item).sort(), ["code", "id", "name"]);
+          const expected = (
+            await admin.query<{ id: string }>(
+              `SELECT id FROM org_unit WHERE tenant_id=$1 AND entity_id=$2 AND kind=$3
+               AND active AND merged_into_id IS NULL AND effective_from<=org_entity_today($1,$2)
+               AND (effective_to IS NULL OR effective_to>=org_entity_today($1,$2))`,
+              [actor.tenantId, actor.entityId, kind],
+            )
+          ).rows.map((row) => row.id);
+          assert.deepEqual(
+            body[key]!.map((item) => item.id).sort(),
+            expected.sort(),
+            key,
+          );
+        }
+        assert.ok(body.departments!.some((item) => item.id === dept));
+        // Tenant isolation: no unit from any other tenant or entity leaks through.
+        const foreign = new Set(
+          (
+            await admin.query<{ id: string }>(
+              "SELECT id FROM org_unit WHERE tenant_id<>$1 OR entity_id<>$2",
+              [actor.tenantId, actor.entityId],
+            )
+          ).rows.map((row) => row.id),
+        );
+        for (const key of Object.keys(kinds))
+          for (const item of body[key]!)
+            assert.ok(!foreign.has(item.id as string), `foreign ${key}`);
+        // A requester in another tenant sees nothing of this one.
+        const elsewhere = await recruit.lookups({
+          ...mgrMaya,
+          tenantId: randomUUID(),
+          entityId: randomUUID(),
+        });
+        assert.deepEqual(elsewhere, {
+          departments: [],
+          locations: [],
+          designations: [],
+        });
+        // HR may use it too; employees and auditors may not.
+        assert.equal(await status(recruit.lookups(hrMaya)), 200);
+        assert.equal(await status(recruit.lookups(arjunE)), 403);
+        assert.equal(await status(recruit.lookups(auditor)), 403);
+      },
+    );
 
     await t.test("requisition lifecycle and four-eyes approval", async () => {
       assert.equal(

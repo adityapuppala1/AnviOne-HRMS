@@ -17,9 +17,13 @@ Lists of records were hand-built per screen: some had only cards, some only a ta
 - **States**: skeleton rows while loading (no animation under reduced motion), `EmptyBlock` with "Clear filters" when `onClearFilters` is given, and a `note` for honest limits such as "first 100 only".
 - **Layout**: 44 px toggle targets, 320 to 1920 px, light and dark through the Untitled tokens.
 
+## Motion
+
+Shared and central (`packages/ui/src/theme.css`): cards rise in with a short stagger (`cv-card`, transform only, first 12 cards), the cards/table swap eases in (`cv-enter`), the details slide-over uses ease-out in and ease-in out, loading rows shimmer (`cv-skeleton`), clickable cards lift on hover and press down, `.button` lifts 1px on hover and presses on active, the chosen tab pops in with a transform (colour fades are avoided so contrast checks never catch a theme switch mid-fade). StatCards already count up. No entrance fades from opacity 0, so axe contrast stays valid mid-animation. Everything stops under `[data-motion="reduce"]` and `prefers-reduced-motion`. The tab indicator pops in; it does not physically slide between tabs.
+
 ## Not done
 
-- URL state for the open record (`?detail=`) is not wired; the optional controlled `openKey` prop makes it possible.
+- `?detail=<key>` is opt-in (`urlState`) and is used where a screen has one collection with a built-in panel (Configuration access, Reports saved, Assigned tasks). Server-mode lists only reopen a record that is on the current page.
 - Server-mode sorting is per page, because the API has no sort parameter.
 - `DataCard` (older table-only card) still exists for reports and the organization screen.
 

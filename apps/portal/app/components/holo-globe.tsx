@@ -233,6 +233,11 @@ export function HoloGlobe({
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
+    // The provider only learns the system setting after mount, so read it
+    // directly too; otherwise the first effect run would animate briefly.
+    const still =
+      reduceMotion ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const state: State = {
       spin: START_SPIN,
       velocity: 0,
@@ -295,7 +300,7 @@ export function HoloGlobe({
     const sizing = new ResizeObserver(resize);
     sizing.observe(canvas);
     resize();
-    if (reduceMotion) return () => sizing.disconnect();
+    if (still) return () => sizing.disconnect();
 
     // Parallax: the globe leans toward the pointer across the whole window.
     const fine = window.matchMedia(

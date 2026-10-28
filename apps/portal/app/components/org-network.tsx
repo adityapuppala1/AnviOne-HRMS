@@ -89,8 +89,11 @@ export default function OrgNetwork({
     const { clientWidth: w, clientHeight: h } = el;
     if (!w || !h) return;
     const { width, height } = layoutRef.current;
+    // Touch screens keep nodes at least 44px tall; the canvas pans instead.
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
     const scale = Math.max(
       MIN_K,
+      coarse ? 44 / CARD.h : 0,
       Math.min(1.15, (w - 24) / width, (h - 24) / height),
     );
     const t = zoomIdentity
@@ -332,9 +335,13 @@ function NodeCard({
           {node.name}
           {isMe && <span className="oc-you">{text.node.youBadge}</span>}
         </span>
-        <span className="oc-node-title">{node.title || text.noTitle}</span>
+        <span className="oc-node-title" title={node.title || undefined}>
+          {node.title || text.noTitle}
+        </span>
         <span className="oc-node-meta">
-          <span>{deptLabel(node.department, text.noDepartment)}</span>
+          <span title={deptLabel(node.department, text.noDepartment)}>
+            {deptLabel(node.department, text.noDepartment)}
+          </span>
           <span className="oc-count">
             {text.node.reports(node.directReportCount)}
           </span>

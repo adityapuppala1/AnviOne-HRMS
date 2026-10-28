@@ -11,8 +11,6 @@ import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { PencilSimple } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { DotsThreeVertical } from "@phosphor-icons/react/dist/csr/DotsThreeVertical";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
-import { CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
-import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Archive } from "@phosphor-icons/react/dist/csr/Archive";
 import { ArrowClockwise } from "@phosphor-icons/react/dist/csr/ArrowClockwise";
@@ -23,7 +21,7 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import type { Icon } from "@phosphor-icons/react";
 import {
   Button,
-  DataCard,
+  CollectionView,
   Dropdown,
   DialogPanel,
   EmptyBlock,
@@ -329,64 +327,48 @@ function OrganizationRecords() {
                   }
                 />
               ) : (
-                <>
-                  <DataCard
-                    title={text.recordsLabel}
-                    label={text.recordsTable}
-                    rows={data.items}
-                    getKey={(unit) => unit.id}
-                    pageSize={20}
-                    empty={null}
-                    columns={[
-                      {
-                        id: "name",
-                        label: text.columns[kind],
-                        isRowHeader: true,
-                        render: (unit) => <UnitName unit={unit} Icon={Icon} />,
-                      },
-                      {
-                        id: "assigned",
-                        label: text.columns.assigned,
-                        render: assignedText,
-                      },
-                      {
-                        id: "window",
-                        label: text.columns.window,
-                        render: (unit) => (
-                          <span className="text-sm">{windowText(unit)}</span>
-                        ),
-                      },
-                      {
-                        id: "availability",
-                        label: text.columns.availability,
-                        render: (unit) => <StatusPill unit={unit} />,
-                      },
-                      {
-                        id: "actions",
-                        label: "",
-                        render: (unit) => (
-                          <RowActions
-                            unit={unit}
-                            writable={writable}
-                            onEdit={() => setEditing(unit)}
-                            onDetails={() => setDetailId(unit.id)}
-                            onMerge={() => setMerging(unit)}
-                          />
-                        ),
-                      },
-                    ]}
-                    mobileRow={(unit) => (
-                      <div className="flex items-start gap-3">
-                        <div className="min-w-0 flex-1">
-                          <UnitName unit={unit} Icon={Icon} />
-                          <p className="organization-mobile-line">
-                            {assignedText(unit)}
-                          </p>
-                          <p className="organization-mobile-line text-sm text-tertiary">
-                            {windowText(unit)}
-                          </p>
-                          <StatusPill unit={unit} />
-                        </div>
+                <CollectionView
+                  id={`organization-${kind}`}
+                  label={text.recordsTable}
+                  noun={label.plural}
+                  items={data.items}
+                  getKey={(unit) => unit.id}
+                  onOpen={(unit) => setDetailId(unit.id)}
+                  server={{
+                    page: data.page,
+                    total: data.total,
+                    limit: 20,
+                    onPageChange: (next) => filter("page", String(next)),
+                  }}
+                  defaultView="table"
+                  columns={[
+                    {
+                      id: "name",
+                      label: text.columns[kind],
+                      isRowHeader: true,
+                      render: (unit) => <UnitName unit={unit} Icon={Icon} />,
+                    },
+                    {
+                      id: "assigned",
+                      label: text.columns.assigned,
+                      render: assignedText,
+                    },
+                    {
+                      id: "window",
+                      label: text.columns.window,
+                      render: (unit) => (
+                        <span className="text-sm">{windowText(unit)}</span>
+                      ),
+                    },
+                    {
+                      id: "availability",
+                      label: text.columns.availability,
+                      render: (unit) => <StatusPill unit={unit} />,
+                    },
+                    {
+                      id: "actions",
+                      label: "",
+                      render: (unit) => (
                         <RowActions
                           unit={unit}
                           writable={writable}
@@ -394,31 +376,31 @@ function OrganizationRecords() {
                           onDetails={() => setDetailId(unit.id)}
                           onMerge={() => setMerging(unit)}
                         />
+                      ),
+                    },
+                  ]}
+                  renderCard={(unit) => (
+                    <div className="flex items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <UnitName unit={unit} Icon={Icon} />
+                        <p className="organization-mobile-line">
+                          {assignedText(unit)}
+                        </p>
+                        <p className="organization-mobile-line text-sm text-tertiary">
+                          {windowText(unit)}
+                        </p>
+                        <StatusPill unit={unit} />
                       </div>
-                    )}
-                  />
-                  <div className="organization-pagination">
-                    <span>{text.page(data.page, Math.max(data.pages, 1))}</span>
-                    <div>
-                      <Button
-                        variant="secondary"
-                        isDisabled={data.page <= 1}
-                        onPress={() => filter("page", String(data.page - 1))}
-                      >
-                        <CaretLeft size={16} />
-                        {text.previous}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        isDisabled={data.page >= data.pages}
-                        onPress={() => filter("page", String(data.page + 1))}
-                      >
-                        {text.next}
-                        <CaretRight size={16} />
-                      </Button>
+                      <RowActions
+                        unit={unit}
+                        writable={writable}
+                        onEdit={() => setEditing(unit)}
+                        onDetails={() => setDetailId(unit.id)}
+                        onMerge={() => setMerging(unit)}
+                      />
                     </div>
-                  </div>
-                </>
+                  )}
+                />
               )}
             </UTabs.Panel>
           </UTabs>

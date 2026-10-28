@@ -136,6 +136,7 @@ import {
   recruitOfferAcceptSchema,
   recruitOfferAcceptedSchema,
   recruitFunnelSchema,
+  recruitLookupsSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -1372,6 +1373,12 @@ Object.assign(spec.paths, {
       "Record a decline or expiry (HR)",
       recruitOfferDeclineSchema,
       recruitOfferSchema,
+    ),
+  },
+  "/recruit/lookups": {
+    get: read(
+      "Departments, locations and designations in effect today (id, code, name only) for raising a requisition",
+      recruitLookupsSchema,
     ),
   },
   "/recruit/funnel": {

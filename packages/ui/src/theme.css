@@ -478,3 +478,128 @@ button[data-disabled] {
     padding: 20px;
   }
 }
+
+/* Motion polish ----------------------------------------------------------
+   Transform-only entrances (never opacity from zero, so contrast checks stay
+   valid mid-animation), short and non-blocking. All of it stops under
+   [data-motion="reduce"] or prefers-reduced-motion. */
+@keyframes cv-rise {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes cv-swap {
+  from {
+    transform: translateY(6px) scale(0.995);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes cv-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.cv-enter {
+  animation: cv-swap 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cv-card {
+  animation: cv-rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s;
+}
+.cv-card[data-clickable]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -18px #2a297066;
+}
+.cv-card[data-clickable]:active {
+  transform: translateY(0) scale(0.99);
+}
+.cv-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-subtle, #f2f2f5) 25%,
+    color-mix(in srgb, var(--surface-subtle, #f2f2f5) 55%, white) 50%,
+    var(--surface-subtle, #f2f2f5) 75%
+  );
+  background-size: 200% 100%;
+  animation: cv-shimmer 1.4s linear infinite;
+}
+[data-mode="dark"] .cv-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-subtle, #23232b) 25%,
+    color-mix(in srgb, var(--surface-subtle, #23232b) 80%, white) 50%,
+    var(--surface-subtle, #23232b) 75%
+  );
+  background-size: 200% 100%;
+}
+[data-collection] tbody tr {
+  transition: background-color 0.15s;
+}
+.button {
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s;
+}
+.button:hover:not([data-disabled]):not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+}
+.button:active:not([data-disabled]) {
+  transform: translateY(1px) scale(0.985);
+}
+/* Colour transitions are avoided on purpose: a theme switch would be caught
+   mid-fade by contrast checks. The chosen tab pops in with a transform. */
+@keyframes tab-pop {
+  from {
+    transform: scale(0.94);
+  }
+  to {
+    transform: none;
+  }
+}
+.tab[data-selected] {
+  animation: tab-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-motion="reduce"] .cv-enter,
+[data-motion="reduce"] .cv-card,
+[data-motion="reduce"] .cv-skeleton {
+  animation: none;
+}
+[data-motion="reduce"] .tab[data-selected] {
+  animation: none;
+}
+[data-motion="reduce"] .cv-card,
+[data-motion="reduce"] .button {
+  transition: none;
+}
+[data-motion="reduce"] .cv-card[data-clickable]:hover,
+[data-motion="reduce"] .button:hover,
+[data-motion="reduce"] .button:active {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-enter,
+  .cv-card,
+  .cv-skeleton {
+    animation: none;
+  }
+  .tab[data-selected] {
+    animation: none;
+  }
+  .cv-card,
+  .button {
+    transition: none;
+  }
+  .cv-card[data-clickable]:hover,
+  .button:hover,
+  .button:active {
+    transform: none;
+  }
+}

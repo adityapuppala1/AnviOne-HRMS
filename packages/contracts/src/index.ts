@@ -2948,3 +2948,17 @@ export const recruitFunnelSchema = z.strictObject({
   ),
 });
 export type RecruitFunnel = z.infer<typeof recruitFunnelSchema>;
+
+// Pick-lists for raising a requisition (recruit.request or recruit.manage). Only the id, code
+// and name of departments, locations and designations in effect today; no other org data.
+const recruitLookupItemSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  name: z.string(),
+});
+export const recruitLookupsSchema = z.strictObject({
+  departments: z.array(recruitLookupItemSchema),
+  locations: z.array(recruitLookupItemSchema),
+  designations: z.array(recruitLookupItemSchema),
+});
+export type RecruitLookups = z.infer<typeof recruitLookupsSchema>;

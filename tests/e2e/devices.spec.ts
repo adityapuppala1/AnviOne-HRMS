@@ -29,6 +29,7 @@ const ROUTES = [
   "/details",
   "/chart",
   "/reports",
+  "/configuration",
   "/preferences",
   "/settings",
   "/tasks",

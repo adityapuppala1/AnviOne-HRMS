@@ -42,7 +42,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.exit_scope',$15,true),
     set_config('app.expense_scope',$16,true),
     set_config('app.profile_scope',$17,true),
-    set_config('app.report_scope',$18,true)`,
+    set_config('app.report_scope',$18,true),
+    set_config('app.branding_scope',$19,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -84,6 +85,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
         "none",
       // Saved report definitions only; report rows use each domain's own scope.
       scopeFor(actor, "report.run") ?? "none",
+      // Branding history is visible only to roles that may publish branding.
+      scopeFor(actor, "branding.write") ?? "none",
     ],
   );
 }

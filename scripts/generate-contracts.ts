@@ -3,6 +3,10 @@ import { writeFile, mkdir } from "node:fs/promises";
 import {
   brandingSchema,
   brandingUpdateSchema,
+  brandingHistorySchema,
+  brandingRollbackSchema,
+  permissionMatrixSchema,
+  integrationReadinessSchema,
   directorySchema,
   dashboardSchema,
   meSchema,
@@ -242,6 +246,45 @@ const spec = {
         brandingUpdateSchema,
         brandingSchema,
         "200",
+      ),
+    },
+    "/branding/history": {
+      get: {
+        ...read(
+          "Branding version history, newest first (platform admin; at most 50 per page)",
+          brandingHistorySchema,
+        ),
+        parameters: [
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 50, default: 20 },
+          },
+          {
+            name: "beforeVersion",
+            in: "query",
+            schema: { type: "integer", minimum: 2 },
+          },
+        ],
+      },
+    },
+    "/branding/rollback": {
+      post: write(
+        "Publish a new branding version restoring a recorded one; version-checked, audited and outboxed atomically",
+        brandingRollbackSchema,
+        brandingSchema,
+      ),
+    },
+    "/admin/permissions": {
+      get: read(
+        "Read-only role x permission matrix as defined in code",
+        permissionMatrixSchema,
+      ),
+    },
+    "/admin/integrations": {
+      get: read(
+        "Read-only integration readiness derived from configuration, without secrets",
+        integrationReadinessSchema,
       ),
     },
     "/audit-events": {

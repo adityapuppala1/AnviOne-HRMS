@@ -8,7 +8,6 @@ import { GearSix as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { SquaresFour as LayoutDashboard } from "@phosphor-icons/react/dist/csr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import { Buildings } from "@phosphor-icons/react/dist/csr/Buildings";
-import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import { ClipboardText } from "@phosphor-icons/react/dist/csr/ClipboardText";
 import { AirplaneTilt } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
@@ -20,6 +19,7 @@ import { DoorOpen } from "@phosphor-icons/react/dist/csr/DoorOpen";
 import { Receipt } from "@phosphor-icons/react/dist/csr/Receipt";
 import { IdentificationCard } from "@phosphor-icons/react/dist/csr/IdentificationCard";
 import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
+import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -69,6 +69,13 @@ export function Command({
           <LayoutDashboard size={18} />
           {copy.nav.overview}
         </Button>
+        {(me.permissions.includes("admin.read") ||
+          me.permissions.includes("branding.write")) && (
+          <Button variant="ghost" onPress={() => go("/configuration")}>
+            <SlidersHorizontal size={18} />
+            {copy.nav.configuration}
+          </Button>
+        )}
         {me.permissions.includes("report.run") && (
           <Button variant="ghost" onPress={() => go("/reports")}>
             <TableIcon size={18} />

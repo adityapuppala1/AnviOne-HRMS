@@ -26,12 +26,12 @@ describe("deny-by-default role contexts", () => {
       role: "platform_admin" as const,
       roles: ["platform_admin" as const],
     };
-    expect(permissionsFor(admin)).toEqual(["branding.write"]);
+    expect(permissionsFor(admin)).toEqual(["branding.write", "admin.read"]);
   });
   it("keeps auditors read-only", () => {
     expect(
       permissionsFor({ ...actor, role: "auditor", roles: ["auditor"] }),
-    ).toEqual(["audit.read"]);
+    ).toEqual(["audit.read", "admin.read"]);
   });
   it("limits organization maintenance to an assigned HR context", () => {
     expect(scopeFor(actor, "organization.write")).toBe("entity");

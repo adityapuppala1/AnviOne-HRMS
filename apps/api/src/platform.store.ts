@@ -13,6 +13,7 @@ import {
   setContext,
 } from "@anvi/database";
 import {
+  permissionMatrix,
   permissionsFor,
   scopeFor,
   type Principal,
@@ -24,6 +25,13 @@ import {
   employeeDetailSchema,
   type Role,
   type Branding,
+  type BrandingUpdate,
+  type BrandingHistory,
+  type PermissionMatrix,
+  type IntegrationReadiness,
+  roleLabels,
+  roleSchema,
+  brandingHistorySchema,
   type Directory,
   type Dashboard,
   type Me,
@@ -41,6 +49,15 @@ export type SessionActor = Principal & {
   entityName: string;
 };
 const employeeColumns = `id, code, name, title, department, location, email, joined_on::text AS "joinedOn", status, initials`;
+// History trigger/guard SQLSTATEs map to generic messages; trigger text is never returned.
+const brandingError = (error: unknown): never => {
+  const code = (error as { code?: string }).code;
+  if (code === "BR001" || code === "BR002")
+    throw new ConflictException(
+      "Workspace settings changed. Reload before saving again.",
+    );
+  throw error;
+};
 const brandingColumns = `platform_name AS "platformName", employee_name AS "employeeName", organization_name AS "organizationName", theme, version`;
 export class PlatformStore {
   readonly pool;
@@ -279,9 +296,18 @@ export class PlatformStore {
       return brandingSchema.parse(result.rows[0]);
     });
   }
-  async updateBranding(actor: Principal, input: Branding, requestId: string) {
+  async updateBranding(
+    actor: Principal,
+    input: BrandingUpdate,
+    requestId: string,
+  ) {
     this.require(actor, "branding.write");
     return scoped(this.pool, actor, async (client) => {
+      // Read by the branding history trigger; transaction-local.
+      await client.query(
+        `SELECT set_config('app.branding_source','edit',true), set_config('app.branding_reason',$1,true), set_config('app.branding_restored_version','',true)`,
+        [input.reason ?? ""],
+      );
       const result = await client.query(
         `UPDATE branding SET platform_name=$1, employee_name=$2, organization_name=$3, theme=$4, version=version+1 WHERE version=$5 RETURNING ${brandingColumns}`,
         [
@@ -303,13 +329,210 @@ export class PlatformStore {
         "branding.published",
         `branding:v${updated.version}`,
         requestId,
+        input.reason ? { reason: input.reason } : undefined,
       );
       await client.query(
         `INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version) VALUES ($1,$2,$3,'branding.published.v1',$3,$4)`,
         [randomUUID(), actor.tenantId, actor.entityId, updated.version],
       );
       return updated;
+    }).catch(brandingError);
+  }
+  async brandingHistory(
+    actor: Principal,
+    query: { limit: number; beforeVersion?: number },
+  ): Promise<BrandingHistory> {
+    this.require(actor, "branding.write");
+    return scoped(this.pool, actor, async (client) => {
+      const { rows } = await client.query(
+        `SELECT version, platform_name AS "platformName", employee_name AS "employeeName",
+          organization_name AS "organizationName", theme, source, restored_version AS "restoredVersion",
+          changed_by AS "changedBy", reason, occurred_at AS "occurredAt"
+        FROM branding_history WHERE ($1::int IS NULL OR version < $1) AND tenant_id=$3 AND entity_id=$4
+        ORDER BY version DESC LIMIT $2`,
+        [
+          query.beforeVersion ?? null,
+          query.limit + 1,
+          actor.tenantId,
+          actor.entityId,
+        ],
+      );
+      const items = rows.slice(0, query.limit).map((row) => ({
+        ...row,
+        occurredAt: new Date(row.occurredAt).toISOString(),
+      }));
+      return brandingHistorySchema.parse({
+        items,
+        nextBeforeVersion:
+          rows.length > query.limit ? items[items.length - 1]!.version : null,
+      });
     });
+  }
+  async rollbackBranding(
+    actor: Principal,
+    input: { toVersion: number; version: number; reason: string },
+    requestId: string,
+  ): Promise<Branding> {
+    this.require(actor, "branding.write");
+    return scoped(this.pool, actor, async (client) => {
+      const current = (
+        await client.query(
+          `SELECT ${brandingColumns} FROM branding WHERE tenant_id=$1 AND entity_id=$2 FOR UPDATE`,
+          [actor.tenantId, actor.entityId],
+        )
+      ).rows[0] as Branding | undefined;
+      if (!current)
+        throw new NotFoundException("Workspace branding is not configured.");
+      if (current.version !== input.version)
+        throw new ConflictException(
+          "Workspace settings changed. Reload before rolling back.",
+        );
+      if (input.toVersion === current.version)
+        throw new ConflictException("That version is already current.");
+      const target = (
+        await client.query(
+          `SELECT platform_name AS "platformName", employee_name AS "employeeName", organization_name AS "organizationName", theme FROM branding_history WHERE version=$1 AND tenant_id=$2 AND entity_id=$3`,
+          [input.toVersion, actor.tenantId, actor.entityId],
+        )
+      ).rows[0] as Omit<Branding, "version"> | undefined;
+      if (!target)
+        throw new NotFoundException("That branding version is not recorded.");
+      const fields = (
+        ["platformName", "employeeName", "organizationName", "theme"] as const
+      ).filter((field) => target[field] !== current[field]);
+      if (!fields.length)
+        throw new ConflictException(
+          "That version matches the current branding.",
+        );
+      await client.query(
+        `SELECT set_config('app.branding_source','rollback',true), set_config('app.branding_reason',$1,true), set_config('app.branding_restored_version',$2,true)`,
+        [input.reason, String(input.toVersion)],
+      );
+      const result = await client.query(
+        `UPDATE branding SET platform_name=$1, employee_name=$2, organization_name=$3, theme=$4, version=version+1 WHERE version=$5 RETURNING ${brandingColumns}`,
+        [
+          target.platformName,
+          target.employeeName,
+          target.organizationName,
+          target.theme,
+          current.version,
+        ],
+      );
+      if (!result.rows[0])
+        throw new ConflictException(
+          "Workspace settings changed. Reload before rolling back.",
+        );
+      const updated = brandingSchema.parse(result.rows[0]);
+      await audit(
+        client,
+        actor,
+        "branding.rolled_back",
+        `branding:v${updated.version}`,
+        requestId,
+        {
+          reason: input.reason,
+          details: {
+            fromVersion: current.version,
+            toVersion: input.toVersion,
+            newVersion: updated.version,
+            fields,
+          },
+        },
+      );
+      await client.query(
+        `INSERT INTO outbox_event(id,tenant_id,entity_id,event_type,aggregate_id,aggregate_version) VALUES ($1,$2,$3,'branding.rolled_back.v1',$3,$4)`,
+        [randomUUID(), actor.tenantId, actor.entityId, updated.version],
+      );
+      return updated;
+    }).catch(brandingError);
+  }
+  permissionMatrix(actor: Principal): PermissionMatrix {
+    this.require(actor, "admin.read");
+    return {
+      source: "code",
+      note: "Roles and permissions are defined in code and change only through a reviewed deploy; they cannot be edited at runtime.",
+      roles: roleSchema.options.map((role) => ({
+        role,
+        label: roleLabels[role],
+      })),
+      permissions: permissionMatrix(),
+    };
+  }
+  integrations(actor: Principal): IntegrationReadiness {
+    this.require(actor, "admin.read");
+    // Derived from configuration presence only: never secrets, URLs, key ids or key material.
+    const c = this.config;
+    const demo = c.AUTH_MODE === "demo";
+    const keyCount =
+      (c.PROFILE_DATA_KEYS?.length ?? 0) + (c.PROFILE_DATA_KEY ? 1 : 0);
+    const interval = c.PROFILE_APPLY_DUE_INTERVAL_MS;
+    return {
+      asOf: new Date().toISOString(),
+      items: [
+        {
+          key: "oidc",
+          name: "Corporate sign-in (OIDC)",
+          status: demo ? "demo" : "configured",
+          note: demo
+            ? "Loopback demo sign-in with synthetic people; corporate sign-in is not in use."
+            : "Corporate sign-in is configured for a tenant-specific HTTPS issuer.",
+          detail: { requiredAuthContext: Boolean(c.OIDC_REQUIRED_ACR) },
+        },
+        {
+          key: "rate_limit_store",
+          name: "Rate-limit store (Valkey)",
+          status: c.RATE_LIMIT_URL ? "configured" : "not_configured",
+          note: c.RATE_LIMIT_URL
+            ? "Rate-limit counters are shared across API replicas."
+            : "Counters are kept in this process only; replicas would each grant a full budget.",
+          detail: { tls: Boolean(c.RATE_LIMIT_URL?.startsWith("rediss:")) },
+        },
+        {
+          key: "document_scanning",
+          name: "Document storage and malware scanning",
+          status: "not_configured",
+          note: "Documents are stored in the database after type and size checks; no malware scanner is connected.",
+          detail: {},
+        },
+        {
+          key: "notifications",
+          name: "Notification dispatch",
+          status: "not_configured",
+          note: "Events are recorded in the outbox and receipted by the worker; no email, chat or push delivery is connected.",
+          detail: {},
+        },
+        {
+          key: "profile_data_keys",
+          name: "Profile data keys",
+          status: keyCount ? "configured" : "not_configured",
+          note: keyCount
+            ? "Personal contact details are sealed at rest; the newest key seals and older keys still open."
+            : "No key is configured; personal contact details are not sealed.",
+          detail: { keyCount },
+        },
+        {
+          key: "worker_schedules",
+          name: "Worker schedules",
+          status: interval ? "configured" : "not_configured",
+          note:
+            interval === undefined
+              ? "The API does not see the worker's schedule setting; the worker defaults to hourly application of due profile changes."
+              : interval > 0
+                ? "Due profile changes are applied on a schedule."
+                : "Scheduled application of due profile changes is turned off.",
+          detail: interval
+            ? { profileApplyDueIntervalMinutes: Math.round(interval / 60000) }
+            : {},
+        },
+        {
+          key: "ai_helper",
+          name: "AI helper",
+          status: "not_configured",
+          note: "The AI helper is gated off; workspace suggestions are rule-based.",
+          detail: {},
+        },
+      ],
+    };
   }
   async auditEvents(actor: Principal) {
     this.require(actor, "audit.read");

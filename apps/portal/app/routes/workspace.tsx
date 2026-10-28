@@ -232,6 +232,14 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("policy.manage"),
     },
     {
+      to: "/configuration",
+      label: copy.nav.configuration,
+      icon: SlidersHorizontal,
+      visible:
+        me.permissions.includes("admin.read") ||
+        me.permissions.includes("branding.write"),
+    },
+    {
       to: "/reports",
       label: copy.nav.reports,
       icon: TableIcon,

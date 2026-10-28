@@ -43,6 +43,7 @@ export const permissionSchema = z.enum([
   "profile.review",
   "report.run",
   "report.export",
+  "admin.read",
 ]);
 export type Permission = z.infer<typeof permissionSchema>;
 export const employeeSchema = z.object({
@@ -102,7 +103,90 @@ export const brandingSchema = z.object({
   version: z.number().int().positive(),
 });
 export type Branding = z.infer<typeof brandingSchema>;
-export const brandingUpdateSchema = brandingSchema.strict();
+// `reason` is optional on edits (recorded in history and audit); rollback requires one.
+export const brandingUpdateSchema = brandingSchema
+  .extend({ reason: z.string().trim().min(10).max(300).optional() })
+  .strict();
+export type BrandingUpdate = z.infer<typeof brandingUpdateSchema>;
+export const brandingHistorySourceSchema = z.enum([
+  "baseline",
+  "edit",
+  "rollback",
+]);
+export const brandingHistoryEntrySchema = z.object({
+  version: z.number().int().positive(),
+  platformName: z.string(),
+  employeeName: z.string(),
+  organizationName: z.string(),
+  theme: themeSchema,
+  source: brandingHistorySourceSchema,
+  restoredVersion: z.number().int().positive().nullable(),
+  changedBy: z.string(),
+  reason: z.string().nullable(),
+  occurredAt: z.string(),
+});
+export const brandingHistoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    beforeVersion: z.coerce.number().int().min(2).optional(),
+  })
+  .strict();
+export const brandingHistorySchema = z.object({
+  items: z.array(brandingHistoryEntrySchema),
+  nextBeforeVersion: z.number().int().positive().nullable(),
+});
+export type BrandingHistory = z.infer<typeof brandingHistorySchema>;
+export const brandingRollbackSchema = z
+  .object({
+    toVersion: z.number().int().positive(),
+    version: z.number().int().positive(),
+    reason: z.string().trim().min(10).max(300),
+  })
+  .strict();
+export const permissionMatrixSchema = z.object({
+  source: z.literal("code"),
+  note: z.string(),
+  roles: z.array(z.object({ role: roleSchema, label: z.string() })),
+  permissions: z.array(
+    z.object({
+      permission: permissionSchema,
+      description: z.string(),
+      grants: z.array(
+        z.object({
+          role: roleSchema,
+          scope: z.enum(["self", "team", "entity"]),
+        }),
+      ),
+    }),
+  ),
+});
+export type PermissionMatrix = z.infer<typeof permissionMatrixSchema>;
+export const integrationStatusSchema = z.enum([
+  "configured",
+  "not_configured",
+  "demo",
+]);
+export const integrationReadinessSchema = z.object({
+  asOf: z.string(),
+  items: z.array(
+    z.object({
+      key: z.enum([
+        "oidc",
+        "rate_limit_store",
+        "document_scanning",
+        "notifications",
+        "profile_data_keys",
+        "worker_schedules",
+        "ai_helper",
+      ]),
+      name: z.string(),
+      status: integrationStatusSchema,
+      note: z.string(),
+      detail: z.record(z.string(), z.union([z.number(), z.boolean()])),
+    }),
+  ),
+});
+export type IntegrationReadiness = z.infer<typeof integrationReadinessSchema>;
 export const meSchema = z.object({
   actorId: z.uuid(),
   name: z.string(),

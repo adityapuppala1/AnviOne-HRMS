@@ -3,13 +3,19 @@ import {
   Inject,
   Get,
   Put,
+  Post,
   Body,
   Param,
   Query,
   Req,
 } from "@nestjs/common";
 import { z } from "zod";
-import { brandingUpdateSchema, directoryQuerySchema } from "@anvi/contracts";
+import {
+  brandingUpdateSchema,
+  brandingHistoryQuerySchema,
+  brandingRollbackSchema,
+  directoryQuerySchema,
+} from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { parse } from "./http";
 import { type AppRequest } from "./auth";
@@ -45,6 +51,32 @@ export class PeopleController {
       parse(brandingUpdateSchema, body),
       req.requestId,
     );
+  }
+  @Get("api/v1/branding/history") brandingHistory(
+    @Req() req: AppRequest,
+    @Query() query: unknown,
+  ) {
+    return this.store.brandingHistory(
+      req.actor,
+      parse(brandingHistoryQuerySchema, query),
+    );
+  }
+  @Post("api/v1/branding/rollback") rollback(
+    @Req() req: AppRequest,
+    @Body() body: unknown,
+  ) {
+    return this.store.rollbackBranding(
+      req.actor,
+      parse(brandingRollbackSchema, body),
+      req.requestId,
+    );
+  }
+  // Read-only administration: the permission matrix and integration readiness.
+  @Get("api/v1/admin/permissions") permissions(@Req() req: AppRequest) {
+    return this.store.permissionMatrix(req.actor);
+  }
+  @Get("api/v1/admin/integrations") integrations(@Req() req: AppRequest) {
+    return this.store.integrations(req.actor);
   }
   @Get("api/v1/audit-events") audit(@Req() req: AppRequest) {
     return this.store.auditEvents(req.actor);

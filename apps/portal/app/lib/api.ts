@@ -27,7 +27,10 @@ import {
   expenseClaimSchema,
   expenseListSchema,
   myExpensesSchema,
+  brandingHistorySchema,
+  integrationReadinessSchema,
   organizationChartSchema,
+  permissionMatrixSchema,
   orgChartNeighborhoodSchema,
   orgChartSearchSchema,
   reportCatalogSchema,
@@ -421,4 +424,30 @@ export const useSavedReports = (enabled: boolean) =>
     enabled,
     queryFn: ({ signal }) =>
       api("/reports/saved", savedReportListSchema, { signal }),
+  });
+
+export const useBrandingHistory = (enabled: boolean, before?: number) =>
+  useQuery({
+    queryKey: ["branding", "history", before ?? null],
+    enabled,
+    queryFn: ({ signal }) =>
+      api(
+        `/branding/history?limit=20${before ? `&beforeVersion=${before}` : ""}`,
+        brandingHistorySchema,
+        { signal },
+      ),
+  });
+export const usePermissionMatrix = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["admin", "permissions"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/admin/permissions", permissionMatrixSchema, { signal }),
+  });
+export const useIntegrations = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["admin", "integrations"],
+    enabled,
+    queryFn: ({ signal }) =>
+      api("/admin/integrations", integrationReadinessSchema, { signal }),
   });

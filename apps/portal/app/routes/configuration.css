@@ -1,0 +1,362 @@
+.config-page {
+  min-width: 0;
+}
+.config-panel {
+  min-width: 0;
+  overflow: visible;
+}
+.config-tabs-scroll {
+  overflow-x: auto;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.config-tabs {
+  min-width: max-content;
+  border-bottom: 0;
+}
+.config-tabs [role="tab"] {
+  min-height: 52px;
+  align-items: center;
+  white-space: nowrap;
+}
+.config-tab-panel {
+  padding: 22px;
+  min-width: 0;
+}
+.config-stack {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.config-lead {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.config-quiet {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.config-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 11px 14px;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.config-note > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--brand-ink);
+}
+.config-success {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--brand-soft);
+  color: var(--ink);
+  font-size: 13px;
+}
+.config-error {
+  margin: 0;
+  color: #a12626;
+  font-size: 13px;
+}
+[data-mode="dark"] .config-error {
+  color: #ffb4b4;
+}
+
+/* Timeline: a hairline rail with one card per version. */
+.config-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: grid;
+  gap: 14px;
+  border-left: 2px solid var(--line);
+  min-width: 0;
+}
+.config-entry {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.config-entry::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  background: var(--line);
+}
+.config-entry.is-current {
+  border-color: var(--brand);
+}
+.config-entry.is-current::before {
+  background: var(--brand);
+}
+.config-entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.config-who,
+.config-reason {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.config-who time {
+  color: var(--muted);
+}
+.config-diff {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font-size: 13px;
+}
+.config-diff > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.config-diff dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.config-diff dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+  margin: 0;
+  color: var(--ink);
+}
+.config-arrow {
+  color: var(--muted);
+}
+.config-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.config-theme .theme-swatch i {
+  width: 18px;
+  height: 18px;
+}
+.config-entry-actions {
+  display: flex;
+}
+.config-entry-actions .button,
+.config-more .button {
+  min-height: 44px;
+  gap: 8px;
+}
+.config-more {
+  display: flex;
+  justify-content: center;
+}
+
+/* Dialog */
+.config-form {
+  display: grid;
+  gap: 14px;
+}
+.config-changes h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.config-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.config-dialog-actions .button {
+  min-height: 44px;
+}
+
+/* Access */
+.config-toolbar {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.config-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.config-table-wrap td:first-child {
+  display: table-cell;
+  min-width: 260px;
+}
+.config-area {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--brand-ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+[data-mode="dark"] .config-area {
+  color: var(--ink);
+}
+.config-perm {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13px;
+}
+.config-table-wrap .config-quiet {
+  display: block;
+}
+.config-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.config-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.config-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.config-card h3 {
+  margin: 0;
+  font-size: 14px;
+}
+.config-card dl {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+.config-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.config-card dt {
+  color: var(--ink);
+  font-size: 13px;
+}
+.config-card dd {
+  margin: 0;
+}
+
+/* Integrations */
+.config-integrations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+.config-integration {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.config-integration p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.config-integration-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+.config-integration-head h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 500;
+}
+.config-facts {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font-size: 12px;
+}
+.config-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.config-facts dt {
+  color: var(--muted);
+}
+.config-facts dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .config-toolbar {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    align-items: end;
+  }
+}
+@media (max-width: 480px) {
+  .config-tab-panel {
+    padding: 16px 14px;
+  }
+  .config-timeline {
+    padding-left: 14px;
+  }
+  .config-entry::before {
+    left: -23px;
+  }
+}

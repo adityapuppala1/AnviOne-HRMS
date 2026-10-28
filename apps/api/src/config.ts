@@ -35,6 +35,8 @@ const schema = z.object({
         new Set(keys.map((k) => k.id)).size === keys.length,
     )
     .optional(),
+  // Same variable the worker reads; optional here, used only for readiness reporting.
+  PROFILE_APPLY_DUE_INTERVAL_MS: z.coerce.number().int().min(0).optional(),
   CANDIDATE_ORIGIN: z.url().default("http://127.0.0.2:5174"),
   OIDC_ISSUER: z.url().optional(),
   OIDC_CLIENT_ID: z.string().optional(),

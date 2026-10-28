@@ -1,0 +1,228 @@
+/* Performance: goals, key results, progress bars and review ratings on Loom tokens. */
+.perf-page {
+  min-width: 0;
+}
+.perf-tab {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.perf-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.perf-track {
+  flex: 1 1 auto;
+  min-width: 4rem;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.perf-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+  transform-origin: left center;
+  animation: perf-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.perf-percent {
+  flex: 0 0 auto;
+  min-width: 3ch;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+@keyframes perf-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.perf-krs,
+.perf-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.perf-kr {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.perf-kr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.perf-history {
+  gap: 6px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+.perf-history li {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+.perf-note {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.perf-status-line {
+  font-weight: 650;
+  font-size: 14px;
+}
+
+/* Rating pickers: five real radio buttons drawn as 44px chips. */
+.perf-rating {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.perf-rating legend {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.perf-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.perf-rating-option {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+}
+.perf-rating-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.perf-rating-option span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 650;
+  transition: transform 140ms ease-out;
+  pointer-events: none;
+}
+.perf-rating-option:hover span {
+  border-color: var(--brand);
+}
+.perf-rating-option input:checked + span {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  transform: scale(1.06);
+}
+.perf-rating-option input:focus-visible + span {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* A submitted review entry. */
+.perf-entry {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  min-width: 0;
+}
+.perf-entry header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.perf-entry header span,
+.perf-comment {
+  color: var(--muted);
+}
+.perf-comment {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.perf-ratings {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.perf-ratings > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.perf-ratings dt {
+  color: var(--muted);
+}
+.perf-ratings dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.perf-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.perf-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.perf-dots i[data-on] {
+  background: var(--brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perf-fill,
+  .perf-rating-option span {
+    animation: none;
+    transition: none;
+  }
+}
+[data-motion="reduce"] .perf-fill,
+[data-motion="reduce"] .perf-rating-option span {
+  animation: none;
+  transition: none;
+}

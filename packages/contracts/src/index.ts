@@ -44,6 +44,9 @@ export const permissionSchema = z.enum([
   "recruit.manage",
   "recruit.request",
   "recruit.interview",
+  "performance.self",
+  "performance.review",
+  "performance.manage",
   "profile.self",
   "profile.review",
   "report.run",
@@ -2962,3 +2965,351 @@ export const recruitLookupsSchema = z.strictObject({
   designations: z.array(recruitLookupItemSchema),
 });
 export type RecruitLookups = z.infer<typeof recruitLookupsSchema>;
+
+// ---- Performance basics (PERF-01) ----
+// Goals (objectives with key results) and review cycles with self and manager reviews.
+// Visibility: the owner, the owner's direct manager and HR. Reviews are blind: the manager sees
+// the self-review only after submitting theirs; the employee sees the manager review and the
+// final rating only once HR has finalised. Ratings are human inputs only: nothing is scored,
+// suggested or summarised automatically. Every list is paginated: page (default 1), limit
+// (default 25, max 100), and returns { items, total, page, limit, counts }.
+const perfVersion = z.number().int().positive();
+const perfNote = z.string().trim().min(3).max(500);
+const perfPaging = {
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+};
+const perfPage = {
+  total: z.number().int(),
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+};
+const perfQ = z.string().trim().max(80).default("");
+const perfValue = z.number().min(-999999999999).max(999999999999);
+export const perfObjectiveStatusSchema = z.enum([
+  "draft",
+  "active",
+  "completed",
+  "cancelled",
+]);
+export const perfUnitSchema = z.enum([
+  "number",
+  "percent",
+  "currency",
+  "hours",
+]);
+export const perfCycleStatusSchema = z.enum([
+  "draft",
+  "active",
+  "closed",
+  "cancelled",
+]);
+export const perfReviewStatusSchema = z.enum([
+  "self_pending",
+  "manager_pending",
+  "calibration",
+  "finalised",
+]);
+export const perfCompetencySchema = z.enum([
+  "quality",
+  "delivery",
+  "collaboration",
+  "ownership",
+  "growth",
+]);
+export type PerfCompetency = z.infer<typeof perfCompetencySchema>;
+const perfRating = z.number().int().min(1).max(5);
+// All five fixed competencies, each rated 1 to 5.
+export const perfRatingsSchema = z.strictObject({
+  quality: perfRating,
+  delivery: perfRating,
+  collaboration: perfRating,
+  ownership: perfRating,
+  growth: perfRating,
+});
+
+export const perfKeyResultSchema = z.strictObject({
+  id: z.uuid(),
+  objectiveId: z.uuid(),
+  title: z.string(),
+  unit: perfUnitSchema,
+  startValue: z.number(),
+  targetValue: z.number(),
+  // Always the latest progress update (the start value until one is recorded).
+  currentValue: z.number(),
+  // (current - start) / (target - start), clamped to 0..100.
+  progress: z.number(),
+  updateCount: z.number().int(),
+  version: z.number().int(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  canEdit: z.boolean(),
+  canRecordProgress: z.boolean(),
+});
+export type PerfKeyResult = z.infer<typeof perfKeyResultSchema>;
+export const perfObjectiveSchema = z.strictObject({
+  id: z.uuid(),
+  ownerEmployeeId: z.uuid(),
+  ownerName: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  parentObjectiveId: z.uuid().nullable(),
+  // Null when the parent goal is not visible to the caller.
+  parentTitle: z.string().nullable(),
+  status: perfObjectiveStatusSchema,
+  statusNote: z.string().nullable(),
+  // Average of the key results' progress.
+  progress: z.number(),
+  keyResultCount: z.number().int(),
+  mine: z.boolean(),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  // UI flags: what the caller may do now; the database decides again on every write.
+  canEdit: z.boolean(),
+  canActivate: z.boolean(),
+  canComplete: z.boolean(),
+  canCancel: z.boolean(),
+  canAddKeyResult: z.boolean(),
+});
+export type PerfObjective = z.infer<typeof perfObjectiveSchema>;
+export const perfObjectiveDetailSchema = z.strictObject({
+  objective: perfObjectiveSchema,
+  keyResults: z.array(perfKeyResultSchema),
+  // Visible goals aligned to this one.
+  children: z.array(
+    z.strictObject({
+      id: z.uuid(),
+      title: z.string(),
+      ownerName: z.string(),
+      status: perfObjectiveStatusSchema,
+      progress: z.number(),
+    }),
+  ),
+});
+export type PerfObjectiveDetail = z.infer<typeof perfObjectiveDetailSchema>;
+export const perfObjectiveListSchema = z.strictObject({
+  items: z.array(perfObjectiveSchema),
+  ...perfPage,
+  counts: z.record(perfObjectiveStatusSchema, z.number().int()),
+});
+export type PerfObjectiveList = z.infer<typeof perfObjectiveListSchema>;
+export const perfObjectiveQuerySchema = z.strictObject({
+  ...perfPaging,
+  q: perfQ,
+  status: perfObjectiveStatusSchema.optional(),
+  ownerId: z.uuid().optional(),
+  // mine: goals I own; team: my direct reports' goals; all: everything visible to me.
+  view: z.enum(["mine", "team", "all"]).default("all"),
+});
+const perfObjectiveFields = {
+  title: z.string().trim().min(3).max(160),
+  description: z.string().trim().min(1).max(2000).nullable().optional(),
+  periodStart: z.iso.date(),
+  periodEnd: z.iso.date(),
+  parentObjectiveId: z.uuid().nullable().optional(),
+};
+export const perfObjectiveCreateSchema = z.strictObject({
+  ...perfObjectiveFields,
+  // Managers may set goals for direct reports, HR for anyone; defaults to the caller.
+  ownerEmployeeId: z.uuid().nullable().optional(),
+});
+export const perfObjectiveUpdateSchema = z.strictObject({
+  ...perfObjectiveFields,
+  version: perfVersion,
+});
+export const perfObjectiveActionSchema = z.strictObject({
+  version: perfVersion,
+  note: perfNote.optional(),
+});
+export const perfObjectiveCancelSchema = z.strictObject({
+  version: perfVersion,
+  note: perfNote,
+});
+export const perfAlignableSchema = z.strictObject({
+  items: z.array(
+    z.strictObject({
+      id: z.uuid(),
+      title: z.string(),
+      ownerEmployeeId: z.uuid(),
+      ownerName: z.string(),
+      status: perfObjectiveStatusSchema,
+    }),
+  ),
+});
+export type PerfAlignable = z.infer<typeof perfAlignableSchema>;
+export const perfAlignableQuerySchema = z.strictObject({
+  ownerId: z.uuid().optional(),
+});
+const perfKeyResultFields = {
+  title: z.string().trim().min(3).max(160),
+  unit: perfUnitSchema,
+  startValue: perfValue,
+  targetValue: perfValue,
+};
+export const perfKeyResultCreateSchema = z.strictObject(perfKeyResultFields);
+export const perfKeyResultUpdateSchema = z.strictObject({
+  ...perfKeyResultFields,
+  version: perfVersion,
+});
+export const perfProgressCreateSchema = z.strictObject({
+  // The key result's current version (optimistic concurrency).
+  version: perfVersion,
+  value: perfValue,
+  note: z.string().trim().min(1).max(500).nullable().optional(),
+});
+export const perfProgressSchema = z.strictObject({
+  id: z.uuid(),
+  keyResultId: z.uuid(),
+  value: z.number(),
+  previousValue: z.number(),
+  note: z.string().nullable(),
+  by: z.string(),
+  at: z.string(),
+});
+export const perfProgressListSchema = z.strictObject({
+  items: z.array(perfProgressSchema),
+  ...perfPage,
+});
+export type PerfProgressList = z.infer<typeof perfProgressListSchema>;
+export const perfProgressQuerySchema = z.strictObject({ ...perfPaging });
+
+export const perfCycleSchema = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  selfDue: z.string(),
+  managerDue: z.string(),
+  // Null: everyone in the entity with a manager.
+  departmentId: z.uuid().nullable(),
+  departmentName: z.string().nullable(),
+  status: perfCycleStatusSchema,
+  statusNote: z.string().nullable(),
+  openedAt: z.string().nullable(),
+  closedAt: z.string().nullable(),
+  // Counts of the reviews visible to the caller in this cycle.
+  reviewCounts: z.record(perfReviewStatusSchema, z.number().int()),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  canEdit: z.boolean(),
+  canOpen: z.boolean(),
+  canClose: z.boolean(),
+  canCancel: z.boolean(),
+});
+export type PerfCycle = z.infer<typeof perfCycleSchema>;
+export const perfCycleListSchema = z.strictObject({
+  items: z.array(perfCycleSchema),
+  ...perfPage,
+  counts: z.record(perfCycleStatusSchema, z.number().int()),
+  canCreate: z.boolean(),
+});
+export type PerfCycleList = z.infer<typeof perfCycleListSchema>;
+export const perfCycleQuerySchema = z.strictObject({
+  ...perfPaging,
+  q: perfQ,
+  status: perfCycleStatusSchema.optional(),
+});
+const perfCycleFields = {
+  name: z.string().trim().min(3).max(80),
+  periodStart: z.iso.date(),
+  periodEnd: z.iso.date(),
+  selfDue: z.iso.date(),
+  managerDue: z.iso.date(),
+  departmentId: z.uuid().nullable().optional(),
+};
+export const perfCycleCreateSchema = z.strictObject(perfCycleFields);
+export const perfCycleUpdateSchema = z.strictObject({
+  ...perfCycleFields,
+  version: perfVersion,
+});
+export const perfCycleActionSchema = z.strictObject({
+  version: perfVersion,
+  note: perfNote.optional(),
+});
+export const perfCycleOpenedSchema = z.strictObject({
+  cycle: perfCycleSchema,
+  // Reviews generated, and people in scope skipped because they have no current manager.
+  generated: z.number().int(),
+  skippedNoManager: z.number().int(),
+});
+export type PerfCycleOpened = z.infer<typeof perfCycleOpenedSchema>;
+
+export const perfReviewEntrySchema = z.strictObject({
+  id: z.uuid(),
+  kind: z.enum(["self", "manager"]),
+  authorEmployeeId: z.uuid(),
+  authorName: z.string(),
+  ratings: perfRatingsSchema,
+  // Plain average of the five ratings; not a computed score of the person.
+  overall: z.number(),
+  comment: z.string().nullable(),
+  submittedAt: z.string(),
+});
+export type PerfReviewEntry = z.infer<typeof perfReviewEntrySchema>;
+export const perfReviewSchema = z.strictObject({
+  id: z.uuid(),
+  cycleId: z.uuid(),
+  cycleName: z.string(),
+  cycleStatus: perfCycleStatusSchema,
+  selfDue: z.string(),
+  managerDue: z.string(),
+  employeeId: z.uuid(),
+  employeeName: z.string(),
+  managerId: z.uuid(),
+  managerName: z.string(),
+  status: perfReviewStatusSchema,
+  selfSubmittedAt: z.string().nullable(),
+  managerSubmittedAt: z.string().nullable(),
+  finalRating: z.number().int().nullable(),
+  finalReason: z.string().nullable(),
+  finalisedBy: z.string().nullable(),
+  finalisedAt: z.string().nullable(),
+  mine: z.boolean(),
+  iAmManager: z.boolean(),
+  version: z.number().int(),
+  updatedAt: z.string(),
+  canSubmitSelf: z.boolean(),
+  canSubmitManager: z.boolean(),
+  canFinalise: z.boolean(),
+});
+export type PerfReview = z.infer<typeof perfReviewSchema>;
+export const perfReviewDetailSchema = z.strictObject({
+  review: perfReviewSchema,
+  // Only the entries the caller may see (blind rules apply).
+  entries: z.array(perfReviewEntrySchema),
+  // True while the caller is the manager and has not submitted: the self-review stays hidden.
+  blind: z.boolean(),
+});
+export type PerfReviewDetail = z.infer<typeof perfReviewDetailSchema>;
+export const perfReviewListSchema = z.strictObject({
+  items: z.array(perfReviewSchema),
+  ...perfPage,
+  counts: z.record(perfReviewStatusSchema, z.number().int()),
+});
+export type PerfReviewList = z.infer<typeof perfReviewListSchema>;
+export const perfReviewQuerySchema = z.strictObject({
+  ...perfPaging,
+  q: perfQ,
+  status: perfReviewStatusSchema.optional(),
+  cycleId: z.uuid().optional(),
+  // mine: my own review; team: reviews I write as manager; all: everything visible to me.
+  view: z.enum(["mine", "team", "all"]).default("all"),
+});
+export const perfReviewSubmitSchema = z.strictObject({
+  version: perfVersion,
+  ratings: perfRatingsSchema,
+  comment: z.string().trim().min(1).max(2000).nullable().optional(),
+});
+export const perfReviewFinaliseSchema = z.strictObject({
+  version: perfVersion,
+  finalRating: perfRating,
+  reason: z.string().trim().min(10).max(500),
+});

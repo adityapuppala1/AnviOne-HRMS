@@ -22,6 +22,7 @@ import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
 import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
+import { Target } from "@phosphor-icons/react/dist/csr/Target";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -91,6 +92,14 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/recruitment")}>
             <UserPlus size={18} />
             {copy.nav.recruitment}
+          </Button>
+        )}
+        {(me.permissions.includes("performance.self") ||
+          me.permissions.includes("performance.review") ||
+          me.permissions.includes("performance.manage")) && (
+          <Button variant="ghost" onPress={() => go("/performance")}>
+            <Target size={18} />
+            {copy.nav.performance}
           </Button>
         )}
         {me.permissions.includes("report.run") && (

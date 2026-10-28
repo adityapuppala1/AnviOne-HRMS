@@ -28,6 +28,7 @@ const ROUTES = [
   "/expenses",
   "/projects",
   "/recruitment",
+  "/performance",
   "/details",
   "/chart",
   "/reports",

@@ -137,6 +137,27 @@ import {
   recruitOfferAcceptedSchema,
   recruitFunnelSchema,
   recruitLookupsSchema,
+  perfObjectiveListSchema,
+  perfObjectiveCreateSchema,
+  perfObjectiveDetailSchema,
+  perfAlignableSchema,
+  perfObjectiveUpdateSchema,
+  perfKeyResultCreateSchema,
+  perfObjectiveActionSchema,
+  perfObjectiveCancelSchema,
+  perfKeyResultUpdateSchema,
+  perfProgressListSchema,
+  perfProgressCreateSchema,
+  perfCycleListSchema,
+  perfCycleCreateSchema,
+  perfCycleSchema,
+  perfCycleUpdateSchema,
+  perfCycleOpenedSchema,
+  perfCycleActionSchema,
+  perfReviewListSchema,
+  perfReviewDetailSchema,
+  perfReviewSubmitSchema,
+  perfReviewFinaliseSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -1395,6 +1416,213 @@ Object.assign(spec.paths, {
         },
       ],
     },
+  },
+});
+// Performance basics (PERF-01). Lists: page (default 1), limit (default 25, max 100), q, filters.
+// Ratings are human inputs only; nothing is scored automatically.
+const perfList = (...filters: string[]) => [
+  {
+    name: "page",
+    in: "query",
+    schema: { type: "integer", minimum: 1, default: 1 },
+  },
+  {
+    name: "limit",
+    in: "query",
+    schema: { type: "integer", minimum: 1, maximum: 100, default: 25 },
+  },
+  ...filters.map((name) => ({
+    name,
+    in: "query",
+    schema: { type: "string" },
+  })),
+];
+Object.assign(spec.paths, {
+  "/performance/objectives": {
+    get: {
+      ...read(
+        "Visible goals (owner, their manager, HR); view=mine|team|all",
+        perfObjectiveListSchema,
+      ),
+      parameters: perfList("q", "status", "ownerId", "view"),
+    },
+    post: write(
+      "Create a draft goal for myself, a direct report (manager) or anyone (HR)",
+      perfObjectiveCreateSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/objectives/alignable": {
+    get: {
+      ...read(
+        "Draft or active goals the owner may align to: their own and their manager's (id, title, owner)",
+        perfAlignableSchema,
+      ),
+      parameters: [
+        {
+          name: "ownerId",
+          in: "query",
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+    },
+  },
+  "/performance/objectives/{id}": {
+    parameters: idParameter,
+    get: read(
+      "One visible goal with its key results and aligned goals",
+      perfObjectiveDetailSchema,
+    ),
+    put: write(
+      "Edit a draft or active goal (the period only while draft)",
+      perfObjectiveUpdateSchema,
+      perfObjectiveDetailSchema,
+      "200",
+    ),
+  },
+  "/performance/objectives/{id}/key-results": {
+    parameters: idParameter,
+    post: write(
+      "Add a key result (at most 10) to a draft or active goal",
+      perfKeyResultCreateSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/objectives/{id}/activate": {
+    parameters: idParameter,
+    post: write(
+      "Activate a draft goal that has at least one key result",
+      perfObjectiveActionSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/objectives/{id}/complete": {
+    parameters: idParameter,
+    post: write(
+      "Complete an active goal (final)",
+      perfObjectiveActionSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/objectives/{id}/cancel": {
+    parameters: idParameter,
+    post: write(
+      "Cancel a draft or active goal with a reason (final)",
+      perfObjectiveCancelSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/key-results/{id}": {
+    parameters: idParameter,
+    put: write(
+      "Edit a key result while its goal is a draft",
+      perfKeyResultUpdateSchema,
+      perfObjectiveDetailSchema,
+      "200",
+    ),
+  },
+  "/performance/key-results/{id}/progress": {
+    parameters: idParameter,
+    get: {
+      ...read(
+        "Append-only progress history of a visible key result, newest first",
+        perfProgressListSchema,
+      ),
+      parameters: perfList(),
+    },
+    post: write(
+      "Record progress on a key result of an active goal (append-only; becomes the current value)",
+      perfProgressCreateSchema,
+      perfObjectiveDetailSchema,
+    ),
+  },
+  "/performance/cycles": {
+    get: {
+      ...read(
+        "Review cycles: HR sees all, others the cycles they have a review in",
+        perfCycleListSchema,
+      ),
+      parameters: perfList("q", "status"),
+    },
+    post: write(
+      "Create a draft review cycle (HR)",
+      perfCycleCreateSchema,
+      perfCycleSchema,
+    ),
+  },
+  "/performance/cycles/{id}": {
+    parameters: idParameter,
+    get: read("One visible review cycle", perfCycleSchema),
+    put: write(
+      "Edit a draft review cycle (HR)",
+      perfCycleUpdateSchema,
+      perfCycleSchema,
+      "200",
+    ),
+  },
+  "/performance/cycles/{id}/open": {
+    parameters: idParameter,
+    post: write(
+      "Open a draft cycle (HR): one review per in-scope employee with a current manager",
+      perfCycleActionSchema,
+      perfCycleOpenedSchema,
+    ),
+  },
+  "/performance/cycles/{id}/close": {
+    parameters: idParameter,
+    post: write(
+      "Close an open cycle once every review is finalised (HR)",
+      perfCycleActionSchema,
+      perfCycleSchema,
+    ),
+  },
+  "/performance/cycles/{id}/cancel": {
+    parameters: idParameter,
+    post: write(
+      "Cancel a draft cycle (HR)",
+      perfCycleActionSchema,
+      perfCycleSchema,
+    ),
+  },
+  "/performance/reviews": {
+    get: {
+      ...read(
+        "Visible reviews (my own, the ones I write as manager, or all for HR); view=mine|team|all",
+        perfReviewListSchema,
+      ),
+      parameters: perfList("q", "status", "cycleId", "view"),
+    },
+  },
+  "/performance/reviews/{id}": {
+    parameters: idParameter,
+    get: read(
+      "One visible review with the entries the caller may see (blind rules)",
+      perfReviewDetailSchema,
+    ),
+  },
+  "/performance/reviews/{id}/self": {
+    parameters: idParameter,
+    post: write(
+      "Submit my self-review: five competencies rated 1 to 5 (final)",
+      perfReviewSubmitSchema,
+      perfReviewDetailSchema,
+    ),
+  },
+  "/performance/reviews/{id}/manager": {
+    parameters: idParameter,
+    post: write(
+      "Submit the manager review after the self-review (reviewing manager; final)",
+      perfReviewSubmitSchema,
+      perfReviewDetailSchema,
+    ),
+  },
+  "/performance/reviews/{id}/finalise": {
+    parameters: idParameter,
+    post: write(
+      "Finalise with a rating and a reason (HR, never the employee or the reviewing manager; final)",
+      perfReviewFinaliseSchema,
+      perfReviewDetailSchema,
+    ),
   },
 });
 const candidateSpec = {

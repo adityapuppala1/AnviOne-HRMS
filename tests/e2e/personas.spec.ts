@@ -36,12 +36,12 @@ const cases: Record<
   { shown: string[]; hidden: string[]; denied: [string, string] }
 > = {
   maya: {
-    shown: ["Organization", "Reports", "Exit"],
+    shown: ["Organization", "Reports", "Exit", "Performance"],
     hidden: ["Activity log"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
   },
   employee: {
-    shown: ["Leave", "Expenses", "My details"],
+    shown: ["Leave", "Expenses", "My details", "Performance"],
     hidden: [
       "Reports",
       "Organization",
@@ -52,7 +52,7 @@ const cases: Record<
     denied: ["/reports", "Reports are not available to your role."],
   },
   manager: {
-    shown: ["Team explorer", "Approvals", "Reports"],
+    shown: ["Team explorer", "Approvals", "Reports", "Performance"],
     hidden: [
       "Organization",
       "Candidate intake",
@@ -65,18 +65,36 @@ const cases: Record<
     ],
   },
   hr: {
-    shown: ["Organization", "Reports", "Exit", "Candidate intake"],
+    shown: [
+      "Organization",
+      "Reports",
+      "Exit",
+      "Candidate intake",
+      "Performance",
+    ],
     hidden: ["Activity log", "Workspace settings"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
   },
   auditor: {
     shown: ["Activity log", "Configuration"],
-    hidden: ["Reports", "People directory", "Leave", "Organization"],
+    hidden: [
+      "Reports",
+      "People directory",
+      "Leave",
+      "Organization",
+      "Performance",
+    ],
     denied: ["/reports", "Reports are not available to your role."],
   },
   platform: {
     shown: ["Configuration", "Workspace settings"],
-    hidden: ["Reports", "People directory", "Activity log", "Leave"],
+    hidden: [
+      "Reports",
+      "People directory",
+      "Activity log",
+      "Leave",
+      "Performance",
+    ],
     denied: [
       "/organization",
       "Organization records require an assigned HR admin",

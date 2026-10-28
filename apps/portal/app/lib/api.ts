@@ -64,6 +64,13 @@ import {
   recruitOfferListSchema,
   recruitFunnelSchema,
   recruitLookupsSchema,
+  perfObjectiveListSchema,
+  perfObjectiveDetailSchema,
+  perfAlignableSchema,
+  perfProgressListSchema,
+  perfCycleListSchema,
+  perfReviewListSchema,
+  perfReviewDetailSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -628,6 +635,76 @@ export const useRecruitLookups = (enabled: boolean) =>
     staleTime: 5 * 60_000,
     queryFn: ({ signal }) =>
       recruitGet("lookups", "", recruitLookupsSchema, signal),
+  });
+// Performance (PERF-01). Every key starts with "perf" so one invalidation refreshes all tabs.
+const perfGet = <T>(
+  path: string,
+  query: string,
+  schema: z.ZodType<T>,
+  signal?: AbortSignal,
+) => api(`/performance/${path}${query ? `?${query}` : ""}`, schema, { signal });
+export const usePerfObjectives = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["perf", "objectives", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      perfGet("objectives", query, perfObjectiveListSchema, signal),
+  });
+export const usePerfObjective = (id: string | null) =>
+  useQuery({
+    queryKey: ["perf", "objective", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      perfGet(`objectives/${id}`, "", perfObjectiveDetailSchema, signal),
+  });
+export const usePerfAlignable = (enabled: boolean, ownerId: string) =>
+  useQuery({
+    queryKey: ["perf", "alignable", ownerId],
+    enabled,
+    retry: false,
+    queryFn: ({ signal }) =>
+      perfGet(
+        "objectives/alignable",
+        ownerId ? `ownerId=${ownerId}` : "",
+        perfAlignableSchema,
+        signal,
+      ),
+  });
+export const usePerfProgress = (keyResultId: string | null) =>
+  useQuery({
+    queryKey: ["perf", "progress", keyResultId],
+    enabled: Boolean(keyResultId),
+    queryFn: ({ signal }) =>
+      perfGet(
+        `key-results/${keyResultId}/progress`,
+        "limit=20",
+        perfProgressListSchema,
+        signal,
+      ),
+  });
+export const usePerfCycles = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["perf", "cycles", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      perfGet("cycles", query, perfCycleListSchema, signal),
+  });
+export const usePerfReviews = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["perf", "reviews", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      perfGet("reviews", query, perfReviewListSchema, signal),
+  });
+export const usePerfReview = (id: string | null) =>
+  useQuery({
+    queryKey: ["perf", "review", id],
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      perfGet(`reviews/${id}`, "", perfReviewDetailSchema, signal),
   });
 export const usePeopleSearch = (term: string) =>
   useQuery({

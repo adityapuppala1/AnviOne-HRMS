@@ -45,7 +45,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.report_scope',$18,true),
     set_config('app.branding_scope',$19,true),
     set_config('app.project_scope',$20,true),
-    set_config('app.recruit_scope',$21,true)`,
+    set_config('app.recruit_scope',$21,true),
+    set_config('app.perf_scope',$22,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -98,6 +99,12 @@ export async function setContext(client: PoolClient, actor: Principal) {
       scopeFor(actor, "recruit.manage") ??
         scopeFor(actor, "recruit.request") ??
         scopeFor(actor, "recruit.interview") ??
+        "none",
+      // HR (entity) sees and finalises every review; managers (team) their direct reports';
+      // everyone else (self) only their own goals and review.
+      scopeFor(actor, "performance.manage") ??
+        scopeFor(actor, "performance.review") ??
+        scopeFor(actor, "performance.self") ??
         "none",
     ],
   );

@@ -47,11 +47,16 @@ The Reports screen is built on the kit from the start (radio cards, checkboxes, 
 - Empty states on all of these already render through Untitled `EmptyState` (via `EmptyBlock`).
 - Playwright specs changed minimally: native `selectOption` became click-button-then-option for leave type, document category, activity type (atlas and organization specs), the onboarding intake pickers and the assigned-task status.
 
+## Migrated in the onboarding slice
+
+- `components/onboarding-checklist.tsx`: owner and status filters, task create dialog (title `Input`, owner/prerequisite `Select`, days from joining `RangeInput`, "Required task" `Checkbox`), task status `Select` (with `disabledKeys`), assignee `Select`, and all reason/note boxes use the kit. `components/local-readiness-review.tsx`: the reason box uses `TextArea`. There are no `routes/onboarding*.tsx` files holding controls.
+- `onboarding.spec.ts` changed minimally: `selectOption` became click-button-then-option (with a wait for the listbox to close) and the disabled "Completed" option check now reads `aria-disabled` on the opened option.
+
 ## Deliberately not migrated yet (honest list)
 
 - `home`, `not-found`, `login` (no form fields; its one control is a link-styled button) and `workspace` (shell: no form fields besides the command bar, which is done).
 - Preferences and Settings theme/density/mode pickers: these are card-style radios with illustrations and swatches, not plain radio rows, and the kit `RadioGroup` cannot draw them without re-drawing the cards. The Preferences "Reduce motion" switch keeps the portal's own `.switch` (animated thumb, verified by `atlas.spec.ts`) so the kit's checkbox/radio CSS cannot disturb it.
 - Documents file picker stays a native `input type="file"` (the kit file-upload component is not vendored yet).
-- `components/onboarding-checklist.tsx` and `components/local-readiness-review.tsx`: large, heavily specified native selects/textareas (`onboarding.spec.ts` drives them with `selectOption`); to be migrated with the onboarding slice.
+- `apps/candidate` (the separate candidate-facing app, with its own native task status select and form fields) is outside the portal and was not migrated in the onboarding slice.
 - Our own `Avatar` (Loom colours, used on nearly every screen) is kept; `UAvatar` is used where a screen adopts it (Exit). Row-action `Dropdown` menus and `ButtonGroup` are not introduced: the existing rows use one or two visible buttons, which is clearer than a menu.
 - Still not vendored from the starter kit: `tags`, `slider`, `progress-indicators`, `file-upload`, `modals`, `slideout-menus`, `date-picker`, `loading-indicator`, `charts`.

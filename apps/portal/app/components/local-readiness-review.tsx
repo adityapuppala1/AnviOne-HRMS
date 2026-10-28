@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
-import { Button, DialogPanel, StatusBadge } from "@anvi/ui";
+import { Button, DialogPanel, StatusBadge, TextArea } from "@anvi/ui";
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
@@ -266,16 +266,15 @@ export function LocalReadinessReview({
             onSubmit={(event) => void submit(event)}
           >
             <p>{copy.help}</p>
-            <label>
-              {copy.label}
-              <textarea
-                name="reason"
-                required
-                minLength={10}
-                maxLength={300}
-                autoFocus
-              />
-            </label>
+            <TextArea
+              label={copy.label}
+              name="reason"
+              isRequired
+              hideRequiredIndicator
+              minLength={10}
+              maxLength={300}
+              autoFocus
+            />
             <p>
               Use fictional evidence only. Do not include private documents or
               credentials.

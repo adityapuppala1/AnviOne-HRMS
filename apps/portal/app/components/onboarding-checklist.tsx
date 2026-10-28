@@ -1,7 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Button, DialogPanel, StatusBadge } from "@anvi/ui";
+import {
+  Button,
+  Checkbox,
+  DialogPanel,
+  Input,
+  RangeInput,
+  Select,
+  StatusBadge,
+  TextArea,
+} from "@anvi/ui";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
@@ -138,7 +147,10 @@ export function OnboardingChecklist({
         caseVersion: c.version,
         required: fields.required === "on",
         dueOffsetDays: Number(fields.dueOffsetDays),
-        dependsOn: fields.dependsOn || null,
+        dependsOn:
+          fields.dependsOn && fields.dependsOn !== "none"
+            ? fields.dependsOn
+            : null,
       });
       if (!parsed.success) {
         setError("Review the task title, owner, due offset and prerequisite.");
@@ -258,31 +270,26 @@ export function OnboardingChecklist({
       {tasks.length > 0 ? (
         <>
           <div className="checklist-filters">
-            <label>
-              Task owner
-              <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-                <option value="all">All owners</option>
-                {Object.entries(ownerNames).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Task status
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">All statuses</option>
-                {Object.entries(statusNames).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Task owner"
+              selectedKey={owner}
+              onSelectionChange={(key) => setOwner(String(key))}
+            >
+              <Select.Item id="all" label="All owners" />
+              {Object.entries(ownerNames).map(([key, label]) => (
+                <Select.Item key={key} id={key} label={label} />
+              ))}
+            </Select>
+            <Select
+              label="Task status"
+              selectedKey={status}
+              onSelectionChange={(key) => setStatus(String(key))}
+            >
+              <Select.Item id="all" label="All statuses" />
+              {Object.entries(statusNames).map(([key, label]) => (
+                <Select.Item key={key} id={key} label={label} />
+              ))}
+            </Select>
           </div>
           <ul className="checklist-items">
             {filtered.map((t) => (
@@ -393,15 +400,14 @@ export function OnboardingChecklist({
                   administration and manager coordination. Required tasks cannot
                   be waived; task metadata is fixed after creation.
                 </p>
-                <label>
-                  Checklist reason
-                  <textarea
-                    name="reason"
-                    required
-                    minLength={10}
-                    maxLength={300}
-                  />
-                </label>
+                <TextArea
+                  label="Checklist reason"
+                  name="reason"
+                  isRequired
+                  hideRequiredIndicator
+                  minLength={10}
+                  maxLength={300}
+                />
               </>
             ) : dialog === "create" ? (
               <>
@@ -410,48 +416,50 @@ export function OnboardingChecklist({
                   to the proposed joining date; negative days are before
                   joining.
                 </p>
-                <label>
-                  Task title
-                  <input name="label" minLength={5} maxLength={140} required />
-                </label>
+                <Input
+                  label="Task title"
+                  name="label"
+                  minLength={5}
+                  maxLength={140}
+                  isRequired
+                  hideRequiredIndicator
+                />
                 <div className="intake-form-grid">
-                  <label>
-                    Coordinating owner
-                    <select name="owner" defaultValue="hr">
-                      {Object.entries(ownerNames).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Days from joining
-                    <input
-                      type="number"
-                      name="dueOffsetDays"
-                      min={-30}
-                      max={90}
-                      defaultValue={0}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Prerequisite
-                    <select name="dependsOn" defaultValue="">
-                      <option value="">No prerequisite</option>
-                      {tasks.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <Select
+                    label="Coordinating owner"
+                    name="owner"
+                    defaultSelectedKey="hr"
+                  >
+                    {Object.entries(ownerNames).map(([key, label]) => (
+                      <Select.Item key={key} id={key} label={label} />
+                    ))}
+                  </Select>
+                  <RangeInput
+                    type="number"
+                    label="Days from joining"
+                    name="dueOffsetDays"
+                    min={-30}
+                    max={90}
+                    defaultValue="0"
+                    isRequired
+                  />
+                  <Select
+                    label="Prerequisite"
+                    name="dependsOn"
+                    defaultSelectedKey="none"
+                  >
+                    <Select.Item id="none" label="No prerequisite" />
+                    {tasks.map((t) => (
+                      <Select.Item key={t.id} id={t.id} label={t.label} />
+                    ))}
+                  </Select>
                 </div>
-                <label className="checklist-required">
-                  <input type="checkbox" name="required" defaultChecked />
-                  Required task
-                </label>
+                <Checkbox
+                  name="required"
+                  value="on"
+                  defaultSelected
+                  label="Required task"
+                />
               </>
             ) : (
               <>
@@ -464,41 +472,35 @@ export function OnboardingChecklist({
                     : "Record what was completed or why this task needs attention."}{" "}
                   Reopen completed dependents before their prerequisite.
                 </p>
-                <label>
-                  New task status
-                  <select
-                    name="state"
-                    defaultValue={
-                      dialog.state === "completed"
-                        ? "pending"
-                        : dialog.waitingOn
-                          ? "blocked"
-                          : "completed"
-                    }
-                  >
-                    {Object.entries(statusNames).map(([key, label]) => (
-                      <option
-                        key={key}
-                        value={key}
-                        disabled={
-                          key === dialog.state ||
-                          (key === "completed" && dialog.waitingOn)
-                        }
-                      >
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Completion / change note
-                  <textarea
-                    name="reason"
-                    required
-                    minLength={10}
-                    maxLength={300}
-                  />
-                </label>
+                <Select
+                  label="New task status"
+                  name="state"
+                  autoFocus
+                  defaultSelectedKey={
+                    dialog.state === "completed"
+                      ? "pending"
+                      : dialog.waitingOn
+                        ? "blocked"
+                        : "completed"
+                  }
+                  disabledKeys={Object.keys(statusNames).filter(
+                    (key) =>
+                      key === dialog.state ||
+                      (key === "completed" && Boolean(dialog.waitingOn)),
+                  )}
+                >
+                  {Object.entries(statusNames).map(([key, label]) => (
+                    <Select.Item key={key} id={key} label={label} />
+                  ))}
+                </Select>
+                <TextArea
+                  label="Completion / change note"
+                  name="reason"
+                  isRequired
+                  hideRequiredIndicator
+                  minLength={10}
+                  maxLength={300}
+                />
                 <p>
                   Fictional evidence only. Do not add private data, passwords or
                   document links.
@@ -553,27 +555,30 @@ export function OnboardingChecklist({
             <p>
               Assignment grants access only to this task's minimal work record.
             </p>
-            <label>
-              Assigned employee
-              <select
-                name="employeeId"
-                required
-                defaultValue={assignment.assignee?.employeeId ?? ""}
-              >
-                <option value="" disabled>
-                  Select an active employee
-                </option>
-                {options.data?.assignees.map((person) => (
-                  <option key={person.id} value={person.id}>
-                    {person.name} · {person.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Assignment note
-              <textarea name="reason" required minLength={10} maxLength={300} />
-            </label>
+            <Select
+              label="Assigned employee"
+              name="employeeId"
+              isRequired
+              hideRequiredIndicator
+              placeholder="Select an active employee"
+              defaultSelectedKey={assignment.assignee?.employeeId ?? undefined}
+            >
+              {(options.data?.assignees ?? []).map((person) => (
+                <Select.Item
+                  key={person.id}
+                  id={person.id}
+                  label={`${person.name} · ${person.title}`}
+                />
+              ))}
+            </Select>
+            <TextArea
+              label="Assignment note"
+              name="reason"
+              isRequired
+              hideRequiredIndicator
+              minLength={10}
+              maxLength={300}
+            />
             {options.isPending && (
               <p role="status">Loading eligible employees…</p>
             )}

@@ -94,11 +94,18 @@ test("candidate invitation, autosave, correction and approval across isolated ho
   await dialog
     .getByLabel("Task title")
     .fill("Choose a fictional induction topic");
-  await dialog.getByLabel("Coordinating owner").selectOption("candidate");
+  await dialog.getByRole("button", { name: /Coordinating owner/ }).click();
+  await page.getByRole("option", { name: "Candidate", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog.getByLabel("Days from joining").fill("1");
-  await dialog
-    .getByLabel("Prerequisite")
-    .selectOption({ label: "Record a fictional readiness check" });
+  await dialog.getByRole("button", { name: /Prerequisite/ }).click();
+  await page
+    .getByRole("option", {
+      name: "Record a fictional readiness check",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog.getByRole("checkbox", { name: "Required task" }).uncheck();
   await accessible(page);
   await dialog
@@ -112,9 +119,14 @@ test("candidate invitation, autosave, correction and approval across isolated ho
       exact: true,
     })
     .click();
-  await dialog
-    .getByLabel("Assigned employee")
-    .selectOption({ label: "Maya Iyer · People experience lead" });
+  await dialog.getByRole("button", { name: /Assigned employee/ }).click();
+  await page
+    .getByRole("option", {
+      name: "Maya Iyer · People experience lead",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog
     .getByLabel("Assignment note")
     .fill(
@@ -132,24 +144,34 @@ test("candidate invitation, autosave, correction and approval across isolated ho
       }),
     }),
   ).toContainText("Maya Iyer");
-  await checklist.getByLabel("Task owner").selectOption("candidate");
+  await checklist.getByRole("button", { name: /Task owner/ }).click();
+  await page.getByRole("option", { name: "Candidate", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await expect(checklist.locator(".checklist-item")).toHaveCount(2);
-  await checklist.getByLabel("Task owner").selectOption("all");
-  await checklist.getByLabel("Task status").selectOption("completed");
+  await checklist.getByRole("button", { name: /Task owner/ }).click();
+  await page.getByRole("option", { name: "All owners", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await checklist.getByRole("button", { name: /Task status/ }).click();
+  await page.getByRole("option", { name: "Completed", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await expect(checklist.getByRole("status")).toHaveText(
     "No tasks match these filters.",
   );
-  await checklist.getByLabel("Task status").selectOption("all");
+  await checklist.getByRole("button", { name: /Task status/ }).click();
+  await page.getByRole("option", { name: "All statuses", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await checklist
     .getByRole("button", {
       name: "Update Record a fictional readiness check",
       exact: true,
     })
     .click();
+  await dialog.getByRole("button", { name: /New task status/ }).click();
   await expect(
-    dialog.getByLabel("New task status").locator('option[value="completed"]'),
-  ).toHaveJSProperty("disabled", true);
-  await dialog.getByLabel("New task status").selectOption("blocked");
+    page.getByRole("option", { name: "Completed", exact: true }),
+  ).toHaveAttribute("aria-disabled", "true");
+  await page.getByRole("option", { name: "Blocked", exact: true }).click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
   await dialog
     .getByLabel("Completion / change note")
     .fill("Waiting for the fictional candidate coordination step.");
@@ -345,7 +367,9 @@ test("candidate invitation, autosave, correction and approval across isolated ho
     await checklist
       .getByRole("button", { name: `Update ${task}`, exact: true })
       .click();
-    await dialog.getByLabel("New task status").selectOption("completed");
+    await dialog.getByRole("button", { name: /New task status/ }).click();
+    await page.getByRole("option", { name: "Completed", exact: true }).click();
+    await expect(page.getByRole("listbox")).toHaveCount(0);
     await dialog
       .getByLabel("Completion / change note")
       .fill(

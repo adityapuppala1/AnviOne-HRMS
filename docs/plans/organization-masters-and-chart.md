@@ -13,7 +13,7 @@ HR keeps more kinds of organization records, says when each is in effect, merges
 | More masters       | Designations, grades and cost centres, with the same code, name, uniqueness, reason and audit rules as departments and locations. Employees are not assignable to them yet.                  |
 | Effective dates    | `effectiveFrom` and an inclusive `effectiveTo`. Status is `scheduled`, `in_effect`, `ended` or `inactive` in the entity's business date. New assignments need a unit that is in effect.      |
 | Safe merge         | Departments and locations only. One transaction moves every employee (including former ones) and unfinished candidates to the target, closes the source for good and records the merge link. |
-| Organization chart | The reporting tree from manager links, limited to what the caller's directory access already shows.                                                                                          |
+| Organization chart | The scoped reporting tree (whole tree tab) plus, for everyone, search and a one-level-up, one-level-down neighbourhood of any colleague in 2D and 3D (see ADR 0009).                         |
 
 ## Who does what
 
@@ -35,7 +35,7 @@ HR keeps more kinds of organization records, says when each is in effect, merges
 ## Limits
 
 - Designations, grades and cost centres are masters only; employees cannot be assigned to them yet.
-- The chart is narrower than a full company chart: managers see one level, employees only themselves, because directory access is not widened.
+- The whole-tree tab is still limited to directory access; the search and neighbourhood views deliberately show seven basic fields for every active person in the entity (ADR 0009).
 - A merge also rewrites the department or location of former employees, so nothing points at a closed record.
 - The chart holds at most 2,000 people and 20 levels, and says when it is partial.
 

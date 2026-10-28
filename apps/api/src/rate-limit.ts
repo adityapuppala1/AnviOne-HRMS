@@ -1,4 +1,9 @@
-import type { OnApplicationShutdown } from "@nestjs/common";
+import {
+  HttpException,
+  ServiceUnavailableException,
+  type OnApplicationShutdown,
+} from "@nestjs/common";
+import { rateLimit, type RateLimitRequestHandler } from "express-rate-limit";
 import type { NextFunction, Request, Response } from "express";
 import { RedisStore, type RedisReply } from "rate-limit-redis";
 import { createClient } from "redis";
@@ -103,4 +108,56 @@ export function storeUnavailableHandler(
       code: "HTTP_503",
       requestId: req.requestId,
     });
+}
+
+// A per-person budget (tenant and employee, never session, address or role), so
+// switching roles or signing in again never resets it. Fails closed: a counter store
+// error becomes a 503 through runLimit.
+export function personLimiter(
+  limits: RateLimits,
+  name: string,
+  limit: number,
+  title: string,
+) {
+  return rateLimit({
+    windowMs: 60000,
+    limit,
+    store: limits.store(name),
+    keyGenerator: (req: Request) => {
+      const actor = (req as Request & { actor?: PersonKey }).actor;
+      // Never a shared bucket: callers check this first, and the error fails closed.
+      if (!actor?.tenantId || !actor.employeeId)
+        throw new HttpException("This action is not available to you.", 403);
+      return `${actor.tenantId}:${actor.employeeId}`;
+    },
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    validate: { keyGeneratorIpFallback: false },
+    handler: (_req: Request, _res: Response, next: NextFunction) =>
+      next(new HttpException(title, 429)),
+  });
+}
+interface PersonKey {
+  tenantId: string;
+  employeeId: string;
+}
+
+export function runLimit(
+  handler: RateLimitRequestHandler,
+  req: Request,
+  res: Response,
+) {
+  return new Promise<void>((resolve, reject) => {
+    void handler(req, res, (error?: unknown) => {
+      if (error instanceof StoreUnavailable)
+        reject(
+          new ServiceUnavailableException(
+            "The service is unavailable. Try again shortly.",
+          ),
+        );
+      else if (error)
+        reject(error instanceof Error ? error : new Error("rate limit"));
+      else resolve();
+    });
+  });
 }

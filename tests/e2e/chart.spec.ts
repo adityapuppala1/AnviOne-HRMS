@@ -82,7 +82,7 @@ async function cleanup(codes: string[]) {
   }
 }
 
-test("HR merges a department into another; the org chart is searchable", async ({
+test("HR merges a department into another; the org chart finds anyone and moves with them", async ({
   page,
 }, info) => {
   test.setTimeout(150000);
@@ -132,21 +132,115 @@ test("HR merges a department into another; the org chart is searchable", async (
       page.getByText(`Merged into ${target.name}`).first(),
     ).toBeVisible();
 
-    // Everyone with directory access can search the chart.
+    // Find anyone, pick them, and the chart moves to their reporting lines.
     await page.getByRole("link", { name: "Org chart", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Org chart", level: 1 }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Expand all" }).click();
+    await findAndPick(page, "Neel");
+    await expect(page).toHaveURL(/focus=/);
+    await expect(
+      page.getByRole("button", { name: /Neel Rao/ }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Go to my position" }),
+    ).toBeEnabled();
     await accessible(page);
-    await page.screenshot({ path: info.outputPath("chart-tree.png") });
+    await page.screenshot({ path: info.outputPath("chart-network.png") });
+
+    // Vertical and horizontal.
+    const vertical = page.getByRole("radio", { name: "Vertical view" });
+    const horizontal = page.getByRole("radio", { name: "Horizontal view" });
+    await horizontal.click();
+    await expect(page.locator(".oc-viewport")).toHaveAttribute(
+      "data-orientation",
+      "horizontal",
+    );
+    await page.screenshot({ path: info.outputPath("chart-horizontal.png") });
+    await vertical.click();
+    await expect(page.locator(".oc-viewport")).toHaveAttribute(
+      "data-orientation",
+      "vertical",
+    );
+
+    // Zoom with the buttons and with the keyboard.
+    const level = page.getByTestId("zoom-level");
+    const read = async () => parseInt((await level.textContent()) ?? "0", 10);
+    await page.getByRole("button", { name: "Fit to screen" }).click();
+    await expect.poll(read).toBeGreaterThan(0);
+    await page.waitForTimeout(700);
+    const fitted = await read();
+    await page.getByRole("button", { name: "Zoom in" }).click();
+    await expect.poll(read).toBeGreaterThan(fitted);
+    const zoomed = await read();
+    await page.getByRole("button", { name: "Zoom out" }).click();
+    await expect.poll(read).toBeLessThan(zoomed);
+    await page.locator(".oc-viewport").focus();
+    await page.waitForTimeout(300);
+    const before = await read();
+    await page.keyboard.press("+");
+    await expect.poll(read).toBeGreaterThan(before);
+    const plus = await read();
+    await page.keyboard.press("-");
+    await expect.poll(read).toBeLessThan(plus);
+    await page.keyboard.press("+");
+    await page.keyboard.press("+");
+    await page.keyboard.press("0");
+    await expect.poll(read).toBe(fitted);
+
+    // The List view is the text equivalent.
+    await page.getByRole("tab", { name: "List" }).click();
+    await expect(page.getByText("Reports to", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Selected person", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Direct reports \(\d+\)/ }),
+    ).toBeVisible();
+    await accessible(page);
+
+    // 3D: the lazy scene draws, or says plainly that WebGL is not available.
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.getByRole("tab", { name: "3D" }).click();
+    const scene = page.getByTestId("org-3d");
+    const fallback = page.getByText(/3D needs WebGL/);
+    await expect(scene.or(fallback).first()).toBeVisible();
+    if (await scene.isVisible()) {
+      await expect(scene.locator("canvas")).toBeVisible();
+      await scene.focus();
+      await page.keyboard.press("+");
+      await page.keyboard.press("0");
+    }
+    await accessible(page);
+    await page.screenshot({ path: info.outputPath("chart-3d.png") });
+    expect(
+      errors.filter((e) => !/WebGL|GPU stall|swiftshader/i.test(e)),
+    ).toEqual([]);
+
+    // The whole tree keeps its own search and expand controls.
+    await page.getByRole("tab", { name: "Whole tree" }).click();
+    await page.getByRole("button", { name: "Expand all" }).click();
     await page.getByRole("textbox", { name: "Search the chart" }).fill("Maya");
     await expect(page.getByText("Maya Iyer").first()).toBeVisible();
+    await page.getByRole("textbox", { name: "Search the chart" }).fill("");
+    await accessible(page);
+    await page.screenshot({ path: info.outputPath("chart-tree.png") });
 
     // Dark mode and a phone: still accessible, nothing wider than the screen.
+    await page.getByRole("tab", { name: "Network" }).click();
     await page.getByRole("button", { name: "Use dark theme" }).click();
     await accessible(page);
+    await page.getByRole("tab", { name: "List" }).click();
+    await accessible(page);
+    await page.getByRole("tab", { name: "3D" }).click();
+    await expect(scene.or(fallback).first()).toBeVisible();
+    await accessible(page);
     await page.setViewportSize({ width: 390, height: 900 });
+    await page.getByRole("tab", { name: "Network" }).click();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -156,4 +250,56 @@ test("HR merges a department into another; the org chart is searchable", async (
   } finally {
     await cleanup([source.code, target.code]);
   }
+});
+
+// Type into the "Find anyone" combobox and choose the first result.
+async function findAndPick(page: Page, query: string) {
+  const box = page.getByRole("combobox", {
+    name: "Find anyone in the organization",
+  });
+  await box.fill(query);
+  await expect(page.getByRole("option").first()).toBeVisible();
+  await box.press("ArrowDown");
+  await box.press("Enter");
+  await expect(page.getByRole("listbox")).toBeHidden();
+}
+
+test("An employee can search for someone outside their team and see their manager and reports", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Explore demo workspace" }).click();
+  await expect(
+    page.getByRole("heading", { name: /Good to see you/ }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Your workspace role", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Employee", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("link", { name: "Org chart", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Org chart", level: 1 }),
+  ).toBeVisible();
+  await findAndPick(page, "Neel");
+  await page.getByRole("tab", { name: "List" }).click();
+  await expect(
+    page.getByRole("button", { name: "Go to my position" }),
+  ).toBeEnabled();
+  await expect(page.getByText("Reports to", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Selected person", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Direct reports \(\d+\)/ }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".oc-list-focus").getByText("Neel Rao"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Show Maya Iyer/ }),
+  ).toBeVisible();
+  await expect(page.locator(".oc-list-row").first()).toBeVisible();
+  await accessible(page);
 });

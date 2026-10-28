@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { isIdle, markTouched } from "./activity";
 import {
@@ -27,6 +28,8 @@ import {
   expenseListSchema,
   myExpensesSchema,
   organizationChartSchema,
+  orgChartNeighborhoodSchema,
+  orgChartSearchSchema,
   reportCatalogSchema,
   savedReportListSchema,
   organizationDetailSchema,
@@ -349,6 +352,49 @@ export const useOrgChart = (rootId: string | null = null, depth = 20) =>
       api(
         `/organization/chart?depth=${depth}${rootId ? `&rootId=${rootId}` : ""}`,
         organizationChartSchema,
+        { signal },
+      ),
+  });
+// Debounced people search for the chart. The text is only ever sent to the
+// search endpoint; it is never logged or written into the address bar.
+export const useOrgSearch = (text: string) => {
+  const trimmed = text.trim().slice(0, 60);
+  const [settled, setSettled] = useState(trimmed);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(trimmed), 250);
+    return () => clearTimeout(timer);
+  }, [trimmed]);
+  const enabled = settled.length >= 2;
+  const query = useQuery({
+    queryKey: ["organization", "chart", "search", settled],
+    enabled,
+    placeholderData: keepPreviousData,
+    retry: false,
+    staleTime: 30_000,
+    queryFn: ({ signal }) =>
+      api(
+        `/organization/chart/search?q=${encodeURIComponent(settled)}&limit=10`,
+        orgChartSearchSchema,
+        { signal },
+      ),
+  });
+  return {
+    ...query,
+    // True between typing and the answer for what was typed.
+    waiting: trimmed.length >= 2 && (settled !== trimmed || query.isFetching),
+    active: trimmed.length >= 2,
+  };
+};
+export const useOrgNeighborhood = (id: string | null) =>
+  useQuery({
+    queryKey: ["organization", "chart", "neighborhood", id],
+    enabled: Boolean(id),
+    placeholderData: keepPreviousData,
+    retry: false,
+    queryFn: ({ signal }) =>
+      api(
+        `/organization/chart/neighborhood/${id}`,
+        orgChartNeighborhoodSchema,
         { signal },
       ),
   });

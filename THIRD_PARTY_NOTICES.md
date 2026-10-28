@@ -14,6 +14,8 @@ The repository code is MIT licensed under the root LICENSE. Dependency licenses 
 | Magic UI Number Ticker                                                 | Count-up figures                        | MIT                       |
 | Untitled UI free components                                            | Table, pagination, badges, empty state  | MIT                       |
 | Untitled UI Icons / file icons                                         | Icons used by those components          | MIT                       |
+| d3-hierarchy, d3-shape, d3-selection, d3-zoom, d3-transition           | Org chart Network view                  | ISC                       |
+| three                                                                  | Org chart 3D view (lazy loaded)         | MIT                       |
 | Recharts                                                               | Insights charts                         | MIT                       |
 | tailwind-merge, tailwindcss-animate, tailwindcss-react-aria-components | Support for the Untitled UI components  | MIT                       |
 | Tailwind CSS                                                           | Semantic theme integration              | MIT                       |

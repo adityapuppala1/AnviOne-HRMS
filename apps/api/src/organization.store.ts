@@ -8,6 +8,11 @@ import {
 import { audit, scoped, type PoolClient } from "@anvi/database";
 import {
   organizationChartNodeSchema,
+  orgChartNodeLiteSchema,
+  type OrgChartNeighborhood,
+  type OrgChartNodeLite,
+  type OrgChartSearch,
+  type orgChartSearchQuerySchema,
   organizationUnitSchema,
   type OrganizationChart,
   type OrganizationDetail,
@@ -56,6 +61,41 @@ const conflictCodes: Record<string, string> = {
   "55P03": busy,
 };
 const CHART_NODE_CAP = 2000;
+// Direct reports returned with one neighbourhood; reportCount still gives the total.
+export const NEIGHBORHOOD_REPORT_CAP = 200;
+interface LiteRow {
+  id: string;
+  name: string;
+  initials: string;
+  title: string;
+  department: string | null;
+  managerId: string | null;
+  directReportCount: number;
+}
+// The database refuses (42501) a session without a valid directory context.
+async function structure<T>(work: () => Promise<T>): Promise<T> {
+  try {
+    return await work();
+  } catch (error) {
+    if ((error as { code?: string }).code === "42501")
+      throw new ForbiddenException(
+        "The organization chart is not available to you.",
+      );
+    throw error;
+  }
+}
+const liteColumns = `id, name, initials, title, department,
+  manager_id AS "managerId", direct_report_count AS "directReportCount"`;
+const lite = (row: LiteRow): OrgChartNodeLite =>
+  orgChartNodeLiteSchema.parse({
+    id: row.id,
+    name: row.name,
+    initials: row.initials,
+    title: row.title,
+    department: row.department,
+    managerId: row.managerId,
+    directReportCount: row.directReportCount,
+  });
 
 // This module owns the master lifecycle transaction: version check, mutation,
 // mandatory reason, audit snapshot and outbox are one commit.
@@ -412,6 +452,65 @@ export class OrganizationStore {
         .sort((a, b) => a.depth - b.depth);
       return { scope, rootIds: roots, nodes, total: nodes.length, truncated };
     });
+  }
+
+  // Entity-wide structure lookups for anyone with directory.read at any scope. Rows
+  // come only from the org_chart_* SECURITY DEFINER functions (migration 041), which
+  // expose id, name, initials, title, department, manager id and report count of
+  // active/notice people in the caller's own tenant and entity. Not audited (structure,
+  // not personal records) and the search text is never logged or stored.
+  requireStructure(actor: Principal) {
+    this.platform.require(actor, "directory.read");
+    // Without an employee context there is no person to budget or scope by.
+    if (!actor.employeeId || !actor.tenantId || !actor.entityId)
+      throw new ForbiddenException(
+        "The organization chart is not available to you.",
+      );
+  }
+
+  async search(
+    actor: Principal,
+    query: z.infer<typeof orgChartSearchQuerySchema>,
+  ): Promise<OrgChartSearch> {
+    this.requireStructure(actor);
+    return structure(() =>
+      scoped(this.platform.pool, actor, async (client) => {
+        const { rows } = await client.query<LiteRow>(
+          `SELECT ${liteColumns} FROM org_chart_search($1, $2)`,
+          [query.q, query.limit],
+        );
+        return { items: rows.map(lite) };
+      }),
+    );
+  }
+
+  async neighborhood(
+    actor: Principal,
+    employeeId: string,
+  ): Promise<OrgChartNeighborhood> {
+    this.requireStructure(actor);
+    return structure(() =>
+      scoped(this.platform.pool, actor, async (client) => {
+        const { rows } = await client.query<LiteRow & { relation: string }>(
+          `SELECT relation, ${liteColumns} FROM org_chart_neighborhood($1, $2)`,
+          [employeeId, NEIGHBORHOOD_REPORT_CAP + 1],
+        );
+        const focus = rows.find((r) => r.relation === "focus");
+        // Unknown, inactive and other-entity people all answer the same way.
+        if (!focus) throw new NotFoundException("This person is unavailable.");
+        const managerRow = rows.find((r) => r.relation === "manager");
+        const reports = rows.filter((r) => r.relation === "report");
+        const manager = managerRow ? lite(managerRow) : null;
+        return {
+          focus: lite(focus),
+          manager,
+          reports: reports.slice(0, NEIGHBORHOOD_REPORT_CAP).map(lite),
+          reportCount: focus.directReportCount,
+          truncated: reports.length > NEIGHBORHOOD_REPORT_CAP,
+          skipLevelHint: { managerHasManager: Boolean(manager?.managerId) },
+        };
+      }),
+    );
   }
 
   private async readUnit(

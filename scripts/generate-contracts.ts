@@ -19,6 +19,8 @@ import {
   organizationMergeSchema,
   organizationMergeResultSchema,
   organizationChartSchema,
+  orgChartSearchSchema,
+  orgChartNeighborhoodSchema,
   candidateListSchema,
   candidateOptionsSchema,
   candidateDetailSchema,
@@ -541,6 +543,43 @@ const spec = {
             name: "depth",
             in: "query",
             schema: { type: "integer", minimum: 1, maximum: 20, default: 20 },
+          },
+        ],
+      },
+    },
+    "/organization/chart/search": {
+      get: {
+        ...read(
+          "Search active and notice-period people of the caller's legal entity by name, title or department (literal text, 2-60 characters) for anyone with directory.read at any scope; returns only id, name, initials, title, department, managerId and directReportCount, ordered by name; at most 10; 120 searches a minute per person; not audited and the search text is never logged",
+          orgChartSearchSchema,
+        ),
+        parameters: [
+          {
+            name: "q",
+            in: "query",
+            required: true,
+            schema: { type: "string", minLength: 2, maxLength: 60 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 10, default: 10 },
+          },
+        ],
+      },
+    },
+    "/organization/chart/neighborhood/{employeeId}": {
+      get: {
+        ...read(
+          "One person's reporting neighbourhood (manager one level up, up to 200 direct reports by name) with the same basic fields as search, for anyone with directory.read; unknown, former and other-entity people all answer 404; 120 lookups a minute per person; not audited",
+          orgChartNeighborhoodSchema,
+        ),
+        parameters: [
+          {
+            name: "employeeId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
           },
         ],
       },

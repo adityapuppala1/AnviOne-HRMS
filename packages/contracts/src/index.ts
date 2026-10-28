@@ -270,6 +270,41 @@ export const organizationChartSchema = z.object({
 });
 export type OrganizationChart = z.infer<typeof organizationChartSchema>;
 
+// Entity-wide reporting structure for anyone with directory.read. Deliberately
+// limited to these fields: no email, code, location, dates, status or contact data.
+export const orgChartSearchQuerySchema = z.strictObject({
+  q: z.string().trim().min(2).max(60),
+  limit: z.coerce.number().int().min(1).max(10).default(10),
+});
+export const orgChartNodeLiteSchema = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+  initials: z.string(),
+  title: z.string(),
+  // Null when the person has no department in their entity.
+  department: z.string().nullable(),
+  // Null when there is no manager or the manager is no longer active; set exactly
+  // when a neighbourhood would return that manager.
+  managerId: z.uuid().nullable(),
+  directReportCount: z.number().int().nonnegative(),
+});
+export const orgChartSearchSchema = z.strictObject({
+  items: z.array(orgChartNodeLiteSchema),
+});
+export const orgChartNeighborhoodSchema = z.strictObject({
+  focus: orgChartNodeLiteSchema,
+  manager: orgChartNodeLiteSchema.nullable(),
+  // Direct reports by name, at most 200; reportCount is the full number.
+  reports: z.array(orgChartNodeLiteSchema),
+  reportCount: z.number().int().nonnegative(),
+  truncated: z.boolean(),
+  skipLevelHint: z.strictObject({ managerHasManager: z.boolean() }),
+});
+export type OrgChartSearchQuery = z.infer<typeof orgChartSearchQuerySchema>;
+export type OrgChartNodeLite = z.infer<typeof orgChartNodeLiteSchema>;
+export type OrgChartSearch = z.infer<typeof orgChartSearchSchema>;
+export type OrgChartNeighborhood = z.infer<typeof orgChartNeighborhoodSchema>;
+
 export const candidateStateSchema = z.enum([
   "draft",
   "invited",

@@ -31,6 +31,7 @@ import { PolicyController } from "./policy.controller";
 import { ExitController } from "./exit.controller";
 import { ExpenseController } from "./expense.controller";
 import { ProjectController } from "./project.controller";
+import { RecruitController } from "./recruit.controller";
 import { ProfileController } from "./profile.controller";
 import { ReportController } from "./report.controller";
 import type { Config } from "./config";
@@ -83,6 +84,7 @@ export async function createApp(config: Config) {
       ExitController,
       ExpenseController,
       ProjectController,
+      RecruitController,
       ProfileController,
       ReportController,
     ],

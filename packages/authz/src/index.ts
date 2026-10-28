@@ -24,6 +24,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "exit.self": "self",
     "expense.self": "self",
     "project.self": "self",
+    "recruit.interview": "self",
     "profile.self": "self",
   },
   manager: {
@@ -42,6 +43,9 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "project.self": "self",
     // Managers own the projects they create; HR manages every project.
     "project.manage": "team",
+    // Hiring managers raise and follow their own requisitions; HR runs recruiting.
+    "recruit.request": "team",
+    "recruit.interview": "self",
     "insights.read": "team",
     "profile.self": "self",
     // Managers report on their team on screen only; exporting is HR's.
@@ -62,6 +66,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "expense.approve": "entity",
     "expense.manage": "entity",
     "project.manage": "entity",
+    "recruit.manage": "entity",
     "profile.review": "entity",
     "report.run": "entity",
     "report.export": "entity",
@@ -98,6 +103,12 @@ export const permissionDescriptions: Record<Permission, string> = {
     "See my projects and tasks, log and withdraw my own time, update my tasks' status",
   "project.manage":
     "Create projects, manage their members and tasks, and approve their time",
+  "recruit.manage":
+    "Run recruiting: requisitions, candidates and their contact details, interviews and offers",
+  "recruit.request":
+    "Raise requisitions for my team and follow their applications and scorecards",
+  "recruit.interview":
+    "See interviews I am on the panel for and submit my scorecard",
   "profile.self": "Read and request changes to my own profile",
   "profile.review": "Review profile change requests",
   "report.run": "Run reports on screen",

@@ -41,6 +41,9 @@ export const permissionSchema = z.enum([
   "expense.manage",
   "project.self",
   "project.manage",
+  "recruit.manage",
+  "recruit.request",
+  "recruit.interview",
   "profile.self",
   "profile.review",
   "report.run",
@@ -2377,3 +2380,571 @@ export const timeEntryRejectSchema = z.strictObject({
   version: projectVersion,
   note: z.string().trim().min(3).max(500),
 });
+
+// ----- Recruitment (REC-01): requisitions, candidates, applications, interviews, scorecards, offers.
+// Contact details (email, phone) are returned only to HR (recruit.manage); hiring managers and
+// interviewers see name, current company and experience. Offers carry no salary. "Sent" is a
+// recorded status: no email is dispatched. Every list is paginated: page (default 1),
+// limit (default 25, max 100), and returns { items, total, page, limit, counts }.
+const recruitVersion = z.number().int().positive();
+const recruitNote = z.string().trim().min(3).max(500);
+const recruitPaging = {
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+};
+const recruitPage = {
+  total: z.number().int(),
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+};
+const recruitQ = z.string().trim().max(80).default("");
+export const recruitRequisitionStatusSchema = z.enum([
+  "draft",
+  "pending_approval",
+  "approved",
+  "open",
+  "on_hold",
+  "closed",
+  "rejected",
+  "cancelled",
+]);
+export const recruitEmploymentTypeSchema = z.enum([
+  "full_time",
+  "part_time",
+  "contract",
+  "intern",
+]);
+export const recruitStageSchema = z.enum([
+  "applied",
+  "screening",
+  "interview",
+  "assessment",
+  "offer",
+  "hired",
+  "rejected",
+  "withdrawn",
+]);
+export type RecruitStage = z.infer<typeof recruitStageSchema>;
+export const recruitRejectionReasonSchema = z.enum([
+  "not_a_fit",
+  "salary",
+  "experience",
+  "withdrew",
+  "no_show",
+  "position_filled",
+  "failed_assessment",
+  "other",
+]);
+export const recruitSourceSchema = z.enum([
+  "portal",
+  "referral",
+  "agency",
+  "campaign",
+  "direct",
+  "other",
+]);
+export const recruitInterviewModeSchema = z.enum(["video", "phone", "onsite"]);
+export const recruitInterviewStatusSchema = z.enum([
+  "scheduled",
+  "completed",
+  "cancelled",
+  "no_show",
+]);
+export const recruitRecommendationSchema = z.enum([
+  "strong_yes",
+  "yes",
+  "no",
+  "strong_no",
+]);
+export const recruitOfferStatusSchema = z.enum([
+  "draft",
+  "pending_approval",
+  "approved",
+  "sent",
+  "accepted",
+  "declined",
+  "expired",
+  "withdrawn",
+]);
+const recruitRating = z.number().int().min(1).max(5);
+export const recruitRatingsSchema = z
+  .strictObject({
+    skills: recruitRating.optional(),
+    communication: recruitRating.optional(),
+    problem_solving: recruitRating.optional(),
+    culture_fit: recruitRating.optional(),
+    ownership: recruitRating.optional(),
+  })
+  .refine((v) => Object.values(v).some((r) => r !== undefined), {
+    message: "Rate at least one competency",
+  });
+
+export const recruitRequisitionSchema = z.strictObject({
+  id: z.uuid(),
+  code: z.string(),
+  title: z.string(),
+  departmentId: z.uuid(),
+  departmentName: z.string().nullable(),
+  locationId: z.uuid(),
+  locationName: z.string().nullable(),
+  designationId: z.uuid().nullable(),
+  designationName: z.string().nullable(),
+  headcount: z.number().int(),
+  // Derived from hired applications.
+  filledCount: z.number().int(),
+  applicationCount: z.number().int(),
+  employmentType: recruitEmploymentTypeSchema,
+  hiringManagerId: z.uuid(),
+  hiringManagerName: z.string(),
+  description: z.string().nullable(),
+  targetStart: z.string().nullable(),
+  status: recruitRequisitionStatusSchema,
+  statusNote: z.string().nullable(),
+  requestedByEmployeeId: z.uuid(),
+  approvedBy: z.string().nullable(),
+  approvedAt: z.string().nullable(),
+  closedAt: z.string().nullable(),
+  // A material edit after approval sent it back for approval; its author cannot approve it.
+  needsReapproval: z.boolean(),
+  reapprovalRequestedByEmployeeId: z.uuid().nullable(),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedBy: z.string(),
+  updatedAt: z.string(),
+  // UI flags: what the caller may do now; the database decides again on every write.
+  canEdit: z.boolean(),
+  canSubmit: z.boolean(),
+  canDecide: z.boolean(),
+  canOpen: z.boolean(),
+  canHold: z.boolean(),
+  canClose: z.boolean(),
+  canCancel: z.boolean(),
+  canAddCandidates: z.boolean(),
+});
+export type RecruitRequisition = z.infer<typeof recruitRequisitionSchema>;
+export const recruitRequisitionListSchema = z.strictObject({
+  items: z.array(recruitRequisitionSchema),
+  ...recruitPage,
+  counts: z.record(recruitRequisitionStatusSchema, z.number().int()),
+  canCreate: z.boolean(),
+});
+export type RecruitRequisitionList = z.infer<
+  typeof recruitRequisitionListSchema
+>;
+export const recruitRequisitionQuerySchema = z.strictObject({
+  ...recruitPaging,
+  q: recruitQ,
+  status: recruitRequisitionStatusSchema.optional(),
+});
+const recruitRequisitionFields = {
+  title: z.string().trim().min(3).max(120),
+  departmentId: z.uuid(),
+  locationId: z.uuid(),
+  designationId: z.uuid().nullable().optional(),
+  headcount: z.number().int().min(1).max(50),
+  employmentType: recruitEmploymentTypeSchema,
+  description: z.string().trim().min(1).max(2000).nullable().optional(),
+  targetStart: z.iso.date().nullable().optional(),
+};
+export const recruitRequisitionCreateSchema = z.strictObject({
+  ...recruitRequisitionFields,
+  // HR may name another hiring manager; a manager always raises for themselves.
+  hiringManagerId: z.uuid().nullable().optional(),
+});
+export const recruitRequisitionUpdateSchema = z.strictObject({
+  ...recruitRequisitionFields,
+  version: recruitVersion,
+  hiringManagerId: z.uuid(),
+});
+export const recruitRequisitionActionSchema = z.strictObject({
+  version: recruitVersion,
+  note: recruitNote.optional(),
+});
+export const recruitRequisitionReasonSchema = z.strictObject({
+  version: recruitVersion,
+  note: recruitNote,
+});
+
+export const recruitCandidateSchema = z.strictObject({
+  id: z.uuid(),
+  name: z.string(),
+  // Contact details only for HR: masked (a***@d***.com, ******3210) in lists, in full on the
+  // audited detail read; null for everyone else (and when a key cannot open them).
+  contactVisible: z.boolean(),
+  contactMasked: z.boolean(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  currentCompany: z.string().nullable(),
+  totalExperienceMonths: z.number().int(),
+  source: recruitSourceSchema,
+  referrerEmployeeId: z.uuid().nullable(),
+  consentRecordedAt: z.string().nullable(),
+  retentionUntil: z.string().nullable(),
+  consentWithdrawnAt: z.string().nullable(),
+  anonymised: z.boolean(),
+  // Consent withdrawn or retention date passed: HR may anonymise (nothing runs automatically).
+  purgeEligible: z.boolean(),
+  notes: z.string().nullable(),
+  applicationCount: z.number().int(),
+  version: z.number().int(),
+  createdBy: z.string().nullable(),
+  createdAt: z.string().nullable(),
+  canExtendRetention: z.boolean(),
+  canWithdrawConsent: z.boolean(),
+  canAnonymise: z.boolean(),
+});
+export type RecruitCandidate = z.infer<typeof recruitCandidateSchema>;
+export const recruitCandidateListSchema = z.strictObject({
+  items: z.array(recruitCandidateSchema),
+  ...recruitPage,
+  counts: z.strictObject({
+    total: z.number().int(),
+    purgeEligible: z.number().int(),
+  }),
+});
+export type RecruitCandidateList = z.infer<typeof recruitCandidateListSchema>;
+export const recruitCandidateQuerySchema = z.strictObject({
+  ...recruitPaging,
+  q: recruitQ,
+  source: recruitSourceSchema.optional(),
+});
+export const recruitCandidateCreateSchema = z
+  .strictObject({
+    name: z.string().trim().min(1).max(120),
+    email: z.string().trim().max(254).pipe(z.email()),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^\+?[0-9 ()-]{6,20}$/)
+      .nullable()
+      .optional(),
+    currentCompany: z.string().trim().min(1).max(120).nullable().optional(),
+    totalExperienceMonths: z.number().int().min(0).max(720),
+    source: recruitSourceSchema,
+    referrerEmployeeId: z.uuid().nullable().optional(),
+    // Must be true: candidate details are stored only with recorded consent.
+    consentGiven: z.boolean(),
+    retentionUntil: z.iso.date().nullable().optional(),
+    notes: z.string().trim().min(1).max(1000).nullable().optional(),
+  })
+  .refine((v) => v.source !== "referral" || v.referrerEmployeeId, {
+    message: "Name the referring employee",
+    path: ["referrerEmployeeId"],
+  });
+export const recruitCandidateRetentionSchema = z.strictObject({
+  version: recruitVersion,
+  retentionUntil: z.iso.date(),
+});
+export const recruitCandidateWithdrawConsentSchema = z.strictObject({
+  version: recruitVersion,
+  reason: z.string().trim().min(10).max(500),
+});
+// Irreversible: clears name, contact details, notes, company and referrer.
+export const recruitCandidateAnonymiseSchema = z.strictObject({
+  reason: z.string().trim().min(10).max(500),
+});
+
+export const recruitApplicationSchema = z.strictObject({
+  id: z.uuid(),
+  candidateId: z.uuid(),
+  requisitionId: z.uuid(),
+  requisitionCode: z.string(),
+  requisitionTitle: z.string(),
+  candidateName: z.string(),
+  candidateCompany: z.string().nullable(),
+  candidateExperienceMonths: z.number().int(),
+  source: recruitSourceSchema,
+  stage: recruitStageSchema,
+  previousStage: recruitStageSchema.nullable(),
+  stageEnteredAt: z.string(),
+  daysInStage: z.number().int(),
+  rejectionReason: recruitRejectionReasonSchema.nullable(),
+  // Average of submitted scorecards (1..5); null until one is submitted.
+  ratingAverage: z.number().nullable(),
+  scorecardCount: z.number().int(),
+  version: z.number().int(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  // Stages the caller may move this application to now.
+  allowedStages: z.array(recruitStageSchema),
+  canScheduleInterview: z.boolean(),
+  canMakeOffer: z.boolean(),
+});
+export type RecruitApplication = z.infer<typeof recruitApplicationSchema>;
+export const recruitApplicationListSchema = z.strictObject({
+  items: z.array(recruitApplicationSchema),
+  ...recruitPage,
+  counts: z.record(recruitStageSchema, z.number().int()),
+  canCreate: z.boolean(),
+});
+export type RecruitApplicationList = z.infer<
+  typeof recruitApplicationListSchema
+>;
+export const recruitApplicationQuerySchema = z.strictObject({
+  ...recruitPaging,
+  q: recruitQ,
+  stage: recruitStageSchema.optional(),
+  requisitionId: z.uuid().optional(),
+  source: recruitSourceSchema.optional(),
+});
+export const recruitApplicationCreateSchema = z.strictObject({
+  candidateId: z.uuid(),
+  requisitionId: z.uuid(),
+});
+export const recruitStageChangeSchema = z.strictObject({
+  version: recruitVersion,
+  stage: recruitStageSchema,
+  reason: recruitNote.optional(),
+  rejectionReason: recruitRejectionReasonSchema.optional(),
+});
+export const recruitStageHistorySchema = z.strictObject({
+  fromStage: recruitStageSchema.nullable(),
+  toStage: recruitStageSchema,
+  reason: z.string().nullable(),
+  rejectionReason: recruitRejectionReasonSchema.nullable(),
+  by: z.string(),
+  at: z.string(),
+});
+
+export const recruitInterviewSchema = z.strictObject({
+  id: z.uuid(),
+  applicationId: z.uuid(),
+  requisitionId: z.uuid(),
+  requisitionTitle: z.string(),
+  candidateName: z.string(),
+  roundName: z.string(),
+  scheduledAt: z.string(),
+  durationMinutes: z.number().int(),
+  endsAt: z.string(),
+  mode: recruitInterviewModeSchema,
+  // Shown as text only; links are never fetched.
+  locationOrLink: z.string().nullable(),
+  status: recruitInterviewStatusSchema,
+  statusNote: z.string().nullable(),
+  panel: z.array(
+    z.strictObject({
+      employeeId: z.uuid(),
+      employeeName: z.string(),
+      submitted: z.boolean(),
+    }),
+  ),
+  onPanel: z.boolean(),
+  myScorecardSubmitted: z.boolean(),
+  version: z.number().int(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  canReschedule: z.boolean(),
+  canChangeStatus: z.boolean(),
+  canSubmitScorecard: z.boolean(),
+});
+export type RecruitInterview = z.infer<typeof recruitInterviewSchema>;
+export const recruitInterviewListSchema = z.strictObject({
+  items: z.array(recruitInterviewSchema),
+  ...recruitPage,
+  counts: z.record(recruitInterviewStatusSchema, z.number().int()),
+});
+export type RecruitInterviewList = z.infer<typeof recruitInterviewListSchema>;
+export const recruitInterviewQuerySchema = z.strictObject({
+  ...recruitPaging,
+  q: recruitQ,
+  status: recruitInterviewStatusSchema.optional(),
+  requisitionId: z.uuid().optional(),
+  applicationId: z.uuid().optional(),
+});
+const recruitSlot = {
+  scheduledAt: z.iso.datetime({ offset: true }),
+  durationMinutes: z.number().int().min(15).max(240).multipleOf(15),
+  mode: recruitInterviewModeSchema,
+  locationOrLink: z.string().trim().min(1).max(200).nullable().optional(),
+};
+export const recruitInterviewCreateSchema = z.strictObject({
+  applicationId: z.uuid(),
+  roundName: z.string().trim().min(3).max(60),
+  ...recruitSlot,
+  panel: z
+    .array(z.uuid())
+    .min(1)
+    .max(6)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "List each interviewer once",
+    }),
+});
+export const recruitInterviewRescheduleSchema = z.strictObject({
+  version: recruitVersion,
+  ...recruitSlot,
+});
+export const recruitInterviewStatusChangeSchema = z.strictObject({
+  version: recruitVersion,
+  status: z.enum(["completed", "cancelled", "no_show"]),
+  note: recruitNote.optional(),
+});
+
+export const recruitScorecardSchema = z.strictObject({
+  id: z.uuid(),
+  interviewId: z.uuid(),
+  applicationId: z.uuid(),
+  interviewerEmployeeId: z.uuid(),
+  interviewerName: z.string(),
+  ratings: z.record(z.string(), z.number().int()),
+  overall: z.number(),
+  recommendation: recruitRecommendationSchema,
+  comment: z.string().nullable(),
+  submittedAt: z.string(),
+  mine: z.boolean(),
+});
+export type RecruitScorecard = z.infer<typeof recruitScorecardSchema>;
+export const recruitScorecardListSchema = z.strictObject({
+  items: z.array(recruitScorecardSchema),
+  // True while the caller is an interviewer who has not submitted their own scorecard for
+  // this application: other interviewers' scorecards stay hidden until then.
+  blind: z.boolean(),
+});
+export const recruitScorecardCreateSchema = z.strictObject({
+  ratings: recruitRatingsSchema,
+  recommendation: recruitRecommendationSchema,
+  comment: z.string().trim().min(1).max(1000).nullable().optional(),
+});
+
+export const recruitOfferSchema = z.strictObject({
+  id: z.uuid(),
+  applicationId: z.uuid(),
+  requisitionId: z.uuid(),
+  candidateId: z.uuid(),
+  candidateName: z.string(),
+  title: z.string(),
+  departmentId: z.uuid(),
+  locationId: z.uuid(),
+  designationId: z.uuid().nullable(),
+  managerId: z.uuid(),
+  managerName: z.string(),
+  proposedJoiningDate: z.string(),
+  status: recruitOfferStatusSchema,
+  statusNote: z.string().nullable(),
+  createdBy: z.string(),
+  approvedBy: z.string().nullable(),
+  approvedAt: z.string().nullable(),
+  // Recorded only: no offer email is sent.
+  sentAt: z.string().nullable(),
+  respondedOn: z.string().nullable(),
+  candidateCaseId: z.uuid().nullable(),
+  version: z.number().int(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  canSubmit: z.boolean(),
+  canApprove: z.boolean(),
+  canSend: z.boolean(),
+  canRecordResponse: z.boolean(),
+  canWithdraw: z.boolean(),
+});
+export type RecruitOffer = z.infer<typeof recruitOfferSchema>;
+export const recruitOfferListSchema = z.strictObject({
+  items: z.array(recruitOfferSchema),
+  ...recruitPage,
+  counts: z.record(recruitOfferStatusSchema, z.number().int()),
+});
+export type RecruitOfferList = z.infer<typeof recruitOfferListSchema>;
+export const recruitOfferQuerySchema = z.strictObject({
+  ...recruitPaging,
+  q: recruitQ,
+  status: recruitOfferStatusSchema.optional(),
+  requisitionId: z.uuid().optional(),
+});
+export const recruitOfferCreateSchema = z.strictObject({
+  applicationId: z.uuid(),
+  proposedJoiningDate: z.iso.date(),
+  // Prefilled from the requisition when omitted.
+  departmentId: z.uuid().nullable().optional(),
+  locationId: z.uuid().nullable().optional(),
+  designationId: z.uuid().nullable().optional(),
+  managerId: z.uuid().nullable().optional(),
+});
+export const recruitOfferActionSchema = z.strictObject({
+  version: recruitVersion,
+  note: recruitNote.optional(),
+});
+export const recruitOfferWithdrawSchema = z.strictObject({
+  version: recruitVersion,
+  note: recruitNote,
+});
+export const recruitOfferDeclineSchema = z.strictObject({
+  version: recruitVersion,
+  respondedOn: z.iso.date(),
+  // true records the offer as expired rather than declined.
+  expired: z.boolean().default(false),
+  note: recruitNote.optional(),
+});
+export const recruitOfferAcceptSchema = z.strictObject({
+  version: recruitVersion,
+  respondedOn: z.iso.date(),
+  // The pre-boarding preview accepts only synthetic @anvi.example addresses.
+  preboardingEmail: z
+    .string()
+    .trim()
+    .max(254)
+    .pipe(z.email())
+    .refine((v) => v.toLowerCase().endsWith("@anvi.example"), {
+      message:
+        "Use a synthetic @anvi.example address for the pre-boarding preview",
+    }),
+});
+export const recruitApplicationDetailSchema = z.strictObject({
+  application: recruitApplicationSchema,
+  history: z.array(recruitStageHistorySchema),
+  interviews: z.array(recruitInterviewSchema),
+  scorecards: recruitScorecardListSchema,
+  // HR only; empty for hiring managers.
+  offers: z.array(recruitOfferSchema),
+});
+export type RecruitApplicationDetail = z.infer<
+  typeof recruitApplicationDetailSchema
+>;
+export const recruitOfferAcceptedSchema = z.strictObject({
+  offer: recruitOfferSchema,
+  application: recruitApplicationSchema,
+  candidateCaseId: z.uuid(),
+  preboarding: z.string(),
+});
+export type RecruitOfferAccepted = z.infer<typeof recruitOfferAcceptedSchema>;
+
+export const recruitFunnelQuerySchema = z.strictObject({
+  requisitionId: z.uuid().optional(),
+});
+// Aggregates only: no names or contact details.
+export const recruitFunnelSchema = z.strictObject({
+  requisitionId: z.uuid().nullable(),
+  totalApplications: z.number().int(),
+  stages: z.array(
+    z.strictObject({
+      stage: recruitStageSchema,
+      current: z.number().int(),
+      // Applications that ever reached this stage.
+      reached: z.number().int(),
+      conversionPercent: z.number().nullable(),
+      averageDaysInStage: z.number().nullable(),
+    }),
+  ),
+  sources: z.array(
+    z.strictObject({ source: recruitSourceSchema, count: z.number().int() }),
+  ),
+  requisitions: z.strictObject({
+    open: z.number().int(),
+    onHold: z.number().int(),
+    pendingApproval: z.number().int(),
+    openHeadcount: z.number().int(),
+    filled: z.number().int(),
+  }),
+  perRequisition: z.array(
+    z.strictObject({
+      requisitionId: z.uuid(),
+      code: z.string(),
+      title: z.string(),
+      status: recruitRequisitionStatusSchema,
+      headcount: z.number().int(),
+      filledCount: z.number().int(),
+      applications: z.number().int(),
+    }),
+  ),
+});
+export type RecruitFunnel = z.infer<typeof recruitFunnelSchema>;

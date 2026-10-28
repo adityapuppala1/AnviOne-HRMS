@@ -7,12 +7,18 @@ import {
   Req,
   Res,
   ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import type { Response } from "express";
 import { z } from "zod";
 import { roleSchema } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { parse } from "./http";
+import {
+  DEMO_ISSUER,
+  demoPersonas,
+  demoPersonaKeySchema,
+} from "./demo-personas";
 import {
   OidcService,
   cookieName,
@@ -31,6 +37,12 @@ function signInFailed(req: AppRequest, method: string, reason: string) {
       client: req.ip,
       requestId: req.requestId,
     }),
+  );
+}
+
+function loopback(req: AppRequest) {
+  return ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
+    req.socket.remoteAddress ?? "",
   );
 }
 
@@ -54,23 +66,51 @@ export class SessionController {
       demo: this.store.config.AUTH_MODE === "demo",
     };
   }
+  // Demo personas for the sign-in screen: names and roles come from the live
+  // bindings, so a persona the script has not bound yet is simply left out.
+  @Get("api/v1/auth/demo/personas") async demoPersonaList(
+    @Req() req: AppRequest,
+  ) {
+    if (this.store.config.AUTH_MODE !== "demo" || !loopback(req))
+      throw new NotFoundException();
+    const items = [];
+    for (const persona of demoPersonas) {
+      try {
+        const actor = await this.store.resolveIdentity(
+          DEMO_ISSUER,
+          persona.subject,
+        );
+        items.push({
+          key: persona.key,
+          name: actor.name,
+          title: persona.title,
+          roles: actor.roles,
+          summary: persona.summary,
+        });
+      } catch {
+        /* Not bound in this database: omit it. */
+      }
+    }
+    return items;
+  }
   @Post("api/v1/auth/demo") async demo(
     @Req() req: AppRequest,
+    @Body() body: unknown,
     @Res({ passthrough: true }) res: Response,
   ) {
     assertOrigin(this.store, req);
-    if (
-      this.store.config.AUTH_MODE !== "demo" ||
-      !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
-        req.socket.remoteAddress ?? "",
-      )
-    ) {
+    if (this.store.config.AUTH_MODE !== "demo" || !loopback(req)) {
       signInFailed(req, "demo", "not_allowed");
       throw new ForbiddenException("Demo sign-in is unavailable.");
     }
+    // Without a body this stays the original single demo identity (Maya).
+    const { persona = "maya" } = parse(
+      z.object({ persona: demoPersonaKeySchema.optional() }).strict(),
+      body ?? {},
+    );
     const actor = await this.store.resolveIdentity(
-      "urn:anvione:local-demo",
-      "maya-demo",
+      DEMO_ISSUER,
+      demoPersonas.find((p) => p.key === persona)!.subject,
     );
     setSessionCookie(
       this.store,

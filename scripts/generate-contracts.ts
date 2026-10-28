@@ -103,6 +103,39 @@ import {
   timeEntryWithdrawSchema,
   timeEntryApproveSchema,
   timeEntryRejectSchema,
+  recruitRequisitionSchema,
+  recruitRequisitionListSchema,
+  recruitRequisitionCreateSchema,
+  recruitRequisitionUpdateSchema,
+  recruitRequisitionActionSchema,
+  recruitRequisitionReasonSchema,
+  recruitCandidateSchema,
+  recruitCandidateListSchema,
+  recruitCandidateCreateSchema,
+  recruitCandidateRetentionSchema,
+  recruitCandidateWithdrawConsentSchema,
+  recruitCandidateAnonymiseSchema,
+  recruitApplicationSchema,
+  recruitApplicationListSchema,
+  recruitApplicationDetailSchema,
+  recruitApplicationCreateSchema,
+  recruitStageChangeSchema,
+  recruitInterviewSchema,
+  recruitInterviewListSchema,
+  recruitInterviewCreateSchema,
+  recruitInterviewRescheduleSchema,
+  recruitInterviewStatusChangeSchema,
+  recruitScorecardListSchema,
+  recruitScorecardCreateSchema,
+  recruitOfferSchema,
+  recruitOfferListSchema,
+  recruitOfferCreateSchema,
+  recruitOfferActionSchema,
+  recruitOfferWithdrawSchema,
+  recruitOfferDeclineSchema,
+  recruitOfferAcceptSchema,
+  recruitOfferAcceptedSchema,
+  recruitFunnelSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -1075,6 +1108,286 @@ Object.assign(spec.paths, {
       timeEntryRejectSchema,
       timeEntrySchema,
     ),
+  },
+});
+// Recruitment (REC-01). Every list: page (default 1), limit (default 25, max 100), q, filters.
+const recruitList = (...filters: string[]) => [
+  {
+    name: "page",
+    in: "query",
+    schema: { type: "integer", minimum: 1, default: 1 },
+  },
+  {
+    name: "limit",
+    in: "query",
+    schema: { type: "integer", minimum: 1, maximum: 100, default: 25 },
+  },
+  { name: "q", in: "query", schema: { type: "string", maxLength: 80 } },
+  ...filters.map((name) => ({
+    name,
+    in: "query",
+    schema: { type: "string" },
+  })),
+];
+const requisitionSteps: Record<string, [string, z.ZodType]> = {
+  submit: [
+    "Send a draft for approval (requester, hiring manager or HR)",
+    recruitRequisitionActionSchema,
+  ],
+  approve: [
+    "Approve (HR who is neither the requester nor the hiring manager)",
+    recruitRequisitionActionSchema,
+  ],
+  reject: [
+    "Reject with a reason (HR who is neither the requester nor the hiring manager)",
+    recruitRequisitionReasonSchema,
+  ],
+  open: [
+    "Open an approved or held requisition (HR)",
+    recruitRequisitionActionSchema,
+  ],
+  hold: [
+    "Put an open requisition on hold (HR)",
+    recruitRequisitionActionSchema,
+  ],
+  close: ["Close with a reason (HR)", recruitRequisitionReasonSchema],
+  cancel: [
+    "Cancel a draft or pending requisition (requester or HR) or an approved one (HR)",
+    recruitRequisitionActionSchema,
+  ],
+};
+const offerSteps: Record<string, [string, z.ZodType]> = {
+  submit: ["Send a draft offer for approval (HR)", recruitOfferActionSchema],
+  approve: [
+    "Approve an offer (HR other than its creator)",
+    recruitOfferActionSchema,
+  ],
+  send: [
+    "Record that the approved offer was sent (no email is dispatched)",
+    recruitOfferActionSchema,
+  ],
+  withdraw: [
+    "Withdraw an open offer with a reason (HR)",
+    recruitOfferWithdrawSchema,
+  ],
+};
+Object.assign(spec.paths, {
+  "/recruit/requisitions": {
+    get: {
+      ...read(
+        "Requisitions the caller may see (HR all; hiring managers and requesters their own), paginated with status counts",
+        recruitRequisitionListSchema,
+      ),
+      parameters: recruitList("status"),
+    },
+    post: write(
+      "Raise a draft requisition; a manager raises for themselves, HR may name the hiring manager",
+      recruitRequisitionCreateSchema,
+      recruitRequisitionSchema,
+    ),
+  },
+  "/recruit/requisitions/{id}": {
+    parameters: idParameter,
+    get: read("One visible requisition", recruitRequisitionSchema),
+    put: write(
+      "Edit a draft (requester or HR) or adjust an approved or open one (HR) with its version",
+      recruitRequisitionUpdateSchema,
+      recruitRequisitionSchema,
+      "200",
+    ),
+  },
+  ...Object.fromEntries(
+    Object.entries(requisitionSteps).map(([name, [summary, input]]) => [
+      `/recruit/requisitions/{id}/${name}`,
+      {
+        parameters: idParameter,
+        post: write(summary, input, recruitRequisitionSchema),
+      },
+    ]),
+  ),
+  "/recruit/candidates": {
+    get: {
+      ...read(
+        "Candidates with contact details (HR only), paginated",
+        recruitCandidateListSchema,
+      ),
+      parameters: recruitList("source"),
+    },
+    post: write(
+      "Record a candidate with consent; email and phone are sealed; a duplicate email is refused (409)",
+      recruitCandidateCreateSchema,
+      recruitCandidateSchema,
+    ),
+  },
+  "/recruit/candidates/{id}": {
+    parameters: idParameter,
+    get: read(
+      "A candidate: HR sees contact details; hiring managers a limited card",
+      recruitCandidateSchema,
+    ),
+  },
+  "/recruit/candidates/{id}/extend-retention": {
+    parameters: idParameter,
+    post: write(
+      "Extend how long a candidate's details are kept (HR)",
+      recruitCandidateRetentionSchema,
+      recruitCandidateSchema,
+    ),
+  },
+  "/recruit/candidates/{id}/withdraw-consent": {
+    parameters: idParameter,
+    post: write(
+      "Record that the candidate withdrew consent (HR, reason of 10+ characters); blocks new applications and interviews",
+      recruitCandidateWithdrawConsentSchema,
+      recruitCandidateSchema,
+    ),
+  },
+  "/recruit/candidates/{id}/anonymise": {
+    parameters: idParameter,
+    post: write(
+      "Irreversibly clear a candidate's personal details (HR; after consent withdrawal or retention, no open application)",
+      recruitCandidateAnonymiseSchema,
+      recruitCandidateSchema,
+    ),
+  },
+  "/recruit/applications": {
+    get: {
+      ...read(
+        "Applications on requisitions the caller follows, paginated with stage counts",
+        recruitApplicationListSchema,
+      ),
+      parameters: recruitList("stage", "requisitionId", "source"),
+    },
+    post: write(
+      "Add a candidate to an open requisition (HR)",
+      recruitApplicationCreateSchema,
+      recruitApplicationSchema,
+    ),
+  },
+  "/recruit/applications/{id}": {
+    parameters: idParameter,
+    get: read(
+      "An application with stage history, interviews, visible scorecards and (HR) offers",
+      recruitApplicationDetailSchema,
+    ),
+  },
+  "/recruit/applications/{id}/stage": {
+    parameters: idParameter,
+    post: write(
+      "Move an application's stage (forward by HR or the hiring manager; back, withdraw and reopen by HR with a reason)",
+      recruitStageChangeSchema,
+      recruitApplicationSchema,
+    ),
+  },
+  "/recruit/interviews": {
+    get: {
+      ...read(
+        "Interviews the caller manages or sits on, paginated with status counts",
+        recruitInterviewListSchema,
+      ),
+      parameters: recruitList("status", "requisitionId", "applicationId"),
+    },
+    post: write(
+      "Schedule an interview with a panel of 1 to 6 current employees; overlapping bookings are refused (409)",
+      recruitInterviewCreateSchema,
+      recruitInterviewSchema,
+    ),
+  },
+  "/recruit/interviews/mine": {
+    get: {
+      ...read(
+        "Interviews I am on the panel for, paginated",
+        recruitInterviewListSchema,
+      ),
+      parameters: recruitList("status", "requisitionId", "applicationId"),
+    },
+  },
+  "/recruit/interviews/{id}": {
+    parameters: idParameter,
+    get: read("One visible interview", recruitInterviewSchema),
+    put: write(
+      "Reschedule a scheduled interview with its version",
+      recruitInterviewRescheduleSchema,
+      recruitInterviewSchema,
+      "200",
+    ),
+  },
+  "/recruit/interviews/{id}/status": {
+    parameters: idParameter,
+    post: write(
+      "Mark an interview completed, cancelled (with a reason) or no-show",
+      recruitInterviewStatusChangeSchema,
+      recruitInterviewSchema,
+    ),
+  },
+  "/recruit/interviews/{id}/scorecards": {
+    parameters: idParameter,
+    get: read(
+      "Scorecards visible to the caller (blind until they submit their own)",
+      recruitScorecardListSchema,
+    ),
+  },
+  "/recruit/interviews/{id}/scorecard": {
+    parameters: idParameter,
+    post: write(
+      "Submit my scorecard once (panel members, after the interview starts)",
+      recruitScorecardCreateSchema,
+      recruitScorecardListSchema,
+    ),
+  },
+  "/recruit/offers": {
+    get: {
+      ...read(
+        "Offers (HR), paginated with status counts",
+        recruitOfferListSchema,
+      ),
+      parameters: recruitList("status", "requisitionId"),
+    },
+    post: write(
+      "Draft an offer (HR); prefilled from the requisition; no salary is stored",
+      recruitOfferCreateSchema,
+      recruitOfferSchema,
+    ),
+  },
+  ...Object.fromEntries(
+    Object.entries(offerSteps).map(([name, [summary, input]]) => [
+      `/recruit/offers/{id}/${name}`,
+      {
+        parameters: idParameter,
+        post: write(summary, input, recruitOfferSchema),
+      },
+    ]),
+  ),
+  "/recruit/offers/{id}/accept": {
+    parameters: idParameter,
+    post: write(
+      "Record the candidate's acceptance: marks the application hired and creates a draft pre-boarding record (HR)",
+      recruitOfferAcceptSchema,
+      recruitOfferAcceptedSchema,
+    ),
+  },
+  "/recruit/offers/{id}/decline": {
+    parameters: idParameter,
+    post: write(
+      "Record a decline or expiry (HR)",
+      recruitOfferDeclineSchema,
+      recruitOfferSchema,
+    ),
+  },
+  "/recruit/funnel": {
+    get: {
+      ...read(
+        "Aggregate funnel for followed requisitions: stage counts, conversion, days in stage, sources",
+        recruitFunnelSchema,
+      ),
+      parameters: [
+        {
+          name: "requisitionId",
+          in: "query",
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+    },
   },
 });
 const candidateSpec = {

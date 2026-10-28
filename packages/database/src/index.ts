@@ -44,7 +44,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.profile_scope',$17,true),
     set_config('app.report_scope',$18,true),
     set_config('app.branding_scope',$19,true),
-    set_config('app.project_scope',$20,true)`,
+    set_config('app.project_scope',$20,true),
+    set_config('app.recruit_scope',$21,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -91,6 +92,12 @@ export async function setContext(client: PoolClient, actor: Principal) {
       // Owners (team) and HR (entity) manage; members see only their own projects.
       scopeFor(actor, "project.manage") ??
         scopeFor(actor, "project.self") ??
+        "none",
+      // HR (entity) manages recruiting; hiring managers (team) their own requisitions;
+      // interviewers (self) only the interviews they sit on.
+      scopeFor(actor, "recruit.manage") ??
+        scopeFor(actor, "recruit.request") ??
+        scopeFor(actor, "recruit.interview") ??
         "none",
     ],
   );

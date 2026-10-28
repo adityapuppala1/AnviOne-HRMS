@@ -35,6 +35,9 @@ const schema = z.object({
         new Set(keys.map((k) => k.id)).size === keys.length,
     )
     .optional(),
+  // Key id (from the profile key ring) for recruitment email-hash duplicate detection.
+  // Defaults to the oldest key in the ring; `pnpm recruit:rehash` moves hashes after a change.
+  RECRUIT_HASH_KEY_ID: z.coerce.number().int().min(0).max(255).optional(),
   // Same variable the worker reads; optional here, used only for readiness reporting.
   PROFILE_APPLY_DUE_INTERVAL_MS: z.coerce.number().int().min(0).optional(),
   CANDIDATE_ORIGIN: z.url().default("http://127.0.0.2:5174"),

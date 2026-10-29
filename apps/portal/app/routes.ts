@@ -29,6 +29,7 @@ export default [
     route("projects", "routes/projects.tsx"),
     route("recruitment", "routes/recruitment.tsx"),
     route("performance", "routes/performance.tsx"),
+    route("helpdesk", "routes/helpdesk.tsx"),
     route("configuration", "routes/configuration.tsx"),
     route("preferences", "routes/preferences.tsx"),
     route("settings", "routes/settings.tsx"),

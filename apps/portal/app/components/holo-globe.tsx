@@ -228,16 +228,18 @@ export function HoloGlobe({
 }) {
   const { reduceMotion } = usePreferences();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // The provider only learns the system setting after mount, so read it
+  // directly too. Using the combined value as the effect dependency means the
+  // provider catching up does not restart the globe and repaint it.
+  const still =
+    reduceMotion ||
+    (typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-    // The provider only learns the system setting after mount, so read it
-    // directly too; otherwise the first effect run would animate briefly.
-    const still =
-      reduceMotion ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const state: State = {
       spin: START_SPIN,
       velocity: 0,
@@ -363,7 +365,7 @@ export function HoloGlobe({
       canvas.removeEventListener("pointerup", up);
       canvas.removeEventListener("pointercancel", up);
     };
-  }, [pins, reduceMotion]);
+  }, [pins, still]);
 
   return (
     <canvas

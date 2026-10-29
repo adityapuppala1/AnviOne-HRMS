@@ -27,6 +27,7 @@ import { Table as TableIcon } from "@phosphor-icons/react/dist/csr/Table";
 import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { Target } from "@phosphor-icons/react/dist/csr/Target";
+import { Lifebuoy } from "@phosphor-icons/react/dist/csr/Lifebuoy";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
@@ -267,6 +268,15 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("performance.self") ||
         me.permissions.includes("performance.review") ||
         me.permissions.includes("performance.manage"),
+    },
+    {
+      to: "/helpdesk",
+      label: copy.nav.helpdesk,
+      icon: Lifebuoy,
+      visible:
+        me.permissions.includes("helpdesk.self") ||
+        me.permissions.includes("helpdesk.agent") ||
+        me.permissions.includes("helpdesk.manage"),
     },
     {
       to: "/reports",

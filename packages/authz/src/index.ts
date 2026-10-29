@@ -26,6 +26,7 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "project.self": "self",
     "recruit.interview": "self",
     "performance.self": "self",
+    "helpdesk.self": "self",
     "profile.self": "self",
   },
   manager: {
@@ -50,6 +51,8 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     // Managers set goals for and review their direct reports; HR runs cycles and finalises.
     "performance.self": "self",
     "performance.review": "team",
+    // Managers raise and see only their own helpdesk cases, never their team's.
+    "helpdesk.self": "self",
     "insights.read": "team",
     "profile.self": "self",
     // Managers report on their team on screen only; exporting is HR's.
@@ -72,6 +75,9 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "project.manage": "entity",
     "recruit.manage": "entity",
     "performance.manage": "entity",
+    // HR works the helpdesk queue and manages categories, service targets and articles.
+    "helpdesk.agent": "entity",
+    "helpdesk.manage": "entity",
     "profile.review": "entity",
     "report.run": "entity",
     "report.export": "entity",
@@ -120,6 +126,12 @@ export const permissionDescriptions: Record<Permission, string> = {
     "Set goals for my direct reports and submit manager reviews for the people I review",
   "performance.manage":
     "Run review cycles, see every goal and review, and finalise reviews (never my own)",
+  "helpdesk.self":
+    "Raise my own helpdesk cases, follow, reopen, close and rate them, and read published articles",
+  "helpdesk.agent":
+    "Work helpdesk cases (never my own): assign to myself, reply, add internal notes, resolve",
+  "helpdesk.manage":
+    "Assign any case, see confidential cases, and manage categories, service targets and articles",
   "profile.self": "Read and request changes to my own profile",
   "profile.review": "Review profile change requests",
   "report.run": "Run reports on screen",

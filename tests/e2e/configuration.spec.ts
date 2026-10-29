@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./support/test";
 import AxeBuilder from "@axe-core/playwright";
 
 const tags = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];

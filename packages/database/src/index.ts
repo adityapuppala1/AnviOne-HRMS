@@ -46,7 +46,8 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.branding_scope',$19,true),
     set_config('app.project_scope',$20,true),
     set_config('app.recruit_scope',$21,true),
-    set_config('app.perf_scope',$22,true)`,
+    set_config('app.perf_scope',$22,true),
+    set_config('app.helpdesk_scope',$23,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -106,6 +107,15 @@ export async function setContext(client: PoolClient, actor: Principal) {
         scopeFor(actor, "performance.review") ??
         scopeFor(actor, "performance.self") ??
         "none",
+      // manage: every case including confidential ones; agent: the non-confidential queue and
+      // confidential cases assigned to them; self: only their own cases.
+      scopeFor(actor, "helpdesk.manage")
+        ? "manage"
+        : scopeFor(actor, "helpdesk.agent")
+          ? "agent"
+          : scopeFor(actor, "helpdesk.self")
+            ? "self"
+            : "none",
     ],
   );
 }

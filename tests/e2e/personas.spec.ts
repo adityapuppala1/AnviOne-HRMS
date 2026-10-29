@@ -1,47 +1,18 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/test";
 import AxeBuilder from "@axe-core/playwright";
-import { createClient } from "redis";
 import { loginAs, personas, type PersonaKey } from "./support/personas";
-
-// Six sign-ins plus their config reads would spend most of the per-minute auth
-// budget, so clear the local rate-limit counters first (local Valkey only).
-async function resetRateLimits() {
-  try {
-    process.loadEnvFile(".env");
-  } catch {
-    /* No local .env: nothing to reset. */
-  }
-  const url = process.env.RATE_LIMIT_URL;
-  if (!url) return;
-  const target = new URL(url);
-  if (target.hostname !== "127.0.0.1" || target.port !== "56379") return;
-  const client = createClient({ url });
-  await client.connect();
-  try {
-    for await (const keys of client.scanIterator({
-      MATCH: "anvione:rl:*",
-      COUNT: 200,
-    }))
-      if (keys.length) await client.del(keys);
-  } finally {
-    await client.quit();
-  }
-}
-// Before and after, so the specs that follow keep their own budget too.
-test.beforeAll(resetRateLimits);
-test.afterAll(resetRateLimits);
 
 const cases: Record<
   PersonaKey,
   { shown: string[]; hidden: string[]; denied: [string, string] }
 > = {
   maya: {
-    shown: ["Organization", "Reports", "Exit", "Performance"],
+    shown: ["Organization", "Reports", "Exit", "Performance", "Helpdesk"],
     hidden: ["Activity log"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
   },
   employee: {
-    shown: ["Leave", "Expenses", "My details", "Performance"],
+    shown: ["Leave", "Expenses", "My details", "Performance", "Helpdesk"],
     hidden: [
       "Reports",
       "Organization",
@@ -52,7 +23,7 @@ const cases: Record<
     denied: ["/reports", "Reports are not available to your role."],
   },
   manager: {
-    shown: ["Team explorer", "Approvals", "Reports", "Performance"],
+    shown: ["Team explorer", "Approvals", "Reports", "Performance", "Helpdesk"],
     hidden: [
       "Organization",
       "Candidate intake",
@@ -71,6 +42,7 @@ const cases: Record<
       "Exit",
       "Candidate intake",
       "Performance",
+      "Helpdesk",
     ],
     hidden: ["Activity log", "Workspace settings"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
@@ -83,6 +55,7 @@ const cases: Record<
       "Leave",
       "Organization",
       "Performance",
+      "Helpdesk",
     ],
     denied: ["/reports", "Reports are not available to your role."],
   },
@@ -94,6 +67,7 @@ const cases: Record<
       "Activity log",
       "Leave",
       "Performance",
+      "Helpdesk",
     ],
     denied: [
       "/organization",

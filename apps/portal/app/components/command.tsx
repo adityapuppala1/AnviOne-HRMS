@@ -23,6 +23,7 @@ import { SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizon
 import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { Target } from "@phosphor-icons/react/dist/csr/Target";
+import { Lifebuoy } from "@phosphor-icons/react/dist/csr/Lifebuoy";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
@@ -100,6 +101,14 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/performance")}>
             <Target size={18} />
             {copy.nav.performance}
+          </Button>
+        )}
+        {(me.permissions.includes("helpdesk.self") ||
+          me.permissions.includes("helpdesk.agent") ||
+          me.permissions.includes("helpdesk.manage")) && (
+          <Button variant="ghost" onPress={() => go("/helpdesk")}>
+            <Lifebuoy size={18} />
+            {copy.nav.helpdesk}
           </Button>
         )}
         {me.permissions.includes("report.run") && (

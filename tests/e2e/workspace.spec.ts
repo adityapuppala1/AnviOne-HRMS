@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/test";
 import AxeBuilder from "@axe-core/playwright";
 async function login(page: import("@playwright/test").Page) {
   if (!page.url().endsWith("/login")) await page.goto("/login");

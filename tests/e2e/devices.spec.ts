@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./support/test";
 
 // Every screen must adapt to phones, tablets and desktops: no sideways scroll,
 // no clipped content, and touch targets that meet WCAG 2.2 AA (24 CSS px).
@@ -29,6 +29,7 @@ const ROUTES = [
   "/projects",
   "/recruitment",
   "/performance",
+  "/helpdesk",
   "/details",
   "/chart",
   "/reports",

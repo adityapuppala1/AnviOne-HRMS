@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/test";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import pg from "pg";

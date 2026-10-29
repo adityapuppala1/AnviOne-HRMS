@@ -71,6 +71,13 @@ import {
   perfCycleListSchema,
   perfReviewListSchema,
   perfReviewDetailSchema,
+  hdCaseListSchema,
+  hdCaseDetailSchema,
+  hdCategoryListSchema,
+  hdSlaListSchema,
+  hdAgentListSchema,
+  hdArticleListSchema,
+  hdSuggestionListSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -705,6 +712,79 @@ export const usePerfReview = (id: string | null) =>
     enabled: Boolean(id),
     queryFn: ({ signal }) =>
       perfGet(`reviews/${id}`, "", perfReviewDetailSchema, signal),
+  });
+// Helpdesk (HLP-01). Every key starts with "hd" so one invalidation refreshes all tabs.
+const hdGet = <T>(
+  path: string,
+  query: string,
+  schema: z.ZodType<T>,
+  signal?: AbortSignal,
+) => api(`/helpdesk/${path}${query ? `?${query}` : ""}`, schema, { signal });
+export const useHdCases = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["hd", "cases", query],
+    staleTime: 0,
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) => hdGet("cases", query, hdCaseListSchema, signal),
+  });
+export const useHdCase = (id: string | null) =>
+  useQuery({
+    queryKey: ["hd", "case", id],
+    // Other people reply while this is closed, so always look again on opening.
+    staleTime: 0,
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      hdGet(`cases/${id}`, "", hdCaseDetailSchema, signal),
+  });
+export const useHdCategories = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["hd", "categories"],
+    enabled,
+    queryFn: ({ signal }) =>
+      hdGet("categories", "", hdCategoryListSchema, signal),
+  });
+export const useHdSla = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["hd", "sla"],
+    enabled,
+    queryFn: ({ signal }) => hdGet("sla", "", hdSlaListSchema, signal),
+  });
+export const useHdAgents = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["hd", "agents"],
+    enabled,
+    retry: false,
+    queryFn: ({ signal }) => hdGet("agents", "", hdAgentListSchema, signal),
+  });
+export const useHdArticles = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["hd", "articles", query],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      hdGet("articles", query, hdArticleListSchema, signal),
+  });
+export const useHdSuggestions = (
+  enabled: boolean,
+  categoryId: string,
+  text: string,
+) =>
+  useQuery({
+    queryKey: ["hd", "suggest", categoryId, text],
+    enabled,
+    retry: false,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      hdGet(
+        "articles/suggest",
+        new URLSearchParams({
+          q: text,
+          ...(categoryId ? { categoryId } : {}),
+        }).toString(),
+        hdSuggestionListSchema,
+        signal,
+      ),
   });
 export const usePeopleSearch = (term: string) =>
   useQuery({

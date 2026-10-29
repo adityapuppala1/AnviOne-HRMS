@@ -47,6 +47,9 @@ export const permissionSchema = z.enum([
   "performance.self",
   "performance.review",
   "performance.manage",
+  "helpdesk.self",
+  "helpdesk.agent",
+  "helpdesk.manage",
   "profile.self",
   "profile.review",
   "report.run",
@@ -3313,3 +3316,5 @@ export const perfReviewFinaliseSchema = z.strictObject({
   finalRating: perfRating,
   reason: z.string().trim().min(10).max(500),
 });
+
+export * from "./helpdesk";

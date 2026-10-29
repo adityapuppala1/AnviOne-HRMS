@@ -158,6 +158,29 @@ import {
   perfReviewDetailSchema,
   perfReviewSubmitSchema,
   perfReviewFinaliseSchema,
+  hdAgentListSchema,
+  hdArticleActionSchema,
+  hdArticleCreateSchema,
+  hdArticleLinkSchema,
+  hdArticleListSchema,
+  hdArticleSchema,
+  hdArticleUpdateSchema,
+  hdAssignSchema,
+  hdCaseActionSchema,
+  hdCaseCloseSchema,
+  hdCaseCreateSchema,
+  hdCaseDetailSchema,
+  hdCaseListSchema,
+  hdCategoryCreateSchema,
+  hdCategoryListSchema,
+  hdCategorySchema,
+  hdCategoryUpdateSchema,
+  hdCommentCreateSchema,
+  hdConfidentialSetSchema,
+  hdPrioritySetSchema,
+  hdSlaListSchema,
+  hdSlaUpdateSchema,
+  hdSuggestionListSchema,
 } from "../packages/contracts/src/index";
 const schema = (value: z.ZodType) =>
   z.toJSONSchema(value, { target: "draft-2020-12", unrepresentable: "throw" });
@@ -1624,6 +1647,210 @@ Object.assign(spec.paths, {
       perfReviewDetailSchema,
     ),
   },
+});
+// HR helpdesk (HLP-01). Lists: page (default 1), limit (default 25, max 100), q, filters.
+// Service targets are wall-clock hours; suggestions are keyword matches, not AI.
+const hdCaseStepPath = (summary: string) => ({
+  parameters: idParameter,
+  post: write(summary, hdCaseActionSchema, hdCaseDetailSchema),
+});
+Object.assign(spec.paths, {
+  "/helpdesk/categories": {
+    get: read(
+      "Helpdesk categories (active ones; HR also sees retired ones)",
+      hdCategoryListSchema,
+    ),
+    post: write(
+      "Add a category (HR); a confidential category makes its cases confidential",
+      hdCategoryCreateSchema,
+      hdCategorySchema,
+    ),
+  },
+  "/helpdesk/categories/{id}": {
+    parameters: idParameter,
+    put: write(
+      "Rename, retire or flag a category (HR)",
+      hdCategoryUpdateSchema,
+      hdCategorySchema,
+      "200",
+    ),
+  },
+  "/helpdesk/sla": {
+    get: read(
+      "Service targets per priority in wall-clock hours (no business hours or pause)",
+      hdSlaListSchema,
+    ),
+  },
+  "/helpdesk/sla/{priority}": {
+    parameters: [
+      {
+        name: "priority",
+        in: "path",
+        required: true,
+        schema: { type: "string", enum: ["low", "normal", "high", "urgent"] },
+      },
+    ],
+    put: write(
+      "Set the response and resolution targets for a priority (HR; version 0 for the first save)",
+      hdSlaUpdateSchema,
+      hdSlaListSchema,
+      "200",
+    ),
+  },
+  "/helpdesk/agents": {
+    get: read(
+      "People cases can be assigned to: current employees with the HR admin role (agents only)",
+      hdAgentListSchema,
+    ),
+  },
+  "/helpdesk/articles": {
+    get: {
+      ...read(
+        "Knowledge articles (published for everyone; HR also sees drafts and archived)",
+        hdArticleListSchema,
+      ),
+      parameters: perfList("q", "status", "categoryId"),
+    },
+    post: write(
+      "Write a draft article (HR)",
+      hdArticleCreateSchema,
+      hdArticleSchema,
+    ),
+  },
+  "/helpdesk/articles/suggest": {
+    get: {
+      ...read(
+        "Up to 5 published articles matching the words of q in the category (keyword match, not AI)",
+        hdSuggestionListSchema,
+      ),
+      parameters: [
+        {
+          name: "categoryId",
+          in: "query",
+          schema: { type: "string", format: "uuid" },
+        },
+        { name: "q", in: "query", schema: { type: "string", maxLength: 160 } },
+      ],
+    },
+  },
+  "/helpdesk/articles/{id}": {
+    parameters: idParameter,
+    get: read("One visible article", hdArticleSchema),
+    put: write(
+      "Edit an article (HR)",
+      hdArticleUpdateSchema,
+      hdArticleSchema,
+      "200",
+    ),
+  },
+  "/helpdesk/articles/{id}/publish": {
+    parameters: idParameter,
+    post: write(
+      "Publish a draft or archived article (HR)",
+      hdArticleActionSchema,
+      hdArticleSchema,
+    ),
+  },
+  "/helpdesk/articles/{id}/archive": {
+    parameters: idParameter,
+    post: write(
+      "Archive a published article (HR)",
+      hdArticleActionSchema,
+      hdArticleSchema,
+    ),
+  },
+  "/helpdesk/cases": {
+    get: {
+      ...read(
+        "Visible cases (own; agents the entity's, confidential only when assigned or HR manage); view=mine|assigned|unassigned|all",
+        hdCaseListSchema,
+      ),
+      parameters: perfList(
+        "q",
+        "status",
+        "priority",
+        "categoryId",
+        "breached",
+        "view",
+      ),
+    },
+    post: write(
+      "Raise a case for myself; due times come from the service targets",
+      hdCaseCreateSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}": {
+    parameters: idParameter,
+    get: read(
+      "One visible case with its thread (internal notes only for agents), history and linked articles",
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/comments": {
+    parameters: idParameter,
+    post: write(
+      "Add a comment (requester or agent) or an internal note (agents other than the requester)",
+      hdCommentCreateSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/assign": {
+    parameters: idParameter,
+    post: write(
+      "Assign to an HR agent other than the requester (agents take unassigned cases; HR manage assigns anyone)",
+      hdAssignSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/priority": {
+    parameters: idParameter,
+    post: write(
+      "Change the priority (agents); due times are recomputed from the creation time",
+      hdPrioritySetSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/confidential": {
+    parameters: idParameter,
+    post: write(
+      "Mark confidential (agents) or clear the flag (HR manage)",
+      hdConfidentialSetSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/articles": {
+    parameters: idParameter,
+    post: write(
+      "Link a published article to the case (agents)",
+      hdArticleLinkSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/close": {
+    parameters: idParameter,
+    post: write(
+      "Close a resolved case: the requester (optionally rating 1 to 5), or an agent after the 7-day reopen window",
+      hdCaseCloseSchema,
+      hdCaseDetailSchema,
+    ),
+  },
+  "/helpdesk/cases/{id}/start": hdCaseStepPath(
+    "Start an assigned open case (agents)",
+  ),
+  "/helpdesk/cases/{id}/wait": hdCaseStepPath("Wait on the employee (agents)"),
+  "/helpdesk/cases/{id}/resume": hdCaseStepPath(
+    "Resume a case waiting on the employee (agents)",
+  ),
+  "/helpdesk/cases/{id}/resolve": hdCaseStepPath(
+    "Resolve (the assigned agent or HR manage; never the requester)",
+  ),
+  "/helpdesk/cases/{id}/reopen": hdCaseStepPath(
+    "Reopen within 7 days of resolution (requester only)",
+  ),
+  "/helpdesk/cases/{id}/cancel": hdCaseStepPath(
+    "Cancel before resolution (requester or HR manage)",
+  ),
 });
 const candidateSpec = {
   openapi: "3.1.0",

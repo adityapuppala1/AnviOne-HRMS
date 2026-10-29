@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./support/test";
 import AxeBuilder from "@axe-core/playwright";
 
 async function accessible(page: Page) {

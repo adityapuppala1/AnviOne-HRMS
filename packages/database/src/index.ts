@@ -47,7 +47,10 @@ export async function setContext(client: PoolClient, actor: Principal) {
     set_config('app.project_scope',$20,true),
     set_config('app.recruit_scope',$21,true),
     set_config('app.perf_scope',$22,true),
-    set_config('app.helpdesk_scope',$23,true)`,
+    set_config('app.helpdesk_scope',$23,true),
+    set_config('app.engage_scope',$24,true),
+    set_config('app.learn_scope',$25,true),
+    set_config('app.shift_scope',$26,true)`,
     [
       actor.tenantId,
       actor.entityId,
@@ -114,6 +117,30 @@ export async function setContext(client: PoolClient, actor: Principal) {
         : scopeFor(actor, "helpdesk.agent")
           ? "agent"
           : scopeFor(actor, "helpdesk.self")
+            ? "self"
+            : "none",
+      // manage: values, moderation and surveys (aggregates only); self: recognise, react, answer.
+      scopeFor(actor, "engage.manage")
+        ? "manage"
+        : scopeFor(actor, "engage.self")
+          ? "self"
+          : "none",
+      // manage: catalogue, assignments and records for the entity; team: own + direct reports
+      // (read only); self: own.
+      scopeFor(actor, "learn.manage")
+        ? "manage"
+        : scopeFor(actor, "learn.team")
+          ? "team"
+          : scopeFor(actor, "learn.self")
+            ? "self"
+            : "none",
+      // manage: templates, settings, publishing and every roster in the entity; team: own +
+      // current direct reports' rosters; self: own shifts in published weeks.
+      scopeFor(actor, "shift.manage")
+        ? "manage"
+        : scopeFor(actor, "shift.team")
+          ? "team"
+          : scopeFor(actor, "shift.self")
             ? "self"
             : "none",
     ],

@@ -50,6 +50,14 @@ export const permissionSchema = z.enum([
   "helpdesk.self",
   "helpdesk.agent",
   "helpdesk.manage",
+  "engage.self",
+  "engage.manage",
+  "learn.self",
+  "learn.team",
+  "learn.manage",
+  "shift.self",
+  "shift.team",
+  "shift.manage",
   "profile.self",
   "profile.review",
   "report.run",
@@ -3318,3 +3326,6 @@ export const perfReviewFinaliseSchema = z.strictObject({
 });
 
 export * from "./helpdesk";
+export * from "./engage";
+export * from "./learn";
+export * from "./shift";

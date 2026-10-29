@@ -27,6 +27,9 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "recruit.interview": "self",
     "performance.self": "self",
     "helpdesk.self": "self",
+    "engage.self": "self",
+    "learn.self": "self",
+    "shift.self": "self",
     "profile.self": "self",
   },
   manager: {
@@ -53,6 +56,14 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     "performance.review": "team",
     // Managers raise and see only their own helpdesk cases, never their team's.
     "helpdesk.self": "self",
+    // Managers recognise colleagues and answer surveys like everyone else; no team results.
+    "engage.self": "self",
+    // Managers take courses and read (only) their direct reports' assignments.
+    "learn.self": "self",
+    "learn.team": "team",
+    // Managers see their own published shifts and plan, cancel and approve for direct reports.
+    "shift.self": "self",
+    "shift.team": "team",
     "insights.read": "team",
     "profile.self": "self",
     // Managers report on their team on screen only; exporting is HR's.
@@ -78,6 +89,12 @@ const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
     // HR works the helpdesk queue and manages categories, service targets and articles.
     "helpdesk.agent": "entity",
     "helpdesk.manage": "entity",
+    // HR moderates recognition, manages values and runs surveys (aggregate results only).
+    "engage.manage": "entity",
+    // HR runs the course catalogue, assigns courses and records completions (never their own).
+    "learn.manage": "entity",
+    // HR manages templates and rest rules, rosters anyone, publishes weeks and decides any swap.
+    "shift.manage": "entity",
     "profile.review": "entity",
     "report.run": "entity",
     "report.export": "entity",
@@ -132,6 +149,22 @@ export const permissionDescriptions: Record<Permission, string> = {
     "Work helpdesk cases (never my own): assign to myself, reply, add internal notes, resolve",
   "helpdesk.manage":
     "Assign any case, see confidential cases, and manage categories, service targets and articles",
+  "engage.self":
+    "Recognise colleagues, react to recognition, and answer pulse surveys I am eligible for",
+  "engage.manage":
+    "Manage company values, hide or restore recognition with a reason, and run pulse surveys (anonymous aggregate results only)",
+  "learn.self":
+    "Browse published courses, enrol in optional ones, and track my own assignments",
+  "learn.team":
+    "Read my direct reports' course assignments and completions (read only)",
+  "learn.manage":
+    "Manage the course catalogue, assign courses, record completions or waivers (never my own) and read the compliance report",
+  "shift.self":
+    "See my own published shifts and planned hours, swap shifts with a colleague, and claim open shifts",
+  "shift.team":
+    "Plan and cancel my direct reports' shifts, approve their swaps and post team open shifts",
+  "shift.manage":
+    "Manage shift templates and the minimum rest, roster anyone, publish roster weeks, and decide any swap or claim (never my own)",
   "profile.self": "Read and request changes to my own profile",
   "profile.review": "Review profile change requests",
   "report.run": "Run reports on screen",

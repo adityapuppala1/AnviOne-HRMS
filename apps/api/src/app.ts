@@ -34,6 +34,9 @@ import { ProjectController } from "./project.controller";
 import { RecruitController } from "./recruit.controller";
 import { PerformanceController } from "./performance.controller";
 import { HelpdeskController } from "./helpdesk.controller";
+import { EngageController } from "./engage.controller";
+import { LearnController } from "./learn.controller";
+import { ShiftController } from "./shift.controller";
 import { ProfileController } from "./profile.controller";
 import { ReportController } from "./report.controller";
 import type { Config } from "./config";
@@ -89,6 +92,9 @@ export async function createApp(config: Config) {
       RecruitController,
       PerformanceController,
       HelpdeskController,
+      EngageController,
+      LearnController,
+      ShiftController,
       ProfileController,
       ReportController,
     ],

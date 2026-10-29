@@ -24,7 +24,10 @@ import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { Target } from "@phosphor-icons/react/dist/csr/Target";
 import { Lifebuoy } from "@phosphor-icons/react/dist/csr/Lifebuoy";
+import { HandHeart } from "@phosphor-icons/react/dist/csr/HandHeart";
+import { GraduationCap } from "@phosphor-icons/react/dist/csr/GraduationCap";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
+import { CalendarCheck } from "@phosphor-icons/react/dist/csr/CalendarCheck";
 import { DialogPanel, Button, Avatar, Input } from "@anvi/ui";
 import { useDirectory } from "../lib/api";
 import { copy } from "../lib/copy";
@@ -109,6 +112,29 @@ export function Command({
           <Button variant="ghost" onPress={() => go("/helpdesk")}>
             <Lifebuoy size={18} />
             {copy.nav.helpdesk}
+          </Button>
+        )}
+        {(me.permissions.includes("engage.self") ||
+          me.permissions.includes("engage.manage")) && (
+          <Button variant="ghost" onPress={() => go("/engage")}>
+            <HandHeart size={18} />
+            {copy.nav.engage}
+          </Button>
+        )}
+        {(me.permissions.includes("learn.self") ||
+          me.permissions.includes("learn.team") ||
+          me.permissions.includes("learn.manage")) && (
+          <Button variant="ghost" onPress={() => go("/learning")}>
+            <GraduationCap size={18} />
+            {copy.nav.learning}
+          </Button>
+        )}
+        {(me.permissions.includes("shift.self") ||
+          me.permissions.includes("shift.team") ||
+          me.permissions.includes("shift.manage")) && (
+          <Button variant="ghost" onPress={() => go("/shifts")}>
+            <CalendarCheck size={18} />
+            {copy.nav.shifts}
           </Button>
         )}
         {me.permissions.includes("report.run") && (

@@ -7,12 +7,30 @@ const cases: Record<
   { shown: string[]; hidden: string[]; denied: [string, string] }
 > = {
   maya: {
-    shown: ["Organization", "Reports", "Exit", "Performance", "Helpdesk"],
+    shown: [
+      "Organization",
+      "Reports",
+      "Exit",
+      "Performance",
+      "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
+    ],
     hidden: ["Activity log"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
   },
   employee: {
-    shown: ["Leave", "Expenses", "My details", "Performance", "Helpdesk"],
+    shown: [
+      "Leave",
+      "Expenses",
+      "My details",
+      "Performance",
+      "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
+    ],
     hidden: [
       "Reports",
       "Organization",
@@ -23,7 +41,16 @@ const cases: Record<
     denied: ["/reports", "Reports are not available to your role."],
   },
   manager: {
-    shown: ["Team explorer", "Approvals", "Reports", "Performance", "Helpdesk"],
+    shown: [
+      "Team explorer",
+      "Approvals",
+      "Reports",
+      "Performance",
+      "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
+    ],
     hidden: [
       "Organization",
       "Candidate intake",
@@ -43,6 +70,9 @@ const cases: Record<
       "Candidate intake",
       "Performance",
       "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
     ],
     hidden: ["Activity log", "Workspace settings"],
     denied: ["/activity", "Activity history requires an assigned Auditor"],
@@ -56,6 +86,9 @@ const cases: Record<
       "Organization",
       "Performance",
       "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
     ],
     denied: ["/reports", "Reports are not available to your role."],
   },
@@ -68,6 +101,9 @@ const cases: Record<
       "Leave",
       "Performance",
       "Helpdesk",
+      "Recognition",
+      "Learning",
+      "Shifts",
     ],
     denied: [
       "/organization",

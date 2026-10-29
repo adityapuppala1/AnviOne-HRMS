@@ -28,7 +28,10 @@ import { Briefcase } from "@phosphor-icons/react/dist/csr/Briefcase";
 import { UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
 import { Target } from "@phosphor-icons/react/dist/csr/Target";
 import { Lifebuoy } from "@phosphor-icons/react/dist/csr/Lifebuoy";
+import { HandHeart } from "@phosphor-icons/react/dist/csr/HandHeart";
+import { GraduationCap } from "@phosphor-icons/react/dist/csr/GraduationCap";
 import { Scroll } from "@phosphor-icons/react/dist/csr/Scroll";
+import { CalendarCheck } from "@phosphor-icons/react/dist/csr/CalendarCheck";
 import { CaretUpDown } from "@phosphor-icons/react/dist/csr/CaretUpDown";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import { Sun } from "@phosphor-icons/react/dist/csr/Sun";
@@ -277,6 +280,32 @@ function Shell({ me }: { me: Me }) {
         me.permissions.includes("helpdesk.self") ||
         me.permissions.includes("helpdesk.agent") ||
         me.permissions.includes("helpdesk.manage"),
+    },
+    {
+      to: "/engage",
+      label: copy.nav.engage,
+      icon: HandHeart,
+      visible:
+        me.permissions.includes("engage.self") ||
+        me.permissions.includes("engage.manage"),
+    },
+    {
+      to: "/learning",
+      label: copy.nav.learning,
+      icon: GraduationCap,
+      visible:
+        me.permissions.includes("learn.self") ||
+        me.permissions.includes("learn.team") ||
+        me.permissions.includes("learn.manage"),
+    },
+    {
+      to: "/shifts",
+      label: copy.nav.shifts,
+      icon: CalendarCheck,
+      visible:
+        me.permissions.includes("shift.self") ||
+        me.permissions.includes("shift.team") ||
+        me.permissions.includes("shift.manage"),
     },
     {
       to: "/reports",

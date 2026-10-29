@@ -76,3 +76,15 @@ The Performance screen (`/performance`, PERF-01) is built on the kit from the st
 ## Helpdesk (29 October 2026)
 
 The Helpdesk screen (`/helpdesk`, HLP-01) is built on the kit from the start: `UTabs`, `CollectionView` with the details panel and server paging for cases (cards and table) and articles, `Select`, `Input`, `TextArea`, `Checkbox`, `RangeInput`, `StatusBadge`, `StatCard` and `DialogPanel`. It does not borrow helpers or strings from other modules: its own `components/helpdesk/shared.tsx` and `lib/copy/helpdesk.ts` hold the dialogs, pills and send hook. Not from the kit: the conversation thread (a plain ordered list) and the article suggestions (native `details` elements). Its source is `apps/portal/app/components/helpdesk/`.
+
+## Recognition (29 October 2026)
+
+The Recognition screen (`/engage`, ENG-01) is built on the kit: `UTabs`, `CollectionView` with the details panel and server paging for surveys, `PaginationCardMinimal` for the feed, `Select`, `Input`, `TextArea`, `RadioGroup`, `Checkbox`, `RangeInput`, `StatusBadge`, `Avatar`, `EmptyBlock` and `DialogPanel`. Not from the kit: the recognition cards and reaction buttons (own markup, because a card with its own buttons cannot sit inside a clickable `CollectionView` card) and the plain result bars. It does not borrow helpers or strings from other modules: see `apps/portal/app/components/engage/` and `lib/copy/engage.ts`.
+
+## Learning (29 October 2026)
+
+The Learning screen (`/learning`, LRN-01) is built on the kit: `UTabs`, `CollectionView` with the details panel and server paging for assignments, courses and the compliance report (cards and table), `Select`, `Input`, `TextArea`, `Checkbox`, `RangeInput`, `StatusBadge`, `StatCard` and `DialogPanel`. Not from the kit: the compliance bars (a plain stacked bar of coloured spans, with every number also in text). It does not borrow helpers or strings from other modules: see `apps/portal/app/components/learning/`, `lib/copy/learning.ts` and `lib/learning-api.ts`.
+
+## Shifts (29 October 2026)
+
+The Shifts screen (`/shifts`, SHF-01) is built on the kit from the start: `UTabs`, `CollectionView` with server paging for swaps, open shifts, claims and templates (cards and table), the slide-over `DetailPanel` for a shift's history, `Select`, `Input`, `TextArea`, `Checkbox`, `RangeInput` (date and time), `StatusBadge`, `DialogPanel`. Not in the kit and built on Loom tokens: the seven-day week view and the team week grid (a table that folds into per-person cards under 860 px), shift cards (template colour as a stripe plus text label) and a native radio group for the template colour. Source in `apps/portal/app/components/shifts/`.

@@ -78,6 +78,13 @@ import {
   hdAgentListSchema,
   hdArticleListSchema,
   hdSuggestionListSchema,
+  engValueListSchema,
+  engColleagueListSchema,
+  engKudosListSchema,
+  engSurveyListSchema,
+  engSurveyDetailSchema,
+  engSurveyResultsSchema,
+  engKudosDetailSchema,
 } from "@anvi/contracts";
 export class ApiError extends Error {
   constructor(
@@ -785,6 +792,75 @@ export const useHdSuggestions = (
         hdSuggestionListSchema,
         signal,
       ),
+  });
+// Recognition and engagement (ENG-01). Every key starts with "eng" so one invalidation refreshes all tabs.
+const engGet = <T>(
+  path: string,
+  query: string,
+  schema: z.ZodType<T>,
+  signal?: AbortSignal,
+) => api(`/engage/${path}${query ? `?${query}` : ""}`, schema, { signal });
+export const useEngValues = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["eng", "values"],
+    enabled,
+    queryFn: ({ signal }) => engGet("values", "", engValueListSchema, signal),
+  });
+export const useEngColleagues = (enabled: boolean, q: string) =>
+  useQuery({
+    queryKey: ["eng", "colleagues", q],
+    enabled,
+    staleTime: 30000,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      engGet(
+        "colleagues",
+        new URLSearchParams({ q }).toString(),
+        engColleagueListSchema,
+        signal,
+      ),
+  });
+export const useEngKudos = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["eng", "kudos", query],
+    staleTime: 0,
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) => engGet("kudos", query, engKudosListSchema, signal),
+  });
+export const useEngKudosDetail = (id: string | null) =>
+  useQuery({
+    queryKey: ["eng", "kudos-detail", id],
+    staleTime: 0,
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      engGet(`kudos/${id}`, "", engKudosDetailSchema, signal),
+  });
+export const useEngSurveys = (enabled: boolean, query: string) =>
+  useQuery({
+    queryKey: ["eng", "surveys", query],
+    staleTime: 0,
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) =>
+      engGet("surveys", query, engSurveyListSchema, signal),
+  });
+export const useEngSurvey = (id: string | null) =>
+  useQuery({
+    queryKey: ["eng", "survey", id],
+    staleTime: 0,
+    enabled: Boolean(id),
+    queryFn: ({ signal }) =>
+      engGet(`surveys/${id}`, "", engSurveyDetailSchema, signal),
+  });
+export const useEngResults = (id: string | null) =>
+  useQuery({
+    queryKey: ["eng", "results", id],
+    staleTime: 0,
+    enabled: Boolean(id),
+    retry: false,
+    queryFn: ({ signal }) =>
+      engGet(`surveys/${id}/results`, "", engSurveyResultsSchema, signal),
   });
 export const usePeopleSearch = (term: string) =>
   useQuery({

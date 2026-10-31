@@ -51,10 +51,10 @@ test("team exploration, profile tabs, directory display and personal preferences
     "Engineering",
   );
   await expect(page.getByText("4 people", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "List view" }).click();
+  await page.getByRole("radio", { name: "List view" }).click();
   await page.reload();
-  await expect(page.getByRole("button", { name: "List view" })).toHaveAttribute(
-    "aria-pressed",
+  await expect(page.getByRole("radio", { name: "List view" })).toHaveAttribute(
+    "aria-checked",
     "true",
   );
   await page.getByRole("link", { name: /Neel Rao/ }).click();
@@ -123,11 +123,11 @@ test("branding previews and audit search, filters, details and empty states", as
   await expect(
     page.getByRole("heading", { name: "Your workspace. Your signature." }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Mobile preview" }).click();
+  await page.getByRole("radio", { name: "Mobile preview" }).click();
   await expect(page.locator(".preview-window")).toHaveClass(
     /preview-device-mobile/,
   );
-  await page.getByRole("button", { name: "Desktop preview" }).click();
+  await page.getByRole("radio", { name: "Desktop preview" }).click();
   await accessible(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({

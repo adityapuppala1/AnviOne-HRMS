@@ -10,6 +10,7 @@ import { X } from "@phosphor-icons/react/dist/csr/X";
 import {
   Avatar,
   BadgeWithDot,
+  AvatarLabelGroup,
   Button,
   CollectionView,
   DetailFields,
@@ -696,10 +697,12 @@ function TeamToday({
                 isRowHeader: true,
                 sortValue: (p) => p.name,
                 render: (p) => (
-                  <span className="flex items-center gap-3">
-                    <Avatar initials={p.initials} size="small" />
-                    <strong className="text-sm text-primary">{p.name}</strong>
-                  </span>
+                  <AvatarLabelGroup
+                    size="sm"
+                    initials={p.initials}
+                    title={p.name}
+                    subtitle={p.department}
+                  />
                 ),
               },
               {
@@ -739,11 +742,12 @@ function TeamToday({
               <div
                 className={`flex min-w-0 items-center gap-3 presence-${p.status}`}
               >
-                <Avatar initials={p.initials} size="small" />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <strong className="text-sm">{p.name}</strong>
-                  <small className="text-tertiary">{p.department}</small>
-                </span>
+                <AvatarLabelGroup
+                  size="sm"
+                  initials={p.initials}
+                  title={p.name}
+                  subtitle={p.department}
+                />
                 <span className="presence-pill">
                   {presenceLabels[p.status]}
                   {p.checkIn ? ` · ${p.checkIn}` : ""}

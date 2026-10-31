@@ -45,7 +45,7 @@ const PaginationItem = ({
       isCurrent={isCurrent}
       className={({ isSelected }) =>
         cx(
-          "flex size-9 cursor-pointer items-center justify-center p-3 text-sm font-medium text-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-secondary focus-visible:z-10 focus-visible:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2",
+          "flex size-11 cursor-pointer items-center justify-center p-3 text-sm font-medium text-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-secondary focus-visible:z-10 focus-visible:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2",
           rounded ? "rounded-full" : "rounded-lg",
           isSelected && "bg-primary_hover text-secondary",
         )
@@ -125,14 +125,24 @@ export const PaginationPageDefault = ({
     >
       <div className="hidden flex-1 justify-start md:flex">
         <Pagination.PrevTrigger asChild>
-          <Button iconLeading={ArrowLeft} color="link-gray" size="sm">
+          <Button
+            iconLeading={ArrowLeft}
+            color="link-gray"
+            size="sm"
+            className="min-h-11 min-w-11"
+          >
             {isDesktop ? "Previous" : undefined}
           </Button>
         </Pagination.PrevTrigger>
       </div>
 
       <Pagination.PrevTrigger asChild className="md:hidden">
-        <Button iconLeading={ArrowLeft} color="secondary" size="sm">
+        <Button
+          iconLeading={ArrowLeft}
+          color="secondary"
+          size="sm"
+          className="min-h-11 min-w-11"
+        >
           {isDesktop ? "Previous" : undefined}
         </Button>
       </Pagination.PrevTrigger>
@@ -165,13 +175,23 @@ export const PaginationPageDefault = ({
 
       <div className="hidden flex-1 justify-end md:flex">
         <Pagination.NextTrigger asChild>
-          <Button iconTrailing={ArrowRight} color="link-gray" size="sm">
+          <Button
+            iconTrailing={ArrowRight}
+            color="link-gray"
+            size="sm"
+            className="min-h-11 min-w-11"
+          >
             {isDesktop ? "Next" : undefined}
           </Button>
         </Pagination.NextTrigger>
       </div>
       <Pagination.NextTrigger asChild className="md:hidden">
-        <Button iconTrailing={ArrowRight} color="secondary" size="sm">
+        <Button
+          iconTrailing={ArrowRight}
+          color="secondary"
+          size="sm"
+          className="min-h-11 min-w-11"
+        >
           {isDesktop ? "Next" : undefined}
         </Button>
       </Pagination.NextTrigger>

@@ -12,7 +12,7 @@ import {
   Table,
   TableCard,
 } from "./untitled/components/application/table/table";
-import { PaginationCardMinimal } from "./untitled/components/application/pagination/pagination";
+import { PaginationPageDefault } from "./untitled/components/application/pagination/pagination";
 import { EmptyState } from "./untitled/components/application/empty-state/empty-state";
 import { FeaturedIcon } from "./untitled/components/foundations/featured-icon/featured-icon";
 
@@ -231,10 +231,12 @@ export function DataCard<T>({
         </Table>
       )}
       {pages > 1 && (
-        <PaginationCardMinimal
+        <PaginationPageDefault
+          rounded
           page={current}
           total={pages}
           onPageChange={setPage}
+          className="px-4 pb-4"
         />
       )}
     </TableCard.Root>

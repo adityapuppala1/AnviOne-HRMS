@@ -38,6 +38,7 @@ export const settingsCopy = {
   publish: "Publish changes",
   preview: {
     eyebrow: "Your workspace, previewed",
+    modeLabel: "Preview size",
     desktop: "Desktop preview",
     mobile: "Mobile preview",
     overview: "Overview",

@@ -419,6 +419,7 @@ export class EngageStore {
       }),
     );
   }
+  // Same key as the database guards, so the app and the triggers queue on one lock.
   private async kudosLock(client: PoolClient, id: string) {
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('eng-kudos:'||$1::text,0))",
@@ -701,6 +702,7 @@ export class EngageStore {
         ],
       );
   }
+  // Lock, then compare the caller's version: a stale edit gets 409 instead of overwriting.
   private async lockSurvey(client: PoolClient, id: string, version: number) {
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('eng-survey:'||$1::text,0))",

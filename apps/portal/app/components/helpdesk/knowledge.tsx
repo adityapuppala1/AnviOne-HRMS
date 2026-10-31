@@ -107,6 +107,7 @@ export function KnowledgeTab() {
       </div>
       <CollectionView
         id="hd-knowledge"
+        urlState
         label={text.tabs.knowledge}
         noun="articles"
         items={list.data?.items ?? []}

@@ -280,6 +280,7 @@ export class LearnStore {
       input.validityMonths,
     ];
   }
+  // Lock, then compare the caller's version: a stale edit gets 409 instead of overwriting.
   private async lockCourse(client: PoolClient, id: string, version: number) {
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('lrn-course:'||$1::text,0))",

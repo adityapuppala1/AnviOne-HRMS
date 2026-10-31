@@ -294,6 +294,7 @@ function HolidayList({
     <div className="calendar-list">
       <CollectionView
         id="calendar-holidays"
+        urlState
         label={text.year.title(year)}
         noun="holidays"
         items={holidays}

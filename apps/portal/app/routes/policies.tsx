@@ -37,7 +37,7 @@ import {
   api,
   ApiError,
   useMyPolicies,
-  useOrganization,
+  useOrganizationAll,
   usePolicies,
   usePolicy,
 } from "../lib/api";
@@ -177,7 +177,7 @@ function ManageView() {
   const [adding, setAdding] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const { data, error, isPending, refetch } = usePolicies(true);
-  const units = useOrganization("kind=department&limit=50");
+  const units = useOrganizationAll("department");
   const departments: Department[] = (units.data?.items ?? [])
     .filter((unit) => unit.active)
     .map((unit) => ({ id: unit.id, name: unit.name }));

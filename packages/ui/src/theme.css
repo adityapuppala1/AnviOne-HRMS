@@ -419,6 +419,20 @@ button[data-disabled] {
   color: var(--brand-ink);
   border-color: var(--brand);
 }
+/* Tab underline slides between tabs (React Aria SelectionIndicator uses a view transition).
+   Browsers without view transitions simply show the underline under the new tab. */
+::view-transition-group(SelectionIndicator) {
+  animation-duration: 0.24s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(SelectionIndicator) {
+    animation-duration: 0s;
+  }
+}
+html[data-motion="reduce"]::view-transition-group(SelectionIndicator) {
+  animation-duration: 0s;
+}
 .tab-panel {
   padding-top: 24px;
   outline-offset: 6px;

@@ -889,6 +889,15 @@ await test("Shifts: templates, rosters, conflicts, publishing, swaps and open sh
           randomUUID(),
         );
         assert.equal(entity.openShift.audience, "entity");
+        // Regression: the `posted` flag was NULL for people who did not post the shift, which made
+        // the open and claims lists answer 500 for an employee while an entity-wide open shift existed.
+        await changeRole("employee");
+        const openList = await request("/shifts/open");
+        assert.equal(openList.status, 200);
+        const openBody = (await openList.json()) as { items: { id: string }[] };
+        assert.ok(openBody.items.some((o) => o.id === entity.openShift.id));
+        assert.equal((await request("/shifts/claims")).status, 200);
+        await changeRole("hr_admin");
         const claims = await Promise.all(
           [1, 2, 3].map(() =>
             status(shf.claim(rohanE, entity.openShift.id, randomUUID())),

@@ -256,6 +256,7 @@ export function CyclesTab() {
       </div>
       <CollectionView
         id="perf-cycles"
+        urlState
         label={text.tabs.cycles}
         noun="review cycles"
         items={list.data?.items ?? []}

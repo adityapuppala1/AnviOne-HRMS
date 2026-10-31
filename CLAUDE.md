@@ -1,5 +1,7 @@
 # AnviOne / MyAnvi HRMS: project instructions
 
+Start with [docs/HANDOFF.md](docs/HANDOFF.md) for status, pending work, how to run and the next plan. These rules apply to every tool and model, not only Claude.
+
 ## UI components: use Untitled UI everywhere
 
 Build every screen from Untitled UI React components first, bridged to the Anvi Loom look. Only fall back to our own patterns (`packages/ui/src/patterns.tsx`: PageHeader, StatCard, EmptyBlock, DataCard) where Untitled UI has no equivalent.

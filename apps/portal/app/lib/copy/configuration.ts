@@ -1,0 +1,127 @@
+import type { Theme } from "@anvi/contracts";
+
+export const configurationCopy = {
+  eyebrow: "Administration",
+  title: "Configuration",
+  subtitle:
+    "See how the workspace look has changed, who can do what, and which integrations are ready.",
+  denied:
+    "Configuration is available to platform administrators. Switch role to continue.",
+  tabsLabel: "Configuration sections",
+  tabs: { history: "History", access: "Access", integrations: "Integrations" },
+  themeNames: {
+    ocean: "Atlas",
+    iris: "Iris",
+    forest: "Woodland",
+  } satisfies Record<Theme, string>,
+  history: {
+    title: "Branding history",
+    intro:
+      "Every published version of the workspace name, organization name and colour palette, newest first.",
+    note: "Rolling back publishes a new version that copies an earlier one. History is never rewritten or deleted.",
+    list: "Branding versions",
+    loading: "Loading branding history",
+    failed: "Branding history could not be loaded.",
+    emptyTitle: "No history yet",
+    emptyBody: "Versions appear here once branding has been published.",
+    version: (n: number) => `v${n}`,
+    current: "Current",
+    sources: {
+      baseline: "Starting point",
+      edit: "Edited",
+      rollback: "Rolled back",
+    },
+    restored: (n: number) => `Copies v${n}`,
+    by: (name: string) => `by ${name}`,
+    noReason: "No reason recorded.",
+    reasonLabel: "Reason",
+    fields: {
+      platformName: "Platform name",
+      employeeName: "Employee name",
+      organizationName: "Organization name",
+      theme: "Palette",
+    },
+    firstValues: "Values at this version",
+    changesFrom: (n: number) => `Changed from v${n}`,
+    noChange: "No visible changes from the version before.",
+    unknownBefore: "Earlier version not loaded yet.",
+    loadOlder: "Load older",
+    loadingOlder: "Loading older versions",
+    rollbackButton: (n: number) => `Roll back to v${n}`,
+    liveNote: (n: number) => `Version ${n} is live now.`,
+  },
+  rollback: {
+    title: "Roll back branding",
+    intro: (target: number, current: number) =>
+      `This publishes a new version that copies v${target}. The current version, v${current}, stays in the history.`,
+    changesTitle: "What will change",
+    from: "Now",
+    to: "After",
+    nothing: (n: number) =>
+      `Nothing would change: v${n} matches what is live now. Pick a different version.`,
+    honest:
+      "Rolling back publishes a new version. Earlier versions, including the one you leave, are kept and the history is never rewritten.",
+    reason: "Reason",
+    reasonHint: "Why are you rolling back? 10 to 300 characters.",
+    count: (n: number) => `${n} of 300 characters.`,
+    cancel: "Cancel",
+    submit: "Roll back",
+    submitting: "Rolling back",
+    done: (target: number) =>
+      `Rolled back. A new version copying v${target} is now live.`,
+    errors: {
+      conflict:
+        "Someone else changed the branding, or nothing would change. Refresh the history and try again.",
+      forbidden: "Your role cannot roll back branding.",
+      notFound: "That version no longer exists. Refresh the history.",
+      invalid: "Check the reason. It needs 10 to 300 characters.",
+      fallback: "The rollback could not be completed. Try again.",
+    },
+  },
+  access: {
+    title: "Who can do what",
+    note: "Permissions are defined in code and change only through a reviewed release; this view cannot edit them.",
+    search: "Search permissions",
+    searchPlaceholder: "Search permissions",
+    role: "Role",
+    allRoles: "All roles",
+    tableLabel: "Permission matrix",
+    listLabel: "Permission matrix",
+    permissionColumn: "Permission",
+    areaColumn: "Area",
+    noAccess: "No access",
+    showing: (shown: number, total: number) =>
+      `Showing ${shown} of ${total} permissions.`,
+    scopes: {
+      self: "Own",
+      team: "Team",
+      entity: "Entity",
+    },
+    scopeHelp:
+      "Own is the person's own records, Team is their reports, Entity is the whole organization.",
+    emptyTitle: "No matching permissions",
+    emptyBody: "Try a shorter search or choose all roles.",
+    loading: "Loading permissions",
+    failed: "The permission matrix could not be loaded.",
+    nobody: "No role has this permission.",
+    other: "General",
+  },
+  integrations: {
+    title: "Integrations",
+    note: "This page shows readiness only. Nothing secret is shown here: no keys, credentials or connection details.",
+    loading: "Loading integrations",
+    failed: "Integration status could not be loaded.",
+    list: "Integrations",
+    asOf: (when: string) => `Checked ${when}.`,
+    status: {
+      configured: "Configured",
+      not_configured: "Not configured",
+      demo: "Demo",
+    },
+    yes: "Yes",
+    no: "No",
+    facts: "Facts",
+    noFacts: "No further details.",
+  },
+  retry: "Try again",
+} as const;

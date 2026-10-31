@@ -1,0 +1,114 @@
+/* Insights: four figures, then charts that reflow from one column to three. */
+.insights-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.insights-wide {
+  grid-column: 1 / -1;
+}
+.insights-card,
+.insights-types {
+  padding: 20px 22px 16px;
+}
+.insights-card header h2,
+.insights-types header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.insights-card header p,
+.insights-types header p {
+  margin: 2px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.insights-chart {
+  height: 240px;
+  min-width: 0;
+}
+.insights-wide .insights-chart {
+  height: 260px;
+}
+.insights-table {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.insights-table summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--brand-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.insights-table table {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+}
+.insights-table th,
+.insights-table td {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-weight: 500;
+}
+.insights-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.insights-types ul {
+  display: grid;
+  gap: 14px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.insights-types li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  font-size: 14px;
+}
+.insights-types li i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--marigold));
+}
+.insights-none {
+  color: var(--muted);
+  font-size: 14px;
+}
+.recharts-wrapper {
+  font-family: inherit;
+}
+@media (max-width: 1100px) {
+  .insights-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .insights-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .insights-stats {
+    gap: 12px;
+  }
+  .insights-card,
+  .insights-types {
+    padding: 16px 14px 12px;
+  }
+}

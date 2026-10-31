@@ -1,0 +1,138 @@
+/* Today: four cards that reflow from a row to a single column. */
+.today {
+  margin: 0 0 24px;
+}
+.today > h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.today-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+.today-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px 20px;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.today-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.today-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.today-headline {
+  font:
+    600 20px/1.25 var(--display),
+    sans-serif;
+  letter-spacing: -0.01em;
+}
+.today-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.today-number {
+  color: var(--ink);
+  font:
+    600 38px/1 var(--display),
+    sans-serif;
+  letter-spacing: -0.02em;
+}
+.today-bars {
+  display: grid;
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.today-bars li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+.today-bars li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.today-bars li i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--marigold));
+}
+.today-bars small {
+  color: var(--muted);
+}
+.today-note {
+  color: var(--warning);
+}
+.today-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.today-attendance {
+  background:
+    radial-gradient(
+      90% 120% at 100% 0%,
+      color-mix(in srgb, var(--brand) 12%, transparent),
+      transparent 60%
+    ),
+    var(--surface);
+}
+.today-urgent {
+  box-shadow:
+    var(--shadow),
+    inset 0 0 0 2px var(--marigold);
+}
+.today-skeleton {
+  min-height: 150px;
+  background: var(--surface-subtle);
+  box-shadow: none;
+}
+@media (max-width: 480px) {
+  .today-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* On phones the day's actions come before the welcome banner. */
+@media (max-width: 767px) {
+  .home-page {
+    display: flex;
+    flex-direction: column;
+  }
+  .home-page .today {
+    order: -1;
+  }
+}

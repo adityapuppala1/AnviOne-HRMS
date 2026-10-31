@@ -1,0 +1,263 @@
+.chart-page {
+  min-width: 0;
+}
+.chart-notes {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.chart-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chart-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--brand-ink);
+}
+.chart-note-warn {
+  border-left-color: #b7791f;
+  background: #fff7e6;
+  color: #6b4608;
+}
+.chart-note-warn svg {
+  color: #8a5a0c;
+}
+[data-mode="dark"] .chart-note-warn {
+  background: #3a2f1c;
+  color: #f0d9a8;
+  border-left-color: #d9a441;
+}
+[data-mode="dark"] .chart-note-warn svg {
+  color: #e8bd68;
+}
+.chart-panel {
+  padding: 18px 20px 22px;
+  min-width: 0;
+  overflow: hidden;
+}
+.chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.chart-search {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.chart-bulk {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chart-toolbar .button {
+  min-height: 44px;
+  font-size: 12px;
+}
+.chart-live {
+  margin: 10px 0 6px;
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.chart-tree,
+.chart-children {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chart-children {
+  position: relative;
+  margin-left: 21px;
+  padding-left: 22px;
+}
+.chart-children[hidden] {
+  display: none;
+}
+/* Connected lines: a spine down each team and an elbow into every card. */
+.chart-children::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 30px;
+  border-left: 2px solid var(--line);
+}
+.chart-children > .chart-branch {
+  position: relative;
+}
+.chart-children > .chart-branch::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 0;
+  width: 22px;
+  height: 36px;
+  border-left: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  border-bottom-left-radius: 12px;
+  margin-left: 0;
+  pointer-events: none;
+}
+.chart-children > .chart-branch:last-child::before {
+  border-left-color: var(--line);
+}
+.chart-branch {
+  padding-top: 10px;
+  min-width: 0;
+}
+.chart-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.chart-toggle,
+.chart-toggle-spacer {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+}
+.chart-toggle {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--brand-ink);
+  cursor: pointer;
+}
+.chart-toggle:hover {
+  background: var(--brand-soft);
+}
+.chart-toggle:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+.chart-toggle svg {
+  transition: transform 160ms ease;
+}
+.chart-toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.chart-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 560px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chart-card.is-match {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-soft);
+}
+.chart-card-body {
+  min-width: 0;
+  flex: 1;
+}
+.chart-card-body p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.chart-name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  font-family: "Bricolage Grotesque Variable", sans-serif;
+  font-size: 15px;
+  font-weight: 550;
+  color: var(--ink);
+}
+.chart-title {
+  font-size: 13px;
+  color: var(--ink);
+}
+.chart-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chart-card mark {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+@media (min-width: 900px) {
+  .chart-panel {
+    padding: 24px 30px 30px;
+  }
+  .chart-children {
+    margin-left: 22px;
+    padding-left: 30px;
+  }
+  .chart-children > .chart-branch::before {
+    left: -30px;
+    width: 30px;
+  }
+}
+/* Phones: a plain stacked, indented list. Deep levels stop indenting so
+   nothing can push the page sideways at 320px. */
+@media (max-width: 600px) {
+  .chart-panel {
+    padding: 14px 12px 18px;
+  }
+  .chart-bulk {
+    width: 100%;
+  }
+  .chart-bulk .button {
+    flex: 1;
+  }
+  .chart-children {
+    margin-left: 12px;
+    padding-left: 12px;
+  }
+  .chart-children > .chart-branch::before {
+    left: -12px;
+    width: 12px;
+  }
+  .chart-toggle,
+  .chart-toggle-spacer {
+    flex-basis: 44px;
+  }
+  .chart-row {
+    gap: 6px;
+  }
+  .chart-card {
+    padding: 10px;
+    gap: 10px;
+  }
+  .chart-branch[data-deep="true"] > .chart-children {
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .chart-branch[data-deep="true"] > .chart-children::before,
+  .chart-branch[data-deep="true"] > .chart-children > .chart-branch::before {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-toggle svg {
+    transition: none;
+  }
+}

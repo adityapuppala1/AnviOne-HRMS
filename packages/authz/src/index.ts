@@ -1,0 +1,197 @@
+import { permissionSchema, type Role } from "@anvi/contracts";
+export type { Permission } from "@anvi/contracts";
+import type { Permission } from "@anvi/contracts";
+
+export type Scope = "self" | "team" | "entity";
+export interface Principal {
+  actorId: string;
+  employeeId: string;
+  tenantId: string;
+  entityId: string;
+  role: Role;
+  roles: Role[];
+  name: string;
+}
+const policy: Record<Role, Partial<Record<Permission, Scope>>> = {
+  employee: {
+    "directory.read": "self",
+    "onboarding.task.update": "self",
+    "leave.request": "self",
+    "attendance.self": "self",
+    "document.self": "self",
+    "asset.self": "self",
+    "policy.self": "self",
+    "exit.self": "self",
+    "expense.self": "self",
+    "project.self": "self",
+    "recruit.interview": "self",
+    "performance.self": "self",
+    "helpdesk.self": "self",
+    "engage.self": "self",
+    "learn.self": "self",
+    "shift.self": "self",
+    "profile.self": "self",
+  },
+  manager: {
+    "directory.read": "team",
+    "onboarding.task.update": "self",
+    "leave.request": "self",
+    "leave.approve": "team",
+    "attendance.self": "self",
+    "attendance.review": "team",
+    "document.self": "self",
+    "asset.self": "self",
+    "policy.self": "self",
+    "exit.self": "self",
+    "expense.self": "self",
+    "expense.approve": "team",
+    "project.self": "self",
+    // Managers own the projects they create; HR manages every project.
+    "project.manage": "team",
+    // Hiring managers raise and follow their own requisitions; HR runs recruiting.
+    "recruit.request": "team",
+    "recruit.interview": "self",
+    // Managers set goals for and review their direct reports; HR runs cycles and finalises.
+    "performance.self": "self",
+    "performance.review": "team",
+    // Managers raise and see only their own helpdesk cases, never their team's.
+    "helpdesk.self": "self",
+    // Managers recognise colleagues and answer surveys like everyone else; no team results.
+    "engage.self": "self",
+    // Managers take courses and read (only) their direct reports' assignments.
+    "learn.self": "self",
+    "learn.team": "team",
+    // Managers see their own published shifts and plan, cancel and approve for direct reports.
+    "shift.self": "self",
+    "shift.team": "team",
+    "insights.read": "team",
+    "profile.self": "self",
+    // Managers report on their team on screen only; exporting is HR's.
+    "report.run": "team",
+  },
+  hr_admin: {
+    "directory.read": "entity",
+    "leave.approve": "entity",
+    "attendance.review": "entity",
+    "document.review": "entity",
+    "organization.read": "entity",
+    "organization.write": "entity",
+    "onboarding.manage": "entity",
+    "insights.read": "entity",
+    "asset.manage": "entity",
+    "policy.manage": "entity",
+    "exit.manage": "entity",
+    "expense.approve": "entity",
+    "expense.manage": "entity",
+    "project.manage": "entity",
+    "recruit.manage": "entity",
+    "performance.manage": "entity",
+    // HR works the helpdesk queue and manages categories, service targets and articles.
+    "helpdesk.agent": "entity",
+    "helpdesk.manage": "entity",
+    // HR moderates recognition, manages values and runs surveys (aggregate results only).
+    "engage.manage": "entity",
+    // HR runs the course catalogue, assigns courses and records completions (never their own).
+    "learn.manage": "entity",
+    // HR manages templates and rest rules, rosters anyone, publishes weeks and decides any swap.
+    "shift.manage": "entity",
+    "profile.review": "entity",
+    "report.run": "entity",
+    "report.export": "entity",
+  },
+  platform_admin: { "branding.write": "entity", "admin.read": "entity" },
+  auditor: { "audit.read": "entity", "admin.read": "entity" },
+};
+export const permissionDescriptions: Record<Permission, string> = {
+  "directory.read": "Read the people directory",
+  "branding.write":
+    "Publish, review history of and roll back workspace branding",
+  "audit.read": "Read the latest entity audit events",
+  "organization.read": "Read organization units and masters",
+  "organization.write": "Create, change and merge organization units",
+  "onboarding.manage": "Manage candidates and onboarding checklists",
+  "onboarding.task.update": "Update onboarding tasks assigned to me",
+  "leave.request": "Request and cancel my own leave",
+  "leave.approve": "Approve or reject leave",
+  "attendance.self": "Check in, check out and request corrections",
+  "attendance.review": "Review attendance and correction requests",
+  "document.self": "Upload and read my own documents",
+  "document.review": "Verify or reject employee documents",
+  "insights.read": "Read workforce insights",
+  "asset.manage": "Register, issue and return assets",
+  "asset.self": "Read and acknowledge my own assets",
+  "policy.manage": "Draft, publish and withdraw policies",
+  "policy.self": "Read and acknowledge policies",
+  "exit.manage": "Process resignations and exit clearance",
+  "exit.self": "Submit and withdraw my own resignation",
+  "expense.self": "Submit and cancel my own expense claims",
+  "expense.approve": "Approve or reject expense claims",
+  "expense.manage": "Mark claims paid and manage expense categories",
+  "project.self":
+    "See my projects and tasks, log and withdraw my own time, update my tasks' status",
+  "project.manage":
+    "Create projects, manage their members and tasks, and approve their time",
+  "recruit.manage":
+    "Run recruiting: requisitions, candidates and their contact details, interviews and offers",
+  "recruit.request":
+    "Raise requisitions for my team and follow their applications and scorecards",
+  "recruit.interview":
+    "See interviews I am on the panel for and submit my scorecard",
+  "performance.self":
+    "Set my own goals, record their progress, submit my self-review and read my finalised results",
+  "performance.review":
+    "Set goals for my direct reports and submit manager reviews for the people I review",
+  "performance.manage":
+    "Run review cycles, see every goal and review, and finalise reviews (never my own)",
+  "helpdesk.self":
+    "Raise my own helpdesk cases, follow, reopen, close and rate them, and read published articles",
+  "helpdesk.agent":
+    "Work helpdesk cases (never my own): assign to myself, reply, add internal notes, resolve",
+  "helpdesk.manage":
+    "Assign any case, see confidential cases, and manage categories, service targets and articles",
+  "engage.self":
+    "Recognise colleagues, react to recognition, and answer pulse surveys I am eligible for",
+  "engage.manage":
+    "Manage company values, hide or restore recognition with a reason, and run pulse surveys (anonymous aggregate results only)",
+  "learn.self":
+    "Browse published courses, enrol in optional ones, and track my own assignments",
+  "learn.team":
+    "Read my direct reports' course assignments and completions (read only)",
+  "learn.manage":
+    "Manage the course catalogue, assign courses, record completions or waivers (never my own) and read the compliance report",
+  "shift.self":
+    "See my own published shifts and planned hours, swap shifts with a colleague, and claim open shifts",
+  "shift.team":
+    "Plan and cancel my direct reports' shifts, approve their swaps and post team open shifts",
+  "shift.manage":
+    "Manage shift templates and the minimum rest, roster anyone, publish roster weeks, and decide any swap or claim (never my own)",
+  "profile.self": "Read and request changes to my own profile",
+  "profile.review": "Review profile change requests",
+  "report.run": "Run reports on screen",
+  "report.export": "Export reports as audited CSV",
+  "admin.read": "Read the permission matrix and integration readiness",
+};
+// The role x permission table as shipped in code: changes need a reviewed deploy.
+export function permissionMatrix() {
+  return permissionSchema.options.map((permission) => ({
+    permission,
+    description: permissionDescriptions[permission],
+    grants: (Object.keys(policy) as Role[]).flatMap((role) => {
+      const scope = policy[role][permission];
+      return scope ? [{ role, scope }] : [];
+    }),
+  }));
+}
+export function scopeFor(
+  actor: Principal,
+  permission: Permission,
+): Scope | undefined {
+  if (!actor.roles.includes(actor.role)) return undefined;
+  return policy[actor.role][permission];
+}
+export function permissionsFor(actor: Principal): Permission[] {
+  return permissionSchema.options.filter((p) => scopeFor(actor, p));
+}
+export function canSwitch(actor: Principal, role: Role): boolean {
+  return actor.roles.includes(role);
+}

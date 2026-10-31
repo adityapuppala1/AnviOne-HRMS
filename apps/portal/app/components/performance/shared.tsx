@@ -2,6 +2,7 @@ import { useId, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import type { PerfCompetency, PerfReviewEntry } from "@anvi/contracts";
+import { ProgressBarBase } from "@anvi/ui";
 import { api } from "../../lib/api";
 import { performanceCopy as text } from "../../lib/copy/performance";
 import { useWorkspace } from "../../routes/workspace";
@@ -106,19 +107,11 @@ export function ProgressBar({
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div className={`perf-progress ${className}`}>
-      <div
+      <ProgressBarBase
         className="perf-track"
-        role="progressbar"
         aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(clamped)}
-      >
-        <span
-          className="perf-fill"
-          style={{ transform: `scaleX(${clamped / 100})` }}
-        />
-      </div>
+        value={Math.round(clamped)}
+      />
       <span className="perf-percent" aria-hidden="true">
         {Math.round(clamped)}%
       </span>

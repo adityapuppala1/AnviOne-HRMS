@@ -254,6 +254,7 @@ export function SurveysTab({ canManage }: { canManage: boolean }) {
       </div>
       <CollectionView
         id="eng-surveys"
+        urlState
         label={text.tabs.surveys}
         noun="surveys"
         items={list.data?.items ?? []}

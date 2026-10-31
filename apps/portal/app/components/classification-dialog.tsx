@@ -13,7 +13,7 @@ import {
   employeeClassificationUpdateSchema,
   type EmployeeDetail,
 } from "@anvi/contracts";
-import { api, ApiError, useOrganization } from "../lib/api";
+import { api, ApiError, useOrganizationAll } from "../lib/api";
 import { useWorkspace } from "../routes/workspace";
 import { classificationCopy as text } from "../lib/copy/classification";
 import { organizationCopy } from "../lib/copy/organization";
@@ -42,14 +42,7 @@ function UnitSelect({
   onChange: (id: string) => void;
   disabled: boolean;
 }) {
-  const units = useOrganization(
-    new URLSearchParams({
-      kind,
-      q: "",
-      page: "1",
-      limit: "50",
-    }).toString(),
-  );
+  const units = useOrganizationAll(kind);
   if (units.error)
     return (
       <ErrorState

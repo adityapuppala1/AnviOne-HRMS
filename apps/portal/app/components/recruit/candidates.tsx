@@ -229,6 +229,7 @@ export function CandidatesTab() {
       </div>
       <CollectionView
         id="recruit-candidates"
+        urlState
         label={text.tabs.candidates}
         noun="candidates"
         items={list.data?.items ?? []}

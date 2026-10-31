@@ -17,7 +17,7 @@ import {
   type LrnAssignResult,
   type LrnCourse,
 } from "@anvi/contracts";
-import { useOrganization, usePeopleSearch } from "../../lib/api";
+import { useOrganizationAll, usePeopleSearch } from "../../lib/api";
 import { useLrnCourses } from "../../lib/learning-api";
 import { learningCopy as text } from "../../lib/copy/learning";
 import { AssignmentsTab } from "./assignments";
@@ -452,7 +452,7 @@ function UnitPicker({
   onChange: (id: string) => void;
 }) {
   const a = text.assign;
-  const units = useOrganization(`kind=${kind}&limit=50`);
+  const units = useOrganizationAll(kind);
   const options = (units.data?.items ?? []).filter((u) => u.inEffect);
   return units.error ? (
     <p role="alert" className="inline-error">

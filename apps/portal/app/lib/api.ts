@@ -11,6 +11,7 @@ import {
   auditSchema,
   authConfigSchema,
   organizationDirectorySchema,
+  type OrganizationUnit,
   assignedTaskListSchema,
   leaveOverviewSchema,
   leaveApprovalsSchema,
@@ -182,6 +183,31 @@ export const useOrganization = (query: string) =>
     queryKey: ["organization", query],
     queryFn: ({ signal }) =>
       api(`/organization?${query}`, organizationDirectorySchema, { signal }),
+  });
+// Pickers need every unit, not the first page. The API caps a page at 50, so walk the pages
+// (bounded, so a runaway directory cannot loop forever) and return one combined list.
+const ORG_PAGE = 50;
+const ORG_MAX_PAGES = 40;
+export const useOrganizationAll = (kind: OrganizationUnit["kind"]) =>
+  useQuery({
+    queryKey: ["organization", "all", kind],
+    queryFn: async ({ signal }) => {
+      const first = await api(
+        `/organization?kind=${kind}&page=1&limit=${ORG_PAGE}`,
+        organizationDirectorySchema,
+        { signal },
+      );
+      const items = [...first.items];
+      for (let page = 2; page <= Math.min(first.pages, ORG_MAX_PAGES); page++) {
+        const next = await api(
+          `/organization?kind=${kind}&page=${page}&limit=${ORG_PAGE}`,
+          organizationDirectorySchema,
+          { signal },
+        );
+        items.push(...next.items);
+      }
+      return { ...first, items, page: 1 };
+    },
   });
 export const useAssignedTasks = () =>
   useQuery({

@@ -124,6 +124,8 @@ const swapColumns = `s.id, ${day("s.work_date")} AS "workDate", s.status, s.vers
   (shf_is_report(s.requester_id) AND shf_is_report(s.target_id)) AS "teamApprover"`;
 const swapFrom = `shf_swap s JOIN shf_template rt ON rt.id=s.requester_template_id
   JOIN shf_template tt ON tt.id=s.target_template_id`;
+// manager_id is NULL for entity-wide (HR) open shifts, so `posted` is wrapped in COALESCE: a NULL
+// there failed response parsing and made the open and claims lists answer 500 for everyone else.
 const openColumns = `o.id, o.template_id AS "templateId", t.code AS "templateCode", t.name AS "templateName", t.colour,
   ${day("o.work_date")} AS "workDate", ${local("o.start_at")} AS "startAt", ${local("o.end_at")} AS "endAt",
   o.break_minutes AS "breakMinutes", ${minutes("o")} AS "plannedMinutes", o.audience, o.status,
@@ -1253,6 +1255,8 @@ export class ShiftStore {
     if (!isMonday(weekStart))
       throw new BadRequestException("A roster week starts on a Monday.");
   }
+  // Serialises writers on one record (two claims on one open shift, a swap and a withdrawal) for
+  // the rest of the transaction. Take it before reading the row, never after.
   private async lock(client: PoolClient, key: string, id: string) {
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended($1||':'||$2::text,0))",

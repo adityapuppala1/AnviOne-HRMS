@@ -298,6 +298,7 @@ export function RequisitionsTab({ canManage }: { canManage: boolean }) {
       </div>
       <CollectionView
         id="recruit-requisitions"
+        urlState
         label={text.tabs.requisitions}
         noun="requisitions"
         items={list.data?.items ?? []}

@@ -685,6 +685,7 @@ function TeamToday({
         ) : (
           <CollectionView
             id="attendance-board"
+            urlState
             label={text.team.boardTitle(longDate(date))}
             noun="people"
             items={people}

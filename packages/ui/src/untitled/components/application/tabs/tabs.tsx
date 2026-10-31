@@ -11,6 +11,7 @@ import {
   Tab as AriaTab,
   TabList as AriaTabList,
   TabPanel as AriaTabPanel,
+  SelectionIndicator,
   Tabs as AriaTabs,
   TabsContext,
   useSlottedContext,
@@ -66,11 +67,14 @@ const getTabStyles = ({
     (isSelected || isHovered) &&
       "bg-primary_alt text-secondary shadow-xs ring-1 ring-primary ring-inset *:data-icon:text-fg-secondary_hover",
   ),
+  // The selected underline is drawn by <SelectionIndicator> (see Tab), so it can slide between tabs.
+  // Hover keeps the plain border, which is hidden under the indicator once a tab is selected.
   underline: cx(
-    "rounded-none border-b-2 border-transparent outline-focus-ring *:data-icon:text-fg-quaternary",
+    "relative rounded-none border-b-2 border-transparent outline-focus-ring *:data-icon:text-fg-quaternary",
     isFocusVisible && "outline-2 -outline-offset-2",
+    isHovered && !isSelected && "border-fg-brand-primary_alt",
     (isSelected || isHovered) &&
-      "border-fg-brand-primary_alt text-brand-secondary *:data-icon:text-fg-brand-secondary_hover",
+      "text-brand-secondary *:data-icon:text-fg-brand-secondary_hover",
   ),
   line: cx(
     "rounded-none border-l-2 border-transparent outline-focus-ring *:data-icon:text-fg-quaternary",
@@ -251,6 +255,11 @@ export const Tab = ({
     >
       {(state) => (
         <>
+          {/* Sliding underline: React Aria moves this one element between tabs with a view
+              transition. The motion is styled in theme.css and switched off for reduced motion. */}
+          {type === "underline" && (
+            <SelectionIndicator className="tab-indicator absolute inset-x-0 -bottom-0.5 h-0.5 bg-fg-brand-primary_alt" />
+          )}
           {/* Icon */}
           {isValidElement(Icon) && Icon}
           {isReactComponent(Icon) && (

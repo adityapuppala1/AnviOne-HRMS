@@ -19,6 +19,7 @@ import {
   MenuTrigger as AriaMenuTrigger,
   Popover as AriaPopover,
   Separator as AriaSeparator,
+  SubmenuTrigger as AriaSubmenuTrigger,
 } from "react-aria-components";
 import { cx } from "../../../utils/cx";
 import { Avatar } from "../avatar/avatar";
@@ -258,6 +259,8 @@ const DropdownDotsButton = (
 
 export const Dropdown = {
   Root: AriaMenuTrigger,
+  /** Wraps an item and a nested `Popover` to build a sub-menu (flyout). */
+  Submenu: AriaSubmenuTrigger,
   Popover: DropdownPopover,
   Menu: DropdownMenu,
   Section: AriaMenuSection,

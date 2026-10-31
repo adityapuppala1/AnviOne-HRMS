@@ -22,7 +22,7 @@ import type { Icon } from "@phosphor-icons/react";
 import {
   Button,
   CollectionView,
-  Dropdown,
+  RowActionsMenu,
   DialogPanel,
   EmptyBlock,
   ErrorState,
@@ -521,22 +521,16 @@ function RowActions({
           <PencilSimple size={19} />
         </Button>
       )}
-      <Dropdown.Root>
-        <Button variant="icon" aria-label={text.rowActions(unit.name)}>
-          <DotsThreeVertical size={20} weight="bold" />
-        </Button>
-        <Dropdown.Popover>
-          <Dropdown.Menu
-            onAction={(key) => {
-              if (key === "details") onDetails();
-              if (key === "merge") onMerge();
-            }}
-          >
-            <Dropdown.Item id="details" label={text.viewDetails} />
-            {canMerge && <Dropdown.Item id="merge" label={text.mergeInto} />}
-          </Dropdown.Menu>
-        </Dropdown.Popover>
-      </Dropdown.Root>
+      <RowActionsMenu
+        label={text.rowActions(unit.name)}
+        trigger={<DotsThreeVertical size={20} weight="bold" />}
+        actions={[
+          { id: "details", label: text.viewDetails, onAction: onDetails },
+          ...(canMerge
+            ? [{ id: "merge", label: text.mergeInto, onAction: onMerge }]
+            : []),
+        ]}
+      />
     </div>
   );
 }

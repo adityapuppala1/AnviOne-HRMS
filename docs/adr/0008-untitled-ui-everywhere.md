@@ -96,3 +96,9 @@ The Shifts screen (`/shifts`, SHF-01) is built on the kit from the start: `UTabs
 - Avatars: `AvatarLabelGroup` and `AvatarProfilePhoto` vendored; the Attendance team board uses the label group. Other people lists keep the Loom `Avatar` until migrated. Badges: `BadgeGroup` vendored. Empty state and `FeaturedIcon` were already in use through `EmptyBlock`.
 - Metrics: the free starter kit has no stat or metric card, so `StatCard` (already built on the kit `FeaturedIcon`) stays our pattern; numbers remain text.
 - Icons: the kit uses `@untitledui/icons`; the portal uses Phosphor in hundreds of places and the kit set does not cover every glyph the portal needs, so we keep Phosphor and use `@untitledui/icons` only inside vendored kit components.
+
+## Navigation, menus and accordion (U1 to U3)
+
+- Sidebar: `SidebarNavSections` (kit sections with sub-headings) and `SidebarNavDividers`/`NavList` (kit simple list with dividers and collapsible groups) are vendored from the starter kit under `app-navigation`. The workspace rail uses sub-headings; the phone and tablet drawer uses the kit slide-in modal (`MobileNavigationDrawer`). Not vendored: dual-tier and slim sidebars (the portal keeps its own collapse-to-icons rail), the kit mobile header (the portal top bar already has the menu button) and the kit account card. The 800px breakpoint that swaps the rail for the drawer and bottom bar is unchanged.
+- Menus: `Dropdown.Submenu` (flyout), `RowActionsMenu` (icon menu, 44px trigger) and `ContextMenu` are composed from the vendored `Dropdown`. Organization row actions use `RowActionsMenu`. The account and role switcher stays a dialog because many tests drive it. Search dropdown variants are not vendored; `ComboBox` covers search.
+- Accordion: hand-built from kit tokens and primitives (the kit has none). Used on the Help centre topics.

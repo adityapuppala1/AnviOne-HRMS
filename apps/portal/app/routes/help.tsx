@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
-import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
 import { Keyboard } from "@phosphor-icons/react/dist/csr/Keyboard";
 import { Question } from "@phosphor-icons/react/dist/csr/Question";
-import { Button, EmptyBlock, PageHeader, Input } from "@anvi/ui";
+import { Accordion, Button, EmptyBlock, PageHeader, Input } from "@anvi/ui";
 import { helpCopy as text } from "../lib/copy/insights";
 import "./help.css";
 
@@ -68,15 +67,19 @@ export default function Help() {
                 aria-labelledby={`topic-${topic.id}`}
               >
                 <h2 id={`topic-${topic.id}`}>{topic.title}</h2>
-                {topic.articles.map((article) => (
-                  <details key={article.q} open={Boolean(term)}>
-                    <summary>
-                      <span>{article.q}</span>
-                      <CaretDown size={16} aria-hidden="true" />
-                    </summary>
-                    <p>{article.a}</p>
-                  </details>
-                ))}
+                <Accordion
+                  key={term ? "searching" : "browsing"}
+                  className="rounded-none shadow-none ring-0"
+                  headingLevel={3}
+                  defaultOpenIds={
+                    term ? topic.articles.map((article) => article.q) : []
+                  }
+                  items={topic.articles.map((article) => ({
+                    id: article.q,
+                    title: article.q,
+                    content: <p>{article.a}</p>,
+                  }))}
+                />
               </section>
             ))
           )}

@@ -57,6 +57,16 @@ export const copy = {
     insights: "Insights",
     help: "Help centre",
     waiting: (count: number) => `${count} waiting`,
+    drawer: "Your workspace",
+    closeDrawer: "Close navigation menu",
+    groups: {
+      home: "Home",
+      people: "People",
+      time: "Time and approvals",
+      work: "Work and growth",
+      money: "Documents and spend",
+      admin: "Insight and admin",
+    },
   },
   shell: {
     workspace: "Workspace",

@@ -88,3 +88,9 @@ The Learning screen (`/learning`, LRN-01) is built on the kit: `UTabs`, `Collect
 ## Shifts (29 October 2026)
 
 The Shifts screen (`/shifts`, SHF-01) is built on the kit from the start: `UTabs`, `CollectionView` with server paging for swaps, open shifts, claims and templates (cards and table), the slide-over `DetailPanel` for a shift's history, `Select`, `Input`, `TextArea`, `Checkbox`, `RangeInput` (date and time), `StatusBadge`, `DialogPanel`. Not in the kit and built on Loom tokens: the seven-day week view and the team week grid (a table that folds into per-person cards under 860 px), shift cards (template colour as a stripe plus text label) and a native radio group for the template colour. Source in `apps/portal/app/components/shifts/`.
+
+## Navigation, menus and accordion (U1 to U3)
+
+- Sidebar: `SidebarNavSections` (kit sections with sub-headings) and `SidebarNavDividers`/`NavList` (kit simple list with dividers and collapsible groups) are vendored from the starter kit under `app-navigation`. The workspace rail uses sub-headings; the phone and tablet drawer uses the kit slide-in modal (`MobileNavigationDrawer`). Not vendored: dual-tier and slim sidebars (the portal keeps its own collapse-to-icons rail), the kit mobile header (the portal top bar already has the menu button) and the kit account card. The 800px breakpoint that swaps the rail for the drawer and bottom bar is unchanged.
+- Menus: `Dropdown.Submenu` (flyout), `RowActionsMenu` (icon menu, 44px trigger) and `ContextMenu` are composed from the vendored `Dropdown`. Organization row actions use `RowActionsMenu`. The account and role switcher stays a dialog because many tests drive it. Search dropdown variants are not vendored; `ComboBox` covers search.
+- Accordion: hand-built from kit tokens and primitives (the kit has none). Used on the Help centre topics.

@@ -192,6 +192,19 @@ export { EmptyState } from "./untitled/components/application/empty-state/empty-
 export { Button as UButton } from "./untitled/components/base/buttons/button";
 export { Tabs as UTabs } from "./untitled/components/application/tabs/tabs";
 
+// Data display kit pieces (U7-U12): segmented control, pagination variants,
+// avatar label group and profile photo, badge groups.
+export { SegmentedControl, type SegmentedOption } from "./segmented";
+export {
+  PaginationPageDefault,
+  PaginationPageMinimalCenter,
+} from "./untitled/components/application/pagination/pagination";
+export { PaginationLine } from "./untitled/components/application/pagination/pagination-line";
+export { PaginationDot } from "./untitled/components/application/pagination/pagination-dot";
+export { AvatarLabelGroup } from "./untitled/components/base/avatar/avatar-label-group";
+export { AvatarProfilePhoto } from "./untitled/components/base/avatar/avatar-profile-photo";
+export { BadgeGroup } from "./untitled/components/base/badges/badge-groups";
+
 // Shared list pattern: cards or table, paging, details panel (ADR 0010).
 export {
   CollectionView,

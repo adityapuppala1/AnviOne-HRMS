@@ -15,7 +15,8 @@ import {
   EmptyBlock,
   ErrorState,
   Input,
-  PaginationCardMinimal,
+  PaginationPageDefault,
+  SegmentedControl,
   Select,
   StatusBadge,
   TextArea,
@@ -263,13 +264,11 @@ export function KudosList({
             )}
       </p>
       {pages > 1 && (
-        <PaginationCardMinimal
+        <PaginationPageDefault
+          rounded
           page={page}
           total={pages}
-          pageSize={limit}
-          align="left"
           onPageChange={setPage}
-          className="rounded-xl border"
         />
       )}
       <ModerateDialog item={moderating} onClose={() => setModerating(null)} />
@@ -556,18 +555,16 @@ export function MineTab() {
   const [view, setView] = useState<"received" | "given">("received");
   return (
     <div className="eng-tab perf-tab">
-      <div className="eng-switch" role="group" aria-label={text.mine.viewLabel}>
-        {(["received", "given"] as const).map((key) => (
-          <button
-            key={key}
-            type="button"
-            className="eng-pill"
-            aria-pressed={view === key}
-            onClick={() => setView(key)}
-          >
-            {text.mine[key]}
-          </button>
-        ))}
+      <div className="eng-switch">
+        <SegmentedControl
+          label={text.mine.viewLabel}
+          value={view}
+          onChange={setView}
+          options={[
+            { key: "received", label: text.mine.received },
+            { key: "given", label: text.mine.given },
+          ]}
+        />
       </div>
       <KudosList
         view={view}

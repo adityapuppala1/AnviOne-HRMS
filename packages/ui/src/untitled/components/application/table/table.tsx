@@ -264,7 +264,13 @@ const TableHead = ({
       }
     >
       {(state) => (
-        <AriaGroup className="flex items-center gap-1">
+        <AriaGroup
+          className={cx(
+            "flex items-center gap-1",
+            // 44px touch target for sortable headers (WCAG 2.2 target size).
+            state.allowsSorting && "min-h-11",
+          )}
+        >
           <div className="flex items-center gap-1">
             {label && (
               <span className="text-xs font-semibold whitespace-nowrap text-quaternary">

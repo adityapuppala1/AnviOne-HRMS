@@ -88,3 +88,11 @@ The Learning screen (`/learning`, LRN-01) is built on the kit: `UTabs`, `Collect
 ## Shifts (29 October 2026)
 
 The Shifts screen (`/shifts`, SHF-01) is built on the kit from the start: `UTabs`, `CollectionView` with server paging for swaps, open shifts, claims and templates (cards and table), the slide-over `DetailPanel` for a shift's history, `Select`, `Input`, `TextArea`, `Checkbox`, `RangeInput` (date and time), `StatusBadge`, `DialogPanel`. Not in the kit and built on Loom tokens: the seven-day week view and the team week grid (a table that folds into per-person cards under 860 px), shift cards (template colour as a stripe plus text label) and a native radio group for the template colour. Source in `apps/portal/app/components/shifts/`.
+
+## Data display pass (U7 to U12, U16)
+
+- Sorting: sortable table headers use the kit sort affordance (react-aria sets `aria-sort`) with a 44 px target. Pagination: `CollectionView`, `DataCard` and the recognition feed all use the kit numbered `PaginationPageDefault` (previous and next, "Page x of y" on phones); the line and dot variants are vendored but unused. The live "Showing x to y of n" region and the page-size select stay.
+- Button groups: a new `SegmentedControl` (`packages/ui/src/segmented.tsx`, built on the kit `ButtonGroup`) replaces hand-styled toggles on People (grid or list), My roster (week or list), Recognition Mine (received or given) and the Settings preview size. Options are now `radio` roles inside a labelled group (was `button` with `aria-pressed`); `tests/e2e/atlas.spec.ts` and `shifts.spec.ts` were updated.
+- Avatars: `AvatarLabelGroup` and `AvatarProfilePhoto` vendored; the Attendance team board uses the label group. Other people lists keep the Loom `Avatar` until migrated. Badges: `BadgeGroup` vendored. Empty state and `FeaturedIcon` were already in use through `EmptyBlock`.
+- Metrics: the free starter kit has no stat or metric card, so `StatCard` (already built on the kit `FeaturedIcon`) stays our pattern; numbers remain text.
+- Icons: the kit uses `@untitledui/icons`; the portal uses Phosphor in hundreds of places and the kit set does not cover every glyph the portal needs, so we keep Phosphor and use `@untitledui/icons` only inside vendored kit components.

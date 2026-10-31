@@ -305,10 +305,10 @@ test("shifts run from templates and a published week to swaps and open shifts", 
       ).toBeVisible();
       await shot(page, "shift-details");
       await page.keyboard.press("Escape");
-      await page.getByRole("button", { name: "List view" }).click();
+      await page.getByRole("radio", { name: "List view" }).click();
       await expect(page.getByText(/Showing 1–\d+ of \d+/)).toBeVisible();
       await shot(page, "my-roster-list");
-      await page.getByRole("button", { name: "Week view" }).click();
+      await page.getByRole("radio", { name: "Week view" }).click();
     });
 
     async function propose(date: string) {

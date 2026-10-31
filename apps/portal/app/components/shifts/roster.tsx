@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { CalendarBlank } from "@phosphor-icons/react/dist/csr/CalendarBlank";
-import { Button, CollectionView, ErrorState, type Column } from "@anvi/ui";
+import {
+  CollectionView,
+  ErrorState,
+  SegmentedControl,
+  type Column,
+} from "@anvi/ui";
 import type { ShfAssignment } from "@anvi/contracts";
 import { useShfRoster } from "../../lib/shifts-api";
 import { shiftsCopy as text } from "../../lib/copy/shifts";
@@ -156,26 +161,15 @@ export function MyRosterTab() {
     <div className="perf-tab hd-tab shf-tab">
       <div className="shf-toolbar">
         <WeekNav monday={monday} onChange={setMonday} />
-        <div
-          className="shf-toggle"
-          role="group"
-          aria-label={text.week.viewLabel}
-        >
-          <Button
-            variant={view === "week" ? "primary" : "secondary"}
-            aria-pressed={view === "week"}
-            onPress={() => setView("week")}
-          >
-            {mode.viewWeek}
-          </Button>
-          <Button
-            variant={view === "list" ? "primary" : "secondary"}
-            aria-pressed={view === "list"}
-            onPress={() => setView("list")}
-          >
-            {mode.viewList}
-          </Button>
-        </div>
+        <SegmentedControl
+          label={text.week.viewLabel}
+          value={view}
+          onChange={setView}
+          options={[
+            { key: "week", label: mode.viewWeek },
+            { key: "list", label: mode.viewList },
+          ]}
+        />
       </div>
       <WeekStatus monday={monday} />
       {notice && (

@@ -14,6 +14,7 @@ import {
   ErrorState,
   LoadingState,
   PageHeader,
+  SegmentedControl,
   StatusBadge,
   type Column,
   Input,
@@ -168,24 +169,15 @@ function Directory() {
               </Button>
             )}
           </div>
-          <div className="view-toggle" aria-label={text.displayLabel}>
-            <Button
-              variant="icon"
-              aria-label={text.gridView}
-              aria-pressed={view === "grid"}
-              onPress={() => setView("grid")}
-            >
-              <LayoutGrid size={17} />
-            </Button>
-            <Button
-              variant="icon"
-              aria-label={text.listView}
-              aria-pressed={view === "list"}
-              onPress={() => setView("list")}
-            >
-              <List size={18} />
-            </Button>
-          </div>
+          <SegmentedControl
+            label={text.displayLabel}
+            value={view}
+            onChange={setView}
+            options={[
+              { key: "grid", ariaLabel: text.gridView, icon: LayoutGrid },
+              { key: "list", ariaLabel: text.listView, icon: List },
+            ]}
+          />
         </div>
         {error ? (
           <ErrorState message={error.message} onRetry={() => void refetch()} />

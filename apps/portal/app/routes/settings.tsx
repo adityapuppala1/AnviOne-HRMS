@@ -13,6 +13,7 @@ import {
   Badge,
   MagicCard,
   PageHeader,
+  SegmentedControl,
   Input,
 } from "@anvi/ui";
 import { brandingSchema, type Theme } from "@anvi/contracts";
@@ -190,24 +191,23 @@ export default function Settings() {
         <aside className={`settings-preview preview-${form.theme}`}>
           <div className="preview-heading">
             <p className="eyebrow">{text.preview.eyebrow}</p>
-            <div className="view-toggle">
-              <Button
-                variant="icon"
-                aria-label={text.preview.desktop}
-                aria-pressed={previewMode === "desktop"}
-                onPress={() => setPreviewMode("desktop")}
-              >
-                <Desktop size={18} />
-              </Button>
-              <Button
-                variant="icon"
-                aria-label={text.preview.mobile}
-                aria-pressed={previewMode === "mobile"}
-                onPress={() => setPreviewMode("mobile")}
-              >
-                <DeviceMobile size={18} />
-              </Button>
-            </div>
+            <SegmentedControl
+              label={text.preview.modeLabel}
+              value={previewMode}
+              onChange={setPreviewMode}
+              options={[
+                {
+                  key: "desktop",
+                  ariaLabel: text.preview.desktop,
+                  icon: Desktop,
+                },
+                {
+                  key: "mobile",
+                  ariaLabel: text.preview.mobile,
+                  icon: DeviceMobile,
+                },
+              ]}
+            />
           </div>
           <MagicCard disabled={reduceMotion} className="brand-preview-magic">
             <div className={`preview-window preview-device-${previewMode}`}>

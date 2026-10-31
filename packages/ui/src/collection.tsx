@@ -15,7 +15,7 @@ import {
   Table,
   TableCard,
 } from "./untitled/components/application/table/table";
-import { PaginationCardMinimal } from "./untitled/components/application/pagination/pagination";
+import { PaginationPageDefault } from "./untitled/components/application/pagination/pagination";
 import {
   ButtonGroup,
   ButtonGroupItem,
@@ -447,13 +447,12 @@ export function CollectionView<T extends object>({
       {!loading && total > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           {pages > 1 ? (
-            <PaginationCardMinimal
+            <PaginationPageDefault
+              rounded
               page={page}
               total={pages}
-              pageSize={limit}
-              align="left"
               onPageChange={goTo}
-              className="min-w-[16rem] flex-1 rounded-xl border"
+              className="min-w-[16rem] flex-1"
             />
           ) : (
             <span />

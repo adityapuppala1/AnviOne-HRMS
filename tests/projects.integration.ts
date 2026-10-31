@@ -142,13 +142,24 @@ await test("Projects: membership, tasks, time logging, approval and the guards u
     return fresh[0]!;
   };
   const seen = new Set<string>();
-  // Rohan gets a synthetic manager binding so he can own projects; removed in cleanup.
-  const rohanBinding = randomUUID();
+  // Rohan already has an active demo binding; the one-active-binding rule allows only one,
+  // so the test reuses it and never inserts or deletes that row.
+  // Rohan already has an active demo binding (employee role only). The one-active-binding
+  // rule allows only one, so the test reuses it, grants manager for the run, and restores
+  // the original roles in cleanup. It never inserts or deletes the row.
+  const rohanRow = (
+    await admin.query<{ id: string; roles: string[] }>(
+      "SELECT id, roles FROM identity_binding WHERE active AND employee_id=$1 AND entity_id=$2 LIMIT 1",
+      [rohan, actor.entityId],
+    )
+  ).rows[0]!;
+  const rohanBinding = rohanRow.id;
+  const rohanOriginalRoles = rohanRow.roles;
   await admin.query(
-    `INSERT INTO identity_binding(id,tenant_id,entity_id,employee_id,issuer,subject,active,roles)
-     VALUES ($1,$2,$3,$4,'urn:anvione:projects-test',$5,true,ARRAY['employee','manager'])`,
-    [rohanBinding, actor.tenantId, actor.entityId, rohan, `projects-${run}`],
+    "UPDATE identity_binding SET roles=ARRAY['employee','manager'] WHERE id=$1",
+    [rohanBinding],
   );
+
   let p1: Project;
   let p2: Project;
   let task: ProjectTask;
@@ -890,8 +901,9 @@ await test("Projects: membership, tasks, time logging, approval and the guards u
     // Synthetic cleanup only: project history is never deleted at runtime.
     await transaction(admin, async (client) => {
       await client.query("SET LOCAL session_replication_role = replica");
-      await client.query("DELETE FROM identity_binding WHERE id=$1", [
+      await client.query("UPDATE identity_binding SET roles=$2 WHERE id=$1", [
         rohanBinding,
+        rohanOriginalRoles,
       ]);
       const entries = (
         await client.query<{ id: string }>(

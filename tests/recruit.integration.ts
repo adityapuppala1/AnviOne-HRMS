@@ -135,12 +135,20 @@ await test("Recruitment: requisitions, candidates, applications, interviews, sco
     candidates: [] as string[],
     cases: [] as string[],
   };
-  // Rohan gets a synthetic HR and manager binding for four-eyes steps; removed in cleanup.
-  const rohanBinding = randomUUID();
+  // Rohan already has an active demo binding; the one-active-binding rule allows only one,
+  // so the test reuses it, grants the roles the four-eyes steps need, and restores the
+  // original roles in cleanup. It never inserts or deletes the row.
+  const rohanRow = (
+    await admin.query<{ id: string; roles: string[] }>(
+      "SELECT id, roles FROM identity_binding WHERE active AND employee_id=$1 AND entity_id=$2 LIMIT 1",
+      [rohan, actor.entityId],
+    )
+  ).rows[0]!;
+  const rohanBinding = rohanRow.id;
+  const rohanOriginalRoles = rohanRow.roles;
   await admin.query(
-    `INSERT INTO identity_binding(id,tenant_id,entity_id,employee_id,issuer,subject,active,roles)
-     VALUES ($1,$2,$3,$4,'urn:anvione:recruit-test',$5,true,ARRAY['employee','manager','hr_admin'])`,
-    [rohanBinding, actor.tenantId, actor.entityId, rohan, `recruit-${run}`],
+    "UPDATE identity_binding SET roles=ARRAY['employee','manager','hr_admin'] WHERE id=$1",
+    [rohanBinding],
   );
   const requisitionBody = {
     title: `Synthetic engineer ${run}`,
@@ -1291,8 +1299,9 @@ await test("Recruitment: requisitions, candidates, applications, interviews, sco
     await transaction(admin, async (client) => {
       await client.query("SET LOCAL session_replication_role = replica");
       const restore = await alwaysOff(client);
-      await client.query("DELETE FROM identity_binding WHERE id=$1", [
+      await client.query("UPDATE identity_binding SET roles=$2 WHERE id=$1", [
         rohanBinding,
+        rohanOriginalRoles,
       ]);
       const q = async (sql: string) =>
         (await client.query<{ id: string }>(sql, [ids.requisitions])).rows.map(

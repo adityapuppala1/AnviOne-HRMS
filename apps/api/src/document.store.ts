@@ -56,24 +56,42 @@ export class DocumentStore {
         `SELECT ${columns} ${from} WHERE d.employee_id=$1 ORDER BY d.uploaded_at DESC LIMIT 100`,
         [actor.employeeId],
       );
-      return { items: rows.map((row) => this.present(actor, row)) };
+      const total = (
+        await client.query<{ n: number }>(
+          "SELECT count(*)::int AS n FROM employee_document d WHERE d.employee_id=$1",
+          [actor.employeeId],
+        )
+      ).rows[0]!.n;
+      return { items: rows.map((row) => this.present(actor, row)), total };
     });
   }
 
   async review(actor: Principal) {
     this.platform.require(actor, "document.review");
-    return scoped(this.platform.pool, actor, async (client) => ({
-      pending: (await this.pendingRows(client, actor)).map((row) =>
-        this.present(actor, row),
-      ),
-      recent: (
-        await client.query<Row>(
-          `SELECT ${columns} ${from} WHERE d.status<>'pending' AND d.employee_id<>$1
-           ORDER BY d.reviewed_at DESC LIMIT 20`,
+    return scoped(this.platform.pool, actor, async (client) => {
+      const totals = (
+        await client.query<{ pending: number; recent: number }>(
+          `SELECT count(*) FILTER (WHERE d.status='pending')::int AS pending,
+             count(*) FILTER (WHERE d.status<>'pending')::int AS recent
+           FROM employee_document d WHERE d.employee_id<>$1`,
           [actor.employeeId],
         )
-      ).rows.map((row) => this.present(actor, row)),
-    }));
+      ).rows[0]!;
+      return {
+        pendingTotal: totals.pending,
+        recentTotal: totals.recent,
+        pending: (await this.pendingRows(client, actor)).map((row) =>
+          this.present(actor, row),
+        ),
+        recent: (
+          await client.query<Row>(
+            `SELECT ${columns} ${from} WHERE d.status<>'pending' AND d.employee_id<>$1
+           ORDER BY d.reviewed_at DESC LIMIT 20`,
+            [actor.employeeId],
+          )
+        ).rows.map((row) => this.present(actor, row)),
+      };
+    });
   }
 
   async pendingForInbox(actor: Principal): Promise<EmployeeDocument[]> {

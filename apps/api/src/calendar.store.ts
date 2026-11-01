@@ -85,6 +85,7 @@ export class CalendarStore {
         today,
         workWeek: week.rows[0] ?? { days: [1, 2, 3, 4, 5], version: 1 },
         holidays: holidays.rows.map((h) => holidaySchema.parse(h)),
+        total: holidays.rows.length,
         locations: locations.rows,
         next: next.rows[0] ? holidaySchema.parse(next.rows[0]) : null,
         canManage,

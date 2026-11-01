@@ -102,6 +102,10 @@ export const directoryQuerySchema = z.object({
   location: z.string().max(60).default(""),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
+  sort: z
+    .enum(["name", "title", "department", "location", "joinedOn"])
+    .optional(),
+  dir: z.enum(["asc", "desc"]).default("asc"),
 });
 export const directorySchema = z.object({
   items: z.array(employeeSchema),
@@ -513,6 +517,12 @@ export const candidateSchema = z.object({
 export type Candidate = z.infer<typeof candidateSchema>;
 export const candidateListSchema = z.object({
   items: z.array(candidateSchema),
+  total: z.number().int().nonnegative(),
+});
+export const candidateQuerySchema = z.strictObject({
+  q: z.string().trim().max(80).default(""),
+  sort: z.enum(["name", "title", "joinedOn", "state", "createdAt"]).optional(),
+  dir: z.enum(["asc", "desc"]).default("asc"),
 });
 export const candidateOptionsSchema = z.object({
   departments: z.array(organizationUnitSchema),
@@ -755,11 +765,14 @@ export const leaveOverviewSchema = z.strictObject({
   calendar: personalCalendarSchema,
   balances: z.array(leaveBalanceSchema),
   requests: z.array(leaveRequestSchema),
+  total: z.number().int().nonnegative(),
 });
 export type LeaveOverview = z.infer<typeof leaveOverviewSchema>;
 export const leaveApprovalsSchema = z.strictObject({
   pending: z.array(leaveRequestSchema),
   decided: z.array(leaveRequestSchema),
+  pendingTotal: z.number().int().nonnegative(),
+  decidedTotal: z.number().int().nonnegative(),
 });
 export type LeaveApprovals = z.infer<typeof leaveApprovalsSchema>;
 export const leaveRequestCreateSchema = z
@@ -858,6 +871,7 @@ export const attendanceOverviewSchema = z.strictObject({
   record: attendanceRecordSchema.nullable(),
   days: z.array(attendanceDaySchema),
   corrections: z.array(attendanceCorrectionSchema),
+  correctionsTotal: z.number().int().nonnegative(),
 });
 export type AttendanceOverview = z.infer<typeof attendanceOverviewSchema>;
 export const attendanceTeamMemberSchema = z.strictObject({
@@ -874,6 +888,8 @@ export const attendanceTeamSchema = z.strictObject({
   people: z.array(attendanceTeamMemberSchema),
   pending: z.array(attendanceCorrectionSchema),
   decided: z.array(attendanceCorrectionSchema),
+  pendingTotal: z.number().int().nonnegative(),
+  decidedTotal: z.number().int().nonnegative(),
 });
 export type AttendanceTeam = z.infer<typeof attendanceTeamSchema>;
 export const attendanceCheckInSchema = z.strictObject({});
@@ -912,6 +928,7 @@ export const calendarSchema = z.strictObject({
   today: z.iso.date(),
   workWeek: workWeekSchema,
   holidays: z.array(holidaySchema),
+  total: z.number().int().nonnegative(),
   locations: z.array(z.strictObject({ id: z.uuid(), name: z.string() })),
   next: holidaySchema.nullable(),
   canManage: z.boolean(),
@@ -981,10 +998,13 @@ export const employeeDocumentSchema = z.strictObject({
 export type EmployeeDocument = z.infer<typeof employeeDocumentSchema>;
 export const documentListSchema = z.strictObject({
   items: z.array(employeeDocumentSchema),
+  total: z.number().int().nonnegative(),
 });
 export const documentReviewSchema = z.strictObject({
   pending: z.array(employeeDocumentSchema),
   recent: z.array(employeeDocumentSchema),
+  pendingTotal: z.number().int().nonnegative(),
+  recentTotal: z.number().int().nonnegative(),
 });
 export const documentUploadFieldsSchema = z.strictObject({
   category: documentCategorySchema,
@@ -1072,6 +1092,7 @@ export type ApprovalItem = z.infer<typeof approvalItemSchema>;
 export const approvalInboxSchema = z.strictObject({
   waiting: z.number().int().nonnegative(),
   items: z.array(approvalItemSchema),
+  total: z.number().int().nonnegative(),
 });
 export type ApprovalInbox = z.infer<typeof approvalInboxSchema>;
 const countByName = z.strictObject({
@@ -1507,6 +1528,7 @@ export const myExitSchema = z.strictObject({
 export type MyExit = z.infer<typeof myExitSchema>;
 export const exitListSchema = z.strictObject({
   items: z.array(exitCaseSchema),
+  total: z.number().int().nonnegative(),
   counts: z.strictObject({
     submitted: z.number().int().nonnegative(),
     accepted: z.number().int().nonnegative(),
@@ -1519,6 +1541,10 @@ export type ExitList = z.infer<typeof exitListSchema>;
 export const exitQuerySchema = z.strictObject({
   q: z.string().trim().max(80).default(""),
   status: exitStatusSchema.optional(),
+  sort: z
+    .enum(["employee", "kind", "status", "lastWorkingDay", "createdAt"])
+    .optional(),
+  dir: z.enum(["asc", "desc"]).default("desc"),
 });
 const exitReason = z.string().trim().min(3).max(500);
 const exitNote = z.string().trim().min(3).max(500);

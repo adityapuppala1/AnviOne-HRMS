@@ -13,6 +13,7 @@ import {
   localReviewSchema,
   assignedTaskListSchema,
   type candidateCreateSchema,
+  type candidateQuerySchema,
   type candidateActionSchema,
   type candidateReviewSchema,
   type localReviewProposalSchema,
@@ -24,6 +25,7 @@ import type { z } from "zod";
 import type { Principal } from "@anvi/authz";
 import { hash, opaque, type PlatformStore } from "./platform.store";
 import { previewKey, seal, unseal } from "./onboarding.crypto";
+import { buildOrderBy } from "./sort";
 import { readTasks, changeTask } from "./checklist";
 import { organizationUnitColumns } from "./organization.store";
 import {
@@ -33,6 +35,13 @@ import {
 } from "@anvi/contracts";
 const columns = `c.id,c.name,c.email,c.title,c.joined_on::text AS "joinedOn",c.state,c.version,c.invitation_expires_at AS "invitationExpiresAt",c.review_note AS "reviewNote",c.draft,d.name AS department,l.name AS location,p.name AS manager`;
 const joins = `candidate_case c JOIN org_unit d ON d.id=c.department_id JOIN org_unit l ON l.id=c.location_id JOIN employee e ON e.id=c.manager_id JOIN person p ON p.id=e.person_id`;
+const CANDIDATE_SORT = {
+  name: "lower(c.name)",
+  title: "lower(c.title)",
+  joinedOn: "c.joined_on",
+  state: "c.state",
+  createdAt: "c.created_at",
+} as const;
 export class OnboardingStore {
   constructor(private readonly platform: PlatformStore) {}
   private allow(actor: Principal) {
@@ -62,15 +71,30 @@ export class OnboardingStore {
       invitationExpiresAt: row.invitationExpiresAt?.toISOString() ?? null,
     });
   }
-  async list(actor: Principal, q: string) {
+  async list(actor: Principal, query: z.infer<typeof candidateQuerySchema>) {
     this.allow(actor);
     return scoped(this.platform.pool, actor, async (client) => {
-      const term = `%${q.replace(/[\\%_]/g, "\\$&")}%`;
+      const term = `%${query.q.replace(/[\\%_]/g, "\\$&")}%`;
+      const where = "c.name ILIKE $1 OR c.email ILIKE $1";
+      const total = (
+        await client.query<{ n: number }>(
+          `SELECT count(*)::int AS n FROM ${joins} WHERE ${where}`,
+          [term],
+        )
+      ).rows[0]!.n;
+      const order = buildOrderBy(
+        CANDIDATE_SORT,
+        query.sort,
+        query.dir,
+        "c.created_at DESC, c.id",
+        "c.id",
+      );
       const { rows } = await client.query(
-        `SELECT ${columns} FROM ${joins} WHERE c.name ILIKE $1 OR c.email ILIKE $1 ORDER BY c.created_at DESC,c.id LIMIT 50`,
+        `SELECT ${columns} FROM ${joins} WHERE ${where} ORDER BY ${order} LIMIT 50`,
         [term],
       );
       return {
+        total,
         items: rows.map((row) =>
           candidateSchema.parse({
             ...row,

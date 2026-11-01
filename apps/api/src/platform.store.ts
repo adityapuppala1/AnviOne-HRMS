@@ -40,6 +40,7 @@ import {
 import type { z } from "zod";
 import { readClassification } from "./organization.store";
 import type { Config } from "./config";
+import { buildOrderBy } from "./sort";
 
 export const hash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
@@ -48,6 +49,13 @@ export type SessionActor = Principal & {
   csrfToken: string;
   entityName: string;
 };
+const DIRECTORY_SORT = {
+  name: "lower(name)",
+  title: "lower(title)",
+  department: "lower(department)",
+  location: "lower(location)",
+  joinedOn: "joined_on",
+} as const;
 const employeeColumns = `id, code, name, title, department, location, email, joined_on::text AS "joinedOn", status, initials`;
 // History trigger/guard SQLSTATEs map to generic messages; trigger text is never returned.
 const brandingError = (error: unknown): never => {
@@ -220,8 +228,15 @@ export class PlatformStore {
       const total = Number(count.rows[0]!.count);
       const pages = Math.max(1, Math.ceil(total / query.limit));
       const page = Math.min(query.page, pages);
+      const order = buildOrderBy(
+        DIRECTORY_SORT,
+        query.sort,
+        query.dir,
+        "name,id",
+        "id",
+      );
       const result = await client.query(
-        `SELECT ${employeeColumns} FROM employee_directory WHERE ${where} ORDER BY name,id LIMIT $4 OFFSET $5`,
+        `SELECT ${employeeColumns} FROM employee_directory WHERE ${where} ORDER BY ${order} LIMIT $4 OFFSET $5`,
         [...params, query.limit, (page - 1) * query.limit],
       );
       const facets = await client.query<{

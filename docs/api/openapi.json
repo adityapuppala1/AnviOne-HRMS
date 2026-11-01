@@ -4305,6 +4305,11 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
@@ -4312,7 +4317,8 @@
                     "today",
                     "calendar",
                     "balances",
-                    "requests"
+                    "requests",
+                    "total"
                   ],
                   "additionalProperties": false
                 }
@@ -4731,9 +4737,24 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "pendingTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "decidedTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["pending", "decided"],
+                  "required": [
+                    "pending",
+                    "decided",
+                    "pendingTotal",
+                    "decidedTotal"
+                  ],
                   "additionalProperties": false
                 }
               }
@@ -6173,9 +6194,21 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "correctionsTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["today", "now", "record", "days", "corrections"],
+                  "required": [
+                    "today",
+                    "now",
+                    "record",
+                    "days",
+                    "corrections",
+                    "correctionsTotal"
+                  ],
                   "additionalProperties": false
                 }
               }
@@ -6633,9 +6666,26 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "pendingTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "decidedTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["date", "people", "pending", "decided"],
+                  "required": [
+                    "date",
+                    "people",
+                    "pending",
+                    "decided",
+                    "pendingTotal",
+                    "decidedTotal"
+                  ],
                   "additionalProperties": false
                 }
               }
@@ -8359,6 +8409,11 @@
                         "additionalProperties": false
                       }
                     },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
                     "locations": {
                       "type": "array",
                       "items": {
@@ -8444,6 +8499,7 @@
                     "today",
                     "workWeek",
                     "holidays",
+                    "total",
                     "locations",
                     "next",
                     "canManage"
@@ -9783,9 +9839,14 @@
                           }
                         ]
                       }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["waiting", "items"],
+                  "required": ["waiting", "items", "total"],
                   "additionalProperties": false
                 }
               }
@@ -10081,9 +10142,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["items"],
+                  "required": ["items", "total"],
                   "additionalProperties": false
                 }
               }
@@ -10792,9 +10858,24 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "pendingTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "recentTotal": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["pending", "recent"],
+                  "required": [
+                    "pending",
+                    "recent",
+                    "pendingTotal",
+                    "recentTotal"
+                  ],
                   "additionalProperties": false
                 }
               }
@@ -17039,9 +17120,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
-                  "required": ["items"],
+                  "required": ["items", "total"],
                   "additionalProperties": false
                 }
               }

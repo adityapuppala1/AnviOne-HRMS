@@ -11,6 +11,7 @@ import {
 import { z } from "zod";
 import {
   candidateCreateSchema,
+  candidateQuerySchema,
   candidateActionSchema,
   candidateReviewSchema,
   candidateTaskCreateSchema,
@@ -39,11 +40,8 @@ export class OnboardingController {
     @Req() req: AppRequest,
     @Query() query: unknown,
   ) {
-    const q = parse(
-      z.object({ q: z.string().trim().max(80).default("") }).strict(),
-      query,
-    );
-    return this.onboarding.list(req.actor, q.q);
+    const q = parse(candidateQuerySchema, query);
+    return this.onboarding.list(req.actor, q);
   }
   @Post("api/v1/candidates") createCandidate(
     @Req() req: AppRequest,

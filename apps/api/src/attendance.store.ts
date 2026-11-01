@@ -97,6 +97,12 @@ export class AttendanceStore {
          WHERE c.employee_id=$1 ORDER BY c.created_at DESC LIMIT 30`,
         [actor.employeeId],
       );
+      const correctionsTotal = (
+        await client.query<{ n: number }>(
+          "SELECT count(*)::int AS n FROM attendance_correction c WHERE c.employee_id=$1",
+          [actor.employeeId],
+        )
+      ).rows[0]!.n;
       return {
         today,
         now,
@@ -115,6 +121,7 @@ export class AttendanceStore {
           };
         }),
         corrections: corrections.rows.map((row) => this.present(actor, row)),
+        correctionsTotal,
       };
     });
   }
@@ -177,6 +184,14 @@ export class AttendanceStore {
          ORDER BY c.decided_at DESC LIMIT 20`,
         [actor.employeeId],
       );
+      const totals = (
+        await client.query<{ pending: number; decided: number }>(
+          `SELECT count(*) FILTER (WHERE c.state='pending')::int AS pending,
+             count(*) FILTER (WHERE c.state<>'pending')::int AS decided
+           FROM attendance_correction c WHERE c.employee_id<>$1`,
+          [actor.employeeId],
+        )
+      ).rows[0]!;
       return {
         date: today,
         people: people.rows.map(({ onLeave, onHoliday, ...person }) => ({
@@ -185,6 +200,8 @@ export class AttendanceStore {
         })),
         pending: pending.map((row) => this.present(actor, row)),
         decided: decided.rows.map((row) => this.present(actor, row)),
+        pendingTotal: totals.pending,
+        decidedTotal: totals.decided,
       };
     });
   }

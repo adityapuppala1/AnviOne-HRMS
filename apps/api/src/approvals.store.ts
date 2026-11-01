@@ -98,6 +98,10 @@ export class ApprovalsStore {
         Number(b.canDecide) - Number(a.canDecide) ||
         a.submittedAt.localeCompare(b.submittedAt),
     );
-    return { waiting: items.filter((i) => i.canDecide).length, items };
+    return {
+      waiting: items.filter((i) => i.canDecide).length,
+      items,
+      total: items.length,
+    };
   }
 }

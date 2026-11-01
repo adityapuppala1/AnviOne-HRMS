@@ -88,6 +88,12 @@ export class LeaveStore {
          WHERE r.employee_id=$1 ORDER BY r.start_date DESC, r.created_at DESC LIMIT 50`,
         [actor.employeeId],
       );
+      const total = (
+        await client.query<{ n: number }>(
+          "SELECT count(*)::int AS n FROM leave_request r WHERE r.employee_id=$1",
+          [actor.employeeId],
+        )
+      ).rows[0]!.n;
       const calendar = await personalCalendar(
         client,
         `${year}-01-01`,
@@ -103,6 +109,7 @@ export class LeaveStore {
             b.annualDays === null ? null : b.annualDays - b.used - b.pending,
         })),
         requests: requests.rows.map((row) => this.present(actor, row, today)),
+        total,
       };
     });
   }
@@ -123,9 +130,19 @@ export class LeaveStore {
          ORDER BY r.decided_at DESC LIMIT 20`,
         [actor.employeeId],
       );
+      const totals = (
+        await client.query<{ pending: number; decided: number }>(
+          `SELECT count(*) FILTER (WHERE r.state='pending')::int AS pending,
+             count(*) FILTER (WHERE r.state<>'pending')::int AS decided
+           FROM leave_request r WHERE r.employee_id<>$1`,
+          [actor.employeeId],
+        )
+      ).rows[0]!;
       return {
         pending: pending.rows.map((row) => this.present(actor, row, today)),
         decided: decided.rows.map((row) => this.present(actor, row, today)),
+        pendingTotal: totals.pending,
+        decidedTotal: totals.decided,
       };
     });
   }

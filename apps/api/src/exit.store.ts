@@ -29,6 +29,7 @@ import {
 } from "@anvi/contracts";
 import type { z } from "zod";
 import type { PlatformStore } from "./platform.store";
+import { buildOrderBy } from "./sort";
 
 const stamp = (column: string) =>
   `to_char(${column} AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"')`;
@@ -39,6 +40,14 @@ const caseColumns = `c.id, c.employee_id AS "employeeId", coalesce(d.name,'Forme
   ${stamp("c.created_at")} AS "createdAt", ${stamp("c.decided_at")} AS "decidedAt", c.decided_by_label AS "decidedBy",
   ${stamp("c.closed_at")} AS "closedAt", c.closed_by_label AS "closedBy"`;
 const caseFrom = `FROM exit_case c LEFT JOIN employee_directory d ON d.id=c.employee_id`;
+// Allowed sort keys map to fixed SQL; the request only picks a key.
+const EXIT_SORT = {
+  employee: "lower(coalesce(d.name,'Former employee'))",
+  kind: "c.kind",
+  status: "c.status",
+  lastWorkingDay: "c.last_working_day",
+  createdAt: "c.created_at",
+} as const;
 
 const ruleErrors: Record<string, (message: string) => Error> = {
   EX003: (m) => new BadRequestException(m),
@@ -114,12 +123,25 @@ export class ExitStore {
     this.platform.require(actor, "exit.manage");
     return scoped(this.platform.pool, actor, async (client) => {
       const term = `%${query.q.replace(/[\\%_]/g, "\\$&")}%`;
+      const where = `WHERE ($1='%%' OR d.name ILIKE $1 OR d.code ILIKE $1 OR c.reason ILIKE $1)
+           AND ($2::text IS NULL OR c.status=$2)`;
+      const params = [term, query.status ?? null];
+      const total = (
+        await client.query<{ n: number }>(
+          `SELECT count(*)::int AS n ${caseFrom} ${where}`,
+          params,
+        )
+      ).rows[0]!.n;
+      const order = buildOrderBy(
+        EXIT_SORT,
+        query.sort,
+        query.dir,
+        "(c.status IN ('submitted','accepted')) DESC, c.created_at DESC",
+        "c.id",
+      );
       const { rows } = await client.query(
-        `SELECT ${caseColumns} ${caseFrom}
-         WHERE ($1='%%' OR d.name ILIKE $1 OR d.code ILIKE $1 OR c.reason ILIKE $1)
-           AND ($2::text IS NULL OR c.status=$2)
-         ORDER BY (c.status IN ('submitted','accepted')) DESC, c.created_at DESC LIMIT 200`,
-        [term, query.status ?? null],
+        `SELECT ${caseColumns} ${caseFrom} ${where} ORDER BY ${order} LIMIT 200`,
+        params,
       );
       const counts = {
         submitted: 0,
@@ -134,7 +156,7 @@ export class ExitStore {
         )
       ).rows)
         counts[row.status] = row.count;
-      return exitListSchema.parse({ items: rows, counts });
+      return exitListSchema.parse({ items: rows, total, counts });
     });
   }
 

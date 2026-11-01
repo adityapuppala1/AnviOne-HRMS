@@ -54,6 +54,8 @@ Interface text is centralized in `apps/portal/app/lib/copy.ts` and `apps/portal/
 
 Prerequisites: Git, Docker Engine/Desktop, and pnpm 11.21.0. Bootstrap Node 24.18+ is supported; `pnpm install` provisions the project-pinned **Node 24.22.1** runtime without changing the machine-wide installation.
 
+One command does everything below: `pnpm start:all` checks Node, pnpm and Docker, installs dependencies if needed, writes local secrets once, starts the database, applies migrations, and starts the servers. If ports 4000 or 5173 are already in use, it stops and says so rather than starting a second copy. The manual steps follow.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm setup:local
@@ -80,6 +82,8 @@ pnpm worker
 It records internal event consumption. It does not send email or claim external delivery.
 
 ## Validate
+
+The same checks run in CI (`.github/workflows/ci.yml`). Working notes for contributors and AI tools are in [docs/HANDOFF.md](docs/HANDOFF.md), pending work is in [docs/TRACKER.md](docs/TRACKER.md), and the module and dependency map is in [docs/architecture.md](docs/architecture.md).
 
 ```sh
 pnpm format:check
@@ -110,6 +114,8 @@ Integration and browser tests use the synthetic local database. They exercise ro
 Read [the consolidated architecture decision](docs/adr/0001-consolidated-foundation.md), [Atlas design decision](docs/adr/0002-atlas-experience.md), [people and organization decision](docs/adr/0003-people-organization-identity.md), [delivery backlog](docs/backlog.md), [API contract](docs/api/openapi.json), [setup/identity runbook](docs/runbooks/development-and-identity.md), [controlled identity operations](docs/runbooks/identity-operations.md), [threat model](docs/threat-model/foundation.md) and [data-protection policy draft](docs/compliance/data-protection-policy.md).
 
 ## Release boundary
+
+The engagement, learning and shifts modules are built for synthetic data, with the limits in their plans. Their browser checks, and the full browser suite on the latest merged code, are not yet recorded; see [docs/TRACKER.md](docs/TRACKER.md).
 
 Corporate OIDC is implemented but has **not** been verified against the organization's Entra tenant. Leave, attendance, holidays, approvals and documents are implemented for synthetic data. Real identity provisioning, complete onboarding/activation, malware scanning and object storage for files, notifications, payroll, AI, MCP and TimeSphere remain future slices. Production requires the identity, privacy, security and operations gates in the backlog, including TLS/CSP, managed keys, independent audit storage, backup restore evidence and security review. Automated tests are not a compliance certification.
 

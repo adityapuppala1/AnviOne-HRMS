@@ -2,7 +2,7 @@
 
 Read this first, whichever model or tool you are. It says what exists, what is still open, and how to start. Project rules are in [CLAUDE.md](../CLAUDE.md) (also summarised in [AGENTS.md](../AGENTS.md)). Product overview is in the [README](../README.md).
 
-Last updated: 2026-10-31. Branch `feat/phase-0-foundation`, remote `origin`.
+Last updated: 2026-11-01. Branch `feat/phase-0-foundation`, remote `origin`.
 
 ## 1. Start the app
 
@@ -38,57 +38,68 @@ Stop `pnpm dev` before `test:e2e`, or Playwright reuses the dev servers and test
 
 Targeted runs while fixing: `pnpm exec playwright test tests/e2e/<spec>.spec.ts --workers=1`.
 
+### Workflow
+
+- **Branches:** work on a feature branch, one per slice. Parallel agents each use their own git worktree from the same base branch. Merge them one at a time, and resolve `docs/TRACKER.md` by hand, since every branch edits it.
+- **Tracker:** when a task finishes, update its row in `docs/TRACKER.md` with the date and commit. Do not leave a row `doing` after the work has stopped.
+- **Time limits:** run the integration and browser suites with a timeout, and watch the log file. A log that has not changed for 10 minutes is stalled. On Windows, stop it with `taskkill /PID <pid> /T /F`, then rerun the failing file alone.
+- **Port and process hygiene:** stop `pnpm dev` before `pnpm test:e2e`. Before an integration run, check that the API, portal and test ports are free with `netstat -ano | findstr LISTENING`. A leftover test server causes `EADDRINUSE` and misleading failures.
+- **Shared demo logins:** an integration test must not insert a second active identity binding for a demo person, because the database allows one. Reuse the existing binding, grant the roles the test needs, and restore them in cleanup. The projects and recruitment tests do this.
+- **CI:** `.github/workflows/ci.yml` runs format, the contracts diff, `pnpm check`, the audit, integration, browser and Docker smoke tests on each push.
+
 ## 3. What is built
 
 Every module follows the same slice shape: plan doc in `docs/plans`, forward-only migration, contracts, store and controller, UI, integration and Playwright tests, acceptance evidence in `docs/acceptance-evidence`, backlog and traceability rows.
 
-| Area | Module | Backend | Portal route | Status |
-|---|---|---|---|---|
-| Core | Directory, org masters, org chart | yes | `/people`, `/organization`, `/chart` | built |
-| Time | Attendance, leave, calendar | yes | `/attendance`, `/leave`, `/calendar` | built |
-| Onboarding | Pre-boarding intake | yes | `/onboarding` | built |
-| Documents | Documents, policies, assets | yes | `/documents`, `/policies`, `/assets` | built |
-| Spend | Expenses, projects and time | yes | `/expenses`, `/projects` | built |
-| Exit | Offboarding | yes | `/exit` | built, no dues or settlement |
-| Profile | Personal details changes (PRF-01) | yes | `/details` | built |
-| Recruitment | Requisitions, candidates, pipeline, interviews, offers (REC-01) | yes | `/recruitment` | built, no email or career page |
-| Performance | Goals, OKRs, review cycles, blind reviews (PERF-01) | yes | `/performance` | built |
-| Helpdesk | HR cases, SLA, knowledge articles (HLP-01) | yes | `/helpdesk` | built, wall-clock SLA only |
-| Engagement | Recognition, anonymous pulse surveys (ENG-01) | yes | `/engage` | built, no notifications |
-| Learning | Courses, assignments, completion (LRN-01) | yes | `/learning` | built, self-declared completion |
-| Shifts | Shift templates, rosters, swaps, open shifts (SHF-01) | yes | `/shifts` | built, no payroll or overtime |
-| Reports | Reports and insights | yes | `/reports`, `/insights` | built |
-| Admin | Configuration, permission matrix, branding history | yes | `/configuration` | built |
-| Demo | Persona sign-in | yes | `/login` | built |
+| Area        | Module                                                          | Backend | Portal route                         | Status                          |
+| ----------- | --------------------------------------------------------------- | ------- | ------------------------------------ | ------------------------------- |
+| Core        | Directory, org masters, org chart                               | yes     | `/people`, `/organization`, `/chart` | built                           |
+| Time        | Attendance, leave, calendar                                     | yes     | `/attendance`, `/leave`, `/calendar` | built                           |
+| Onboarding  | Pre-boarding intake                                             | yes     | `/onboarding`                        | built                           |
+| Documents   | Documents, policies, assets                                     | yes     | `/documents`, `/policies`, `/assets` | built                           |
+| Spend       | Expenses, projects and time                                     | yes     | `/expenses`, `/projects`             | built                           |
+| Exit        | Offboarding                                                     | yes     | `/exit`                              | built, no dues or settlement    |
+| Profile     | Personal details changes (PRF-01)                               | yes     | `/details`                           | built                           |
+| Recruitment | Requisitions, candidates, pipeline, interviews, offers (REC-01) | yes     | `/recruitment`                       | built, no email or career page  |
+| Performance | Goals, OKRs, review cycles, blind reviews (PERF-01)             | yes     | `/performance`                       | built                           |
+| Helpdesk    | HR cases, SLA, knowledge articles (HLP-01)                      | yes     | `/helpdesk`                          | built, wall-clock SLA only      |
+| Engagement  | Recognition, anonymous pulse surveys (ENG-01)                   | yes     | `/engage`                            | built, no notifications         |
+| Learning    | Courses, assignments, completion (LRN-01)                       | yes     | `/learning`                          | built, self-declared completion |
+| Shifts      | Shift templates, rosters, swaps, open shifts (SHF-01)           | yes     | `/shifts`                            | built, no payroll or overtime   |
+| Reports     | Reports and insights                                            | yes     | `/reports`, `/insights`              | built                           |
+| Admin       | Configuration, permission matrix, branding history              | yes     | `/configuration`                     | built                           |
+| Demo        | Persona sign-in                                                 | yes     | `/login`                             | built                           |
 
 Migrations run from `053` to `070` at the time of writing. Each integration file has its own port (`tests/*.integration.ts`); check the file before adding one.
 
 ## 4. Pending work
 
-Verified state as of this handoff:
+Current as of 2026-11-01. The live list with statuses is in [TRACKER.md](TRACKER.md).
 
-1. **Full verification on the combined code has not completed.** Unit tests, format, lint and typecheck pass. The integration suite and the full browser suite were started, then cancelled to free the services. Run them again.
-2. **Open-shift browser test skipped itself** because of a backend 500 that is now fixed (`apps/api/src/shift.store.ts`, `COALESCE` on the `posted` flag). It has not run since the fix, and there is no integration regression test for it yet.
-3. **Flaky browser tests:** `wow` reduced-motion (intermittent), and the Performance test once failed in a full run and passed alone. Causes are not known.
-4. **Nobody has reviewed the new screens by eye.** Recruitment, Performance, Helpdesk, Recognition, Learning and Shifts pass axe, 390px and their own specs only.
-5. **Test data is not cleaned up.** Deletes are blocked on append-only tables, so test runs leave synthetic rows (see each module's `docs/acceptance-evidence/<module>.md`). A dev reset script is needed.
-6. **Not converted to the card/table list view:** Settings, and the Reports result table (its columns change per run).
-7. **API gaps:** most list endpoints return no total, so paging is client-side only. The Activity log shows the latest 50 events. No endpoint sorts on the server. Department and location pickers load 50 entries.
-8. **UI polish:** the tab indicator pops in rather than sliding. No `?detail=` URL state on most lists.
-9. **Known product limits, by design:** no notifications, no email or SMS, no AI features (AI helper gated off), no 360 feedback, no payroll, benefits or overtime, no business-hours SLA, no calendar or video integration, no public career site.
+**Done and pushed** (`feat/phase-0-foundation`, head `a5dd956`): the Untitled UI upgrade (U1 to U16, each on its own branch and merged), the product backlog P1 to P8, the helpdesk, recognition, learning, shifts and performance modules, and the test fixes for shared demo logins in the projects and recruitment integration tests.
 
-Outside owners needed before these can be built: payroll and benefits, notification dispatch, calendar and video integrations, a public career site (hosting, bot protection, privacy review).
+**Not yet verified on the pushed code:**
+
+1. The full browser suite (`pnpm test:e2e`) has not been run since the UI branches were merged.
+2. The new UI has not been checked in a browser: the navigation rail and mobile drawer, dialogs, the sliding tab line, the Reports results table, and each new module at 390px and 1440px in light and dark.
+3. The P2 totals and sorting, and the learning "due soon" filter, have only unit tests. Their integration tests have not run.
+
+**Known test issues:** 4. The org-chart per-person budget test (`tests/org-neighborhood.integration.ts`) passes alone and on rerun, but fails in some full integration runs because the rate-limit counter resets mid-test. 5. The `wow` reduced-motion browser test fails intermittently. The cause is not confirmed. 6. The Performance browser test once could not find "New review cycle" in a full run. The cause is not confirmed. 7. There is no dev reset for synthetic test data. Deletes are blocked on append-only tables, so test runs leave rows behind. Each module's `docs/acceptance-evidence/<module>.md` lists what its tests leave.
+
+**Product limits, by design:** no notifications or email, no AI features (the helper stays gated off), no 360 feedback, no payroll, benefits or overtime, no business-hours SLA, no calendar or video integration, no public career site. The approvals inbox total is capped at 100 rows across its four sources.
+
+**Needs an outside owner before it can be built:** payroll and benefits, notification dispatch, calendar and video integrations, and a public career site (hosting, bot protection and a privacy review).
+
+**Machine note:** on the author's Windows machine, two system utilities hold port 4471, so the attendance integration test runs on 4531.
 
 ## 5. Next plan
 
-In priority order:
-
-1. Run the full verification in section 2 and fix what fails. Add an integration regression test for the open-shift list fix.
-2. Look at each new module in a browser, as each persona, at 390px and 1440px. Log findings in `docs/acceptance-evidence/ui-audit.md`.
-3. Add a dev-only reset for synthetic test data, scoped to the local database.
-4. Convert Settings and the Reports result table to the card/table pattern (ADR 0010).
-5. Add server-side totals and sorting where the list endpoints lack them.
-6. Only after that, new modules: shifts and rosters follow-ups, then engagement and learning follow-ups from their plan docs.
+1. Run the full integration and browser suites on the pushed code, with time limits, and fix what fails.
+2. Make the org-chart budget test, the `wow` test and the Performance test stable, with a confirmed cause for each.
+3. Browser-check the new UI at 390px and 1440px in light and dark, and log findings in `docs/acceptance-evidence/ui-audit.md`.
+4. Add a dev-only reset for synthetic test data, scoped to the local database.
+5. Add integration tests for the P2 totals and sorting and the learning due-soon filter.
+6. Pick the next module from [backlog.md](backlog.md) only after the steps above.
 
 ## 6. Conventions that matter
 

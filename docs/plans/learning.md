@@ -42,6 +42,7 @@ HR keeps a catalogue of courses, assigns them to people (one person, or everyone
 - Audience assignment is a one-time snapshot; there are no rules that keep assigning to new joiners.
 - Managers cannot assign courses or record completions for their team; they read only.
 - No AI recommendations; nothing is suggested.
+- "Mandatory due soon" (summary card and the `dueSoon=true` list filter) counts your open mandatory assignments due within the next 14 days and not yet overdue. It is a count only; it sends no reminder.
 - Course codes run per entity, so a code hints at how many courses the entity has.
 
 ## Tests

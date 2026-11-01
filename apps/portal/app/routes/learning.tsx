@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CalendarDots } from "@phosphor-icons/react/dist/csr/CalendarDots";
 import { WarningCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
 import { PlayCircle } from "@phosphor-icons/react/dist/csr/PlayCircle";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
@@ -28,6 +29,7 @@ export default function Learning() {
   // The summary counts the person's own assignments.
   const mine = (extra: string) => `limit=1&view=mine&${extra}`;
   const overdue = useLrnAssignments(allowed, mine("overdue=true"));
+  const dueSoon = useLrnAssignments(allowed, mine("dueSoon=true"));
   const inProgress = useLrnAssignments(allowed, mine("status=in_progress"));
   const completed = useLrnAssignments(allowed, mine("status=completed"));
   const renewal = useLrnAssignments(allowed, mine("renewal=due"));
@@ -64,6 +66,13 @@ export default function Learning() {
           value={overdue.data?.total ?? 0}
           hint={text.stats.overdueHint}
           icon={WarningCircle}
+          animate={!reduceMotion}
+        />
+        <StatCard
+          label={text.stats.dueSoon}
+          value={dueSoon.data?.total ?? 0}
+          hint={text.stats.dueSoonHint}
+          icon={CalendarDots}
           animate={!reduceMotion}
         />
         <StatCard

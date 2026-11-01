@@ -57,6 +57,7 @@ const LRN_MAX_AUDIENCE = 1000;
 const COURSE_STATUSES = lrnCourseStatusSchema.options;
 const courseUnavailable = "This course is unavailable.";
 const assignmentUnavailable = "This assignment is unavailable.";
+const LRN_DUE_SOON_DAYS = 14;
 const OPEN = "a.status IN ('assigned','in_progress')";
 const OVERDUE = `(${OPEN} AND a.due_on IS NOT NULL AND a.due_on<CURRENT_DATE)`;
 const RENEWAL = `CASE WHEN a.status='completed' AND a.expires_on IS NOT NULL THEN
@@ -485,7 +486,9 @@ export class LearnStore {
       }[query.view];
       const where = `$1::uuid IS NOT NULL AND ${view} AND ($2::text IS NULL OR a.status=$2)
         AND ($3::uuid IS NULL OR a.course_id=$3) AND ($4::uuid IS NULL OR a.employee_id=$4)
-        AND ($5::boolean IS NULL OR ${OVERDUE}=$5) AND ($6::text IS NULL OR ${RENEWAL}=$6)`;
+        AND ($5::boolean IS NULL OR ${OVERDUE}=$5) AND ($6::text IS NULL OR ${RENEWAL}=$6)
+        AND ($7::boolean IS NULL OR (${OPEN} AND a.mandatory AND a.due_on IS NOT NULL
+          AND a.due_on>=CURRENT_DATE AND a.due_on<=CURRENT_DATE+${LRN_DUE_SOON_DAYS})=$7)`;
       const base = [
         actor.employeeId,
         query.status ?? null,
@@ -493,6 +496,7 @@ export class LearnStore {
         query.employeeId ?? null,
         query.overdue ?? null,
         query.renewal ?? null,
+        query.dueSoon ?? null,
       ];
       const total = (
         await client.query<{ n: number }>(
@@ -502,7 +506,7 @@ export class LearnStore {
       ).rows[0]!.n;
       const { rows } = await client.query<AssignmentRow>(
         `SELECT ${assignmentColumns} FROM ${assignmentFrom} WHERE ${where}
-         ORDER BY ${OVERDUE} DESC, a.due_on NULLS LAST, a.created_at DESC, a.id LIMIT $7 OFFSET $8`,
+         ORDER BY ${OVERDUE} DESC, a.due_on NULLS LAST, a.created_at DESC, a.id LIMIT $8 OFFSET $9`,
         [...base, query.limit, (query.page - 1) * query.limit],
       );
       return lrnAssignmentListSchema.parse({

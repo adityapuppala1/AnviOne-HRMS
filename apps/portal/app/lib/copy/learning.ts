@@ -32,6 +32,8 @@ export const learningCopy = {
     inProgressHint: "Started, not finished",
     completed: "Completed",
     completedHint: "Finished or recorded by HR",
+    dueSoon: "Mandatory due soon",
+    dueSoonHint: "Required courses due in the next 14 days",
     renewal: "Renewal due",
     renewalHint: "Certification expires within 30 days",
   },

@@ -204,6 +204,8 @@ export const lrnAssignmentQuerySchema = z.strictObject({
   employeeId: z.uuid().optional(),
   overdue: lrnFlag.optional(),
   renewal: lrnRenewalSchema.optional(),
+  // Mandatory, open and due within the next 14 days (not yet overdue).
+  dueSoon: lrnFlag.optional(),
 });
 
 // ---- Compliance report (HR; counts only) ----

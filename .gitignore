@@ -21,3 +21,6 @@ graphify-out/
 
 # Editor-local settings (for example SonarLint connections)
 .vscode/
+
+# Local agent worktrees
+.claude/

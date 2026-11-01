@@ -1,0 +1,256 @@
+import type { ReactNode } from "react";
+import {
+  Button as AriaButton,
+  Heading,
+  type ButtonProps,
+} from "react-aria-components";
+import {
+  Dialog,
+  Modal,
+  ModalOverlay,
+} from "./untitled/components/application/modals/modal";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { WarningCircle as AlertCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
+
+export function Button({
+  variant = "primary",
+  className = "",
+  ...props
+}: ButtonProps & {
+  variant?: "primary" | "secondary" | "ghost" | "icon";
+  className?: string;
+}) {
+  return (
+    <AriaButton
+      {...props}
+      className={`button button-${variant} ${className}`}
+    />
+  );
+}
+export function Avatar({
+  initials,
+  name,
+  size = "normal",
+}: {
+  initials: string;
+  name?: string;
+  size?: "normal" | "large" | "small";
+}) {
+  const color = (initials.charCodeAt(0) + (initials.charCodeAt(1) || 0)) % 5;
+  return (
+    <span
+      className={`avatar avatar-${color} avatar-${size}`}
+      aria-hidden={!name}
+      aria-label={name}
+    >
+      {initials}
+    </span>
+  );
+}
+export function Badge({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "green" | "amber";
+}) {
+  return (
+    <span className={`badge badge-${tone}`}>
+      {tone === "green" && <span className="status-dot" />}
+      {children}
+    </span>
+  );
+}
+export function DialogPanel({
+  open,
+  onOpenChange,
+  title,
+  children,
+  className = "",
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <ModalOverlay
+      isOpen={open}
+      onOpenChange={onOpenChange}
+      isDismissable
+      className="modal-overlay"
+    >
+      <Modal className={`modal ${className}`}>
+        <Dialog className="dialog">
+          <div className="dialog-heading">
+            <Heading slot="title">{title}</Heading>
+            <Button
+              variant="icon"
+              aria-label="Close dialog"
+              onPress={() => onOpenChange(false)}
+            >
+              <X size={20} />
+            </Button>
+          </div>
+          {children}
+        </Dialog>
+      </Modal>
+    </ModalOverlay>
+  );
+}
+export function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="state-card" role="alert">
+      <AlertCircle size={28} />
+      <h2>Let’s try that again</h2>
+      <p>{message}</p>
+      {onRetry && (
+        <Button variant="secondary" onPress={onRetry}>
+          Try again <ArrowUpRight size={16} />
+        </Button>
+      )}
+    </div>
+  );
+}
+export function LoadingState() {
+  return (
+    <div className="loading" role="status" aria-label="Loading workspace">
+      <span className="skeleton" />
+      <span className="skeleton" />
+      <span className="skeleton" />
+      <span className="sr-only">Loading workspace…</span>
+    </div>
+  );
+}
+
+export { MagicCard } from "./magicui/magic-card";
+export { NumberTicker } from "./magicui/number-ticker";
+export { Tabs, TabList, Tab, TabPanel, Switch } from "react-aria-components";
+
+// Untitled UI (MIT) components, bridged to Loom tokens in ./untitled/untitled.css.
+export {
+  Table,
+  TableCard,
+} from "./untitled/components/application/table/table";
+export {
+  PaginationCardMinimal,
+  PaginationButtonGroup,
+} from "./untitled/components/application/pagination/pagination";
+export { FeaturedIcon } from "./untitled/components/foundations/featured-icon/featured-icon";
+export {
+  Badge as StatusBadge,
+  BadgeWithDot,
+  BadgeWithIcon,
+} from "./untitled/components/base/badges/badges";
+export {
+  Tooltip,
+  TooltipTrigger,
+} from "./untitled/components/base/tooltip/tooltip";
+export {
+  PageHeader,
+  StatCard,
+  EmptyBlock,
+  DataCard,
+  RangeInput,
+  useNarrow,
+  type Column,
+} from "./patterns";
+
+// Untitled UI (MIT, free tier only) form and overlay components.
+export {
+  Input,
+  TextField as UTextField,
+} from "./untitled/components/base/input/input";
+export { TextArea } from "./untitled/components/base/textarea/textarea";
+export { Label } from "./untitled/components/base/input/label";
+export { HintText } from "./untitled/components/base/input/hint-text";
+export { Select } from "./untitled/components/base/select/select";
+export { ComboBox } from "./untitled/components/base/select/combobox";
+export type { SelectItemType } from "./untitled/components/base/select/select-shared";
+export { Checkbox } from "./untitled/components/base/checkbox/checkbox";
+export { Toggle } from "./untitled/components/base/toggle/toggle";
+export {
+  RadioGroup,
+  RadioButton,
+} from "./untitled/components/base/radio-buttons/radio-buttons";
+export { Avatar as UAvatar } from "./untitled/components/base/avatar/avatar";
+export { AvatarOnlineIndicator } from "./untitled/components/base/avatar/base-components/avatar-online-indicator";
+export { Dropdown } from "./untitled/components/base/dropdown/dropdown";
+export { RouterProvider } from "react-aria-components";
+export {
+  RowActionsMenu,
+  ContextMenu,
+  type MenuAction,
+} from "./untitled/components/base/dropdown/menus";
+export {
+  Accordion,
+  type AccordionItem,
+} from "./untitled/components/application/accordion/accordion";
+export { NavItemBase } from "./untitled/components/application/app-navigation/base-components/nav-item";
+export { NavList } from "./untitled/components/application/app-navigation/base-components/nav-list";
+export { MobileNavigationDrawer } from "./untitled/components/application/app-navigation/base-components/mobile-header";
+export {
+  SidebarNavSections,
+  SidebarNavDividers,
+} from "./untitled/components/application/app-navigation/sidebar-navigation/sidebar-sections";
+export type {
+  NavItemType,
+  NavItemDividerType,
+  NavSectionType,
+} from "./untitled/components/application/app-navigation/config";
+export {
+  ButtonGroup,
+  ButtonGroupItem,
+} from "./untitled/components/base/button-group/button-group";
+export { EmptyState } from "./untitled/components/application/empty-state/empty-state";
+export { Button as UButton } from "./untitled/components/base/buttons/button";
+export { Tabs as UTabs } from "./untitled/components/application/tabs/tabs";
+
+// Data display kit pieces (U7-U12): segmented control, pagination variants,
+// avatar label group and profile photo, badge groups.
+export { SegmentedControl, type SegmentedOption } from "./segmented";
+export {
+  PaginationPageDefault,
+  PaginationPageMinimalCenter,
+} from "./untitled/components/application/pagination/pagination";
+export { PaginationLine } from "./untitled/components/application/pagination/pagination-line";
+export { PaginationDot } from "./untitled/components/application/pagination/pagination-dot";
+export { AvatarLabelGroup } from "./untitled/components/base/avatar/avatar-label-group";
+export { AvatarProfilePhoto } from "./untitled/components/base/avatar/avatar-profile-photo";
+export { BadgeGroup } from "./untitled/components/base/badges/badge-groups";
+
+// Shared list pattern: cards or table, paging, details panel (ADR 0010).
+export {
+  CollectionView,
+  DetailPanel,
+  DetailFields,
+  type CollectionDetail,
+  type CollectionViewMode,
+} from "./collection";
+
+// Untitled UI (MIT) modal primitives, progress, slider, native select, input group and form.
+export {
+  Dialog as UDialog,
+  DialogTrigger,
+  Modal as UModal,
+  ModalOverlay as UModalOverlay,
+} from "./untitled/components/application/modals/modal";
+export {
+  ProgressBar as UProgressBar,
+  ProgressBarBase,
+} from "./untitled/components/base/progress-indicators/progress-indicators";
+export { Slider } from "./untitled/components/base/slider/slider";
+export { NativeSelect } from "./untitled/components/base/select/select-native";
+export {
+  InputGroup,
+  InputPrefix,
+} from "./untitled/components/base/input/input-group";
+export { Form } from "./untitled/components/base/form/form";

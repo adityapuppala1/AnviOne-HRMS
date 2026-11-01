@@ -1,0 +1,359 @@
+/* Attendance: today is a thread across the loom from 06:00 to 22:00;
+   the last 30 days are a swatch of dyed tiles. */
+.attendance-page {
+  display: grid;
+  gap: 22px;
+}
+.attendance-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.attendance-layout > .attendance-thread,
+.attendance-layout > .inline-error {
+  grid-column: 1 / -1;
+}
+.attendance-thread {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "copy action"
+    "track track";
+  gap: 22px 24px;
+  align-items: center;
+  padding: 28px 30px 34px;
+  border-radius: var(--radius-shell);
+  color: #f3f2ff;
+  background:
+    repeating-linear-gradient(90deg, #ffffff08 0 1px, transparent 1px 22px),
+    radial-gradient(
+      110% 90% at 100% 0%,
+      color-mix(in srgb, var(--brand) 70%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(135deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+  box-shadow: 0 30px 60px -36px var(--indigo-deep);
+}
+.attendance-thread-copy {
+  grid-area: copy;
+}
+.attendance-thread h2 {
+  font-size: clamp(26px, 3vw, 38px);
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.attendance-thread-copy > p:last-child {
+  margin-top: 8px;
+  color: #cfcdf4;
+  font-size: 14px;
+}
+.attendance-punch.button {
+  grid-area: action;
+  min-height: 52px;
+  padding: 12px 22px;
+  font-size: 14px;
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  box-shadow: 0 14px 26px -14px var(--marigold);
+}
+.attendance-punch.button:hover {
+  background: color-mix(in srgb, var(--marigold) 85%, #fff);
+}
+.attendance-track {
+  grid-area: track;
+  position: relative;
+  height: 14px;
+  margin: 8px 0 18px;
+  border-radius: 999px;
+  background: #ffffff1a;
+}
+.attendance-hour {
+  position: absolute;
+  top: 22px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #c3c1ec;
+  font-variant-numeric: tabular-nums;
+}
+.attendance-hour::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  width: 1px;
+  height: 18px;
+  background: #ffffff26;
+}
+.attendance-span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--marigold);
+  box-shadow: 0 0 0 3px #f4b23e33;
+}
+.attendance-span.is-live {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--marigold) 0 8px,
+    color-mix(in srgb, var(--marigold) 70%, #fff) 8px 14px
+  );
+  background-size: 200% 100%;
+  animation: attendance-flow 3s linear infinite;
+}
+@keyframes attendance-flow {
+  to {
+    background-position: -28px 0;
+  }
+}
+.attendance-now {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: 24px;
+  margin-left: -2px;
+  border-radius: 4px;
+  background: #fff;
+}
+.attendance-month {
+  padding-bottom: 20px;
+}
+.attendance-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px;
+}
+.attendance-cell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  font:
+    650 13px var(--display),
+    sans-serif;
+  color: var(--ink);
+  background: var(--surface-subtle);
+}
+.attendance-cell i {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--marigold);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.attendance-cell.is-selected {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.attendance-present,
+.attendance-swatch.attendance-present {
+  background: var(--brand);
+  color: #fff;
+}
+.attendance-in_progress {
+  background: var(--marigold);
+  color: var(--indigo-deep);
+}
+.attendance-leave,
+.attendance-swatch.attendance-leave {
+  background: color-mix(in srgb, var(--success) 22%, var(--surface));
+  color: var(--success);
+}
+.attendance-holiday,
+.attendance-swatch.attendance-holiday {
+  background: color-mix(in srgb, var(--marigold) 32%, var(--surface));
+  color: var(--marigold-ink);
+}
+[data-mode="dark"] .attendance-holiday {
+  color: var(--marigold);
+}
+.presence-holiday {
+  border-left-color: var(--marigold) !important;
+}
+.attendance-unaccounted,
+.attendance-swatch.attendance-unaccounted {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--coral) 20%, var(--surface)) 0 6px,
+    var(--surface) 6px 10px
+  );
+  color: #9a3221;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--coral) 45%, transparent);
+}
+.attendance-incomplete,
+.attendance-swatch.attendance-incomplete {
+  background: var(--surface);
+  color: #9a3221;
+  box-shadow: inset 0 0 0 2px var(--coral);
+}
+.attendance-weekend,
+.attendance-swatch.attendance-weekend {
+  background: transparent;
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.attendance-not_started {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--brand);
+  color: var(--brand-ink);
+}
+[data-mode="dark"] .attendance-present {
+  color: var(--indigo-deep);
+}
+[data-mode="dark"] .attendance-unaccounted,
+[data-mode="dark"] .attendance-incomplete {
+  color: #f6b3a5;
+}
+.attendance-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  padding: 0 24px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.attendance-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.attendance-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
+}
+.attendance-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 18px 24px 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--surface-subtle);
+}
+.attendance-detail h3 {
+  font-size: 15px;
+}
+.attendance-detail p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.attendance-detail .attendance-flag {
+  color: var(--warning);
+  font-weight: 600;
+}
+.attendance-corrections {
+  padding: 0 24px 12px;
+}
+.attendance-people {
+  list-style: none;
+  margin: 0;
+  padding: 0 24px 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 10px;
+}
+.attendance-people li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--surface-subtle);
+  border-left: 4px solid var(--line);
+}
+.attendance-people strong {
+  display: block;
+  font-size: 13px;
+}
+.attendance-people small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.presence-pill {
+  grid-column: 2;
+  justify-self: start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.presence-in {
+  border-left-color: var(--marigold) !important;
+}
+.presence-in .presence-pill {
+  color: var(--warning);
+}
+.presence-done {
+  border-left-color: var(--brand) !important;
+}
+.presence-done .presence-pill {
+  color: var(--brand-ink);
+}
+.presence-leave {
+  border-left-color: var(--success) !important;
+}
+.presence-leave .presence-pill {
+  color: var(--success);
+}
+
+@media (max-width: 1050px) {
+  .attendance-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .attendance-thread {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "track"
+      "action";
+    padding: 24px 20px 22px;
+  }
+  .attendance-punch.button {
+    width: 100%;
+  }
+  .attendance-hour:nth-child(even) {
+    display: none;
+  }
+  .attendance-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    padding: 0 18px;
+  }
+  .attendance-legend,
+  .attendance-people,
+  .attendance-corrections {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .attendance-detail {
+    margin: 16px 18px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .attendance-span.is-live {
+    animation: none;
+  }
+}
+[data-motion="reduce"] .attendance-span.is-live {
+  animation: none;
+}

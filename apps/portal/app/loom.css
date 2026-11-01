@@ -1,0 +1,646 @@
+/* Anvi Loom layer. Loaded after styles.css; restyles the shared Atlas
+   structure without changing markup contracts. Tokens live in @anvi/ui. */
+
+/* Type ---------------------------------------------------------------- */
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-optical-sizing: auto;
+}
+h1 {
+  font-size: clamp(30px, 3vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+h2 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.eyebrow {
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+.heading-period {
+  color: var(--marigold);
+}
+
+/* Controls ------------------------------------------------------------ */
+.button {
+  border-radius: var(--radius-control);
+  font-weight: 650;
+}
+.button-primary {
+  background: var(--brand);
+  box-shadow:
+    inset 0 1px 0 #ffffff26,
+    0 8px 18px -10px var(--brand);
+}
+.button-primary:hover {
+  background: var(--brand-hover);
+}
+[data-mode="dark"] .button-primary {
+  color: var(--indigo-deep);
+}
+input,
+select,
+textarea {
+  border-radius: var(--radius-control);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
+}
+.badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-weight: 550;
+}
+.badge-green {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+.badge-amber {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--marigold) 22%, transparent);
+}
+.avatar {
+  font-family: var(--display);
+  font-weight: 650;
+  border-radius: 50%;
+}
+.avatar-large {
+  border-radius: 32px;
+}
+.avatar-0 {
+  background: #e4e3fb;
+  color: #34338c;
+}
+.avatar-1 {
+  background: #fde9c4;
+  color: #7a4c00;
+}
+.avatar-2 {
+  background: #d7f0e4;
+  color: #1c6447;
+}
+.avatar-3 {
+  background: #fbe0d9;
+  color: #8e3624;
+}
+.avatar-4 {
+  background: #dcedf3;
+  color: #245a6a;
+}
+[data-mode="dark"] .avatar-0 {
+  background: #34336b;
+  color: #d6d5ff;
+}
+[data-mode="dark"] .avatar-1 {
+  background: #4d3a17;
+  color: #fbd894;
+}
+[data-mode="dark"] .avatar-2 {
+  background: #1d4637;
+  color: #a7e8c9;
+}
+[data-mode="dark"] .avatar-3 {
+  background: #4f2a24;
+  color: #f6c0b3;
+}
+[data-mode="dark"] .avatar-4 {
+  background: #1f3f4a;
+  color: #b5e1ee;
+}
+.tabs-list {
+  background: var(--surface-subtle);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 2px;
+}
+.tab {
+  border-radius: 999px;
+}
+.tab[data-selected] {
+  background: var(--surface);
+  color: var(--brand-ink);
+  box-shadow: 0 6px 16px -10px #2a297066;
+}
+.modal {
+  border-radius: var(--radius-panel);
+}
+.modal-overlay {
+  background: color-mix(in srgb, var(--indigo-deep) 45%, transparent);
+}
+
+/* Shell: an indigo rail woven with faint warp threads ------------------ */
+.sidebar {
+  border-radius: var(--radius-shell);
+  background:
+    repeating-linear-gradient(90deg, #ffffff07 0 1px, transparent 1px 22px),
+    linear-gradient(180deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+  box-shadow: 0 24px 50px -30px var(--indigo-deep);
+}
+.collapse-toggle.button,
+.sidebar-label,
+.planned-nav > div,
+.soon,
+.sidebar-help.button,
+.sidebar-help kbd,
+.workspace-label small,
+.sidebar-user small {
+  color: #c3c1ec;
+}
+.workspace-label {
+  border-color: #ffffff1f;
+  background: #ffffff0a;
+  border-radius: 16px;
+}
+.workspace-initial {
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  border-radius: 50%;
+  width: 32px;
+  font-weight: 700;
+}
+.nav-link {
+  color: #dedcfb;
+  border-radius: 14px;
+}
+.nav-link:hover,
+.sidebar-help.button:hover {
+  background: #ffffff12;
+}
+.nav-link.active {
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  box-shadow: 0 10px 22px -12px var(--marigold);
+}
+.soon {
+  border: 1px solid #ffffff26;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.sidebar-user.button {
+  border-top-color: #ffffff1f;
+}
+[data-mode="dark"] .sidebar {
+  background:
+    repeating-linear-gradient(90deg, #ffffff05 0 1px, transparent 1px 22px),
+    #0e0d24;
+  border: 1px solid var(--line);
+}
+
+/* Floating top bar ----------------------------------------------------- */
+.topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 15;
+  min-height: 64px;
+  margin: 12px 24px 0 0;
+  padding: 0 10px 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+.global-search.button {
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  border-color: transparent;
+}
+.global-search.button:hover {
+  border-color: var(--line);
+}
+.topbar .button-icon {
+  border-radius: 50%;
+}
+.toolbar-divider {
+  display: none;
+}
+.main-content {
+  padding-top: 26px;
+}
+.context-pill {
+  background: var(--brand-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+/* Surfaces: hierarchy through radius and tone, not identical boxes ---- */
+.panel {
+  border-radius: var(--radius-panel);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+}
+[data-mode="dark"] .panel {
+  border-color: var(--line);
+}
+.panel-heading h2 {
+  font-size: 20px;
+}
+.text-link {
+  color: var(--brand-ink);
+  font-weight: 650;
+}
+.page-heading h1 + p {
+  font-size: 14px;
+  max-width: 60ch;
+}
+.date-pill {
+  border-radius: 999px;
+}
+.person-row {
+  border-radius: 16px;
+  transition: background-color 0.18s;
+}
+.person-row:hover {
+  background: var(--surface-subtle);
+}
+
+/* Home: the loom band ------------------------------------------------- */
+.loom-band {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  grid-template-areas:
+    "copy art"
+    "stats stats";
+  gap: 26px 32px;
+  padding: 34px 34px 18px;
+  margin-bottom: 24px;
+  border-radius: var(--radius-shell);
+  color: #f3f2ff;
+  background:
+    radial-gradient(
+      120% 90% at 100% 0%,
+      color-mix(in srgb, var(--brand) 70%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(135deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+  box-shadow: 0 30px 60px -36px var(--indigo-deep);
+}
+.loom-band-copy {
+  grid-area: copy;
+  align-self: center;
+  position: relative;
+  z-index: 1;
+}
+.loom-band h1 {
+  font-size: clamp(34px, 4.2vw, 58px);
+  color: #fff;
+}
+.loom-band-copy > p:last-child {
+  margin-top: 14px;
+  color: #cfcdf4;
+  font-size: 15px;
+  max-width: 42ch;
+}
+.loom-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ffffff14;
+  color: #e2e0ff;
+  font-size: 12px;
+  font-weight: 550;
+}
+.loom-band-art {
+  grid-area: art;
+  width: 100%;
+  height: 100%;
+  min-height: 210px;
+}
+.loom-stats {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.loom-stat {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 4px 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: #ffffff10;
+  border: 1px solid #ffffff1c;
+  color: #f3f2ff;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+.loom-stat:hover {
+  background: #ffffff1c;
+  transform: translateY(-2px);
+}
+.loom-stat-featured {
+  background: var(--marigold);
+  border-color: transparent;
+  color: var(--indigo-deep);
+}
+.loom-stat-featured:hover {
+  background: color-mix(in srgb, var(--marigold) 85%, #fff);
+}
+.loom-stat-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding-right: 26px;
+}
+.loom-stat-value {
+  font:
+    650 44px/1 var(--display),
+    sans-serif;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.loom-stat small {
+  color: #c9c7f0;
+  font-size: 12px;
+  text-align: right;
+  max-width: 18ch;
+}
+.loom-stat-arrow {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  opacity: 0.7;
+}
+.loom-stat .avatar-stack .avatar {
+  border-color: var(--marigold);
+}
+
+/* The weave itself */
+.loom-warp {
+  stroke: #ffffff12;
+  stroke-width: 1;
+}
+.loom-weft {
+  fill: none;
+  stroke: #b9b7ff;
+  stroke-opacity: 0.45;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.loom-thread {
+  fill: none;
+  stroke: var(--marigold);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+.loom-knot circle {
+  fill: var(--surface);
+  stroke: var(--marigold);
+  stroke-width: 3;
+}
+.loom-knot text {
+  fill: var(--indigo);
+  font:
+    700 13px var(--display),
+    sans-serif;
+  text-anchor: middle;
+}
+[data-mode="dark"] .loom-knot text {
+  fill: var(--ink);
+}
+
+/* Login --------------------------------------------------------------- */
+.login-layout {
+  background: var(--canvas);
+}
+.login-story {
+  border-radius: var(--radius-shell);
+  background:
+    radial-gradient(
+      90% 70% at 100% 0%,
+      color-mix(in srgb, var(--brand) 75%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(150deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+  color: #f3f2ff;
+}
+.login-story .brand {
+  color: #fff;
+}
+.login-story-copy h1 {
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  max-width: 13ch;
+}
+.login-story-copy > p:last-child {
+  color: #cfcdf4;
+  font-size: 15px;
+  max-width: 44ch;
+}
+.login-story-footer {
+  color: #b9b7e6;
+}
+.login-loom {
+  position: relative;
+  flex: 1;
+  min-height: 260px;
+  margin: 24px -42px 0;
+}
+.login-loom .loom-weave {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.login-form h2 {
+  font-size: clamp(30px, 3vw, 40px);
+  letter-spacing: -0.035em;
+}
+.login-icon {
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--marigold) 25%, transparent);
+  color: var(--marigold-ink);
+}
+.demo-login-note {
+  border-radius: 18px;
+}
+/* Demo persona picker: one woven row per synthetic person ------------- */
+.persona-picker {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.persona-picker h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.persona-picker > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.persona-picker ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.persona-picker .persona-option {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 14px;
+  text-align: left;
+}
+.persona-name {
+  display: grid;
+  min-width: 0;
+  font-weight: 600;
+}
+.persona-name small {
+  color: var(--muted);
+  font-weight: 400;
+}
+[data-mode="dark"] .login-icon {
+  color: var(--marigold);
+}
+
+/* Directory cards: woven covers in rotating dye tones ------------------- */
+.person-card {
+  border-radius: var(--radius-panel);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.person-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 26px 44px -28px #2a297059;
+}
+.person-cover {
+  background:
+    repeating-linear-gradient(90deg, #ffffff40 0 1px, transparent 1px 14px),
+    #e4e3fb;
+}
+.person-card:nth-child(3n + 2) .person-cover {
+  background:
+    repeating-linear-gradient(90deg, #ffffff40 0 1px, transparent 1px 14px),
+    #fde9c4;
+}
+.person-card:nth-child(3n + 3) .person-cover {
+  background:
+    repeating-linear-gradient(90deg, #ffffff40 0 1px, transparent 1px 14px),
+    #d7f0e4;
+}
+.person-cover i {
+  display: none;
+}
+[data-mode="dark"] .person-cover,
+[data-mode="dark"] .person-card:nth-child(3n + 2) .person-cover,
+[data-mode="dark"] .person-card:nth-child(3n + 3) .person-cover {
+  background:
+    repeating-linear-gradient(90deg, #ffffff0d 0 1px, transparent 1px 14px),
+    var(--brand-soft);
+}
+.person-card .avatar {
+  box-shadow: 0 0 0 4px var(--surface);
+}
+
+/* Responsive ---------------------------------------------------------- */
+@media (max-width: 1050px) {
+  .topbar {
+    margin: 10px 12px 0;
+    top: 10px;
+  }
+  .loom-band {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "art"
+      "stats";
+    padding: 26px 22px 16px;
+  }
+  .loom-band-art {
+    min-height: 150px;
+    margin: -10px -22px 0;
+    width: calc(100% + 44px);
+  }
+}
+@media (max-width: 800px) {
+  .login-loom {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 6px 0 10px;
+  }
+  .loom-band {
+    border-radius: var(--radius-panel);
+    gap: 18px;
+  }
+  .loom-stats {
+    grid-template-columns: 1fr;
+  }
+  .loom-stat-value {
+    font-size: 36px;
+  }
+}
+
+/* Profile banner carries the same woven indigo as the home band */
+.profile-banner {
+  background:
+    repeating-linear-gradient(90deg, #ffffff0d 0 1px, transparent 1px 26px),
+    radial-gradient(
+      80% 120% at 100% 0%,
+      color-mix(in srgb, var(--brand) 70%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(135deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+}
+.profile-banner > span {
+  color: #fff;
+  font-weight: 550;
+}
+.profile-banner-art {
+  opacity: 0.35;
+  filter: saturate(0) brightness(2);
+}
+
+/* Waiting-decision count on a navigation item */
+.nav-count {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  font-size: 11px;
+  font-weight: 700;
+}
+.nav-link.active .nav-count {
+  background: var(--indigo-deep);
+  color: var(--marigold);
+}

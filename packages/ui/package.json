@@ -1,0 +1,21 @@
+{
+  "name": "@anvi/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./theme.css": "./src/theme.css"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
+    "@untitledui/file-icons": "0.0.9",
+    "@untitledui/icons": "0.0.23",
+    "motion": "14.6.0",
+    "react": "19.3.1",
+    "react-aria-components": "1.22.1",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss-animate": "1.0.7",
+    "tailwindcss-react-aria-components": "2.2.0"
+  }
+}

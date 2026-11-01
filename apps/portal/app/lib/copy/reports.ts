@@ -1,0 +1,226 @@
+// English copy for the Reports screen (RPT-01). Keys are stable for later locale resources.
+export const reportsCopy = {
+  noAccess: "Reports are not available to your role.",
+  eyebrow: "Insights",
+  heading: "Reports",
+  intro:
+    "Pick a set of records, choose the columns, add filters and run it. Nothing leaves this screen unless you export it.",
+  tabs: { label: "Reports views", build: "Build", saved: "Saved reports" },
+  see: {
+    title: "What this report can see",
+    scope: {
+      team: "You will see rows for you and the people who report to you.",
+      entity: "You will see rows for the whole legal entity.",
+    },
+    points: [
+      "It only shows rows you already have access to. A report cannot widen your view.",
+      "Filter values are never logged. Only the column and the kind of filter are recorded.",
+      "Exports are recorded in the activity log without any values.",
+    ],
+  },
+  empty: {
+    title: "No reports are available to your role",
+    body: "Reports follow the screens you can already open. Ask HR if you expected to see one here.",
+  },
+  steps: {
+    data: {
+      title: "What do you want to report on?",
+      hint: "Only sets of records your role can run are listed.",
+      group: "Choose a data set",
+    },
+    columns: {
+      title: "Which columns?",
+      hint: "Pick at least one. The report shows them in the order below.",
+      standard: "Standard columns",
+      sensitive: "Sensitive columns",
+      sensitiveBadge: "Sensitive — HR only",
+      sensitiveHint:
+        "These can hold pay or personal details. Choose them only when you need them; they are never chosen for you, and a file you export is yours to protect.",
+      count: (chosen: number, max: number) =>
+        `${chosen} of ${max} columns chosen`,
+      atMax: (max: number) =>
+        `You can choose up to ${max} columns. Untick one to pick another.`,
+      none: "Choose at least one column to run the report.",
+    },
+    filters: {
+      title: "Filters",
+      hint: "Optional. Every filter must match for a row to appear.",
+      add: "Add filter",
+      limit: (max: number) => `You can add up to ${max} filters.`,
+      remove: (n: number) => `Remove filter ${n}`,
+      group: (n: number) => `Filter ${n}`,
+      column: (n: number) => `Filter column ${n}`,
+      operator: (n: number) => `Operator ${n}`,
+      value: (n: number) => `Value ${n}`,
+      valueEnd: (n: number) => `Range end ${n}`,
+      and: "and",
+      none: "No filters. Every row you can see is included.",
+      textPlaceholder: "Type a value",
+      listPlaceholder: "Separate values with commas",
+      pickPlaceholder: "Choose a value",
+      rupee: "Amounts are in rupees.",
+      incomplete: "Fill in this filter or remove it.",
+      badMoney: "Use rupees with at most two decimals.",
+      badNumber: "Enter a number.",
+      badDate: "Choose a date.",
+      badEnum: "Choose a value from the list.",
+      tooMany: "Use at most 50 values.",
+      fix: "Some filters need attention before the report can run.",
+    },
+    order: {
+      title: "Order and size",
+      sort: "Sort by",
+      defaultSort: "Default order",
+      direction: "Direction",
+      asc: "Ascending",
+      desc: "Descending",
+      limit: "Rows to show",
+      limitOption: (n: number) => `${n.toLocaleString("en-IN")} rows`,
+    },
+  },
+  operators: {
+    text: {
+      eq: "is",
+      in: "is any of",
+      contains: "contains",
+      between: "is between",
+      gte: "is at least",
+      lte: "is at most",
+    },
+    enum: {
+      eq: "is",
+      in: "is any of",
+      contains: "contains",
+      between: "is between",
+      gte: "is at least",
+      lte: "is at most",
+    },
+    number: {
+      eq: "equals",
+      in: "is any of",
+      contains: "contains",
+      between: "is between",
+      gte: "is at least",
+      lte: "is at most",
+    },
+    money: {
+      eq: "equals",
+      in: "is any of",
+      contains: "contains",
+      between: "is between",
+      gte: "is at least",
+      lte: "is at most",
+    },
+    date: {
+      eq: "is on",
+      in: "is any of",
+      contains: "contains",
+      between: "is between",
+      gte: "is on or after",
+      lte: "is on or before",
+    },
+  },
+  actions: {
+    run: "Run report",
+    running: "Running the report…",
+    export: "Export CSV",
+    exporting: "Preparing the file…",
+    save: "Save report",
+    needDataset: "Choose a data set to begin.",
+    hrOnlyExport: "Exports are available to HR.",
+    exportNote: (max: number) =>
+      `The file holds up to ${max.toLocaleString("en-IN")} rows and is recorded in the activity log.`,
+  },
+  results: {
+    title: "Results",
+    label: "Report results",
+    heading: "Report results",
+    showing: (shown: number, total: string) =>
+      `Showing ${shown.toLocaleString("en-IN")} of ${total} rows`,
+    sortNote: "Column headings sort the rows shown here only.",
+    truncatedTitle: "Not every row is shown",
+    truncated: (shown: number, total: string) =>
+      `This view holds the first ${shown.toLocaleString("en-IN")} of ${total} matching rows. Add a filter, or raise the row limit (up to 1,000).`,
+    emptyTitle: "No rows match",
+    emptyBody:
+      "Nothing you can see fits these filters. Loosen a filter and run it again.",
+    ran: (shown: number, total: string) =>
+      `Report ran. Showing ${shown.toLocaleString("en-IN")} of ${total} rows.`,
+    empty: "—",
+    cardLabel: "Report rows",
+  },
+  exported: {
+    done: (rows: number, file: string) =>
+      `Exported ${rows.toLocaleString("en-IN")} ${rows === 1 ? "row" : "rows"} to ${file}.`,
+    truncated: (max: number) =>
+      `The file holds the first ${max.toLocaleString("en-IN")} rows. Add a filter to export the rest in parts.`,
+    forbidden: "Your role cannot export reports. Exports are available to HR.",
+    tooMany: "Too many exports. Wait a minute and try again.",
+    unavailable: "The service is unavailable. Try again shortly.",
+    failed: "The file could not be prepared. Try again.",
+    fileFallback: "anvione-report.csv",
+  },
+  runTooMany: "Too many runs. Wait a minute and try again.",
+  runUnavailable: "The service is unavailable. Try again shortly.",
+  runFailed: "The report could not be run. Try again.",
+  saved: {
+    title: "Saved reports",
+    intro:
+      "A saved report keeps the data set, columns, filters and order. It never keeps results.",
+    count: (used: number, max: number) => `${used} of ${max} saved`,
+    emptyTitle: "No saved reports yet",
+    emptyBody:
+      "Build a report, then choose Save report to keep it here for next time.",
+    goBuild: "Go to Build",
+    list: "Saved report list",
+    meta: (
+      dataset: string,
+      columns: number,
+      filters: number,
+      updated: string,
+    ) =>
+      `${dataset} · ${columns} ${columns === 1 ? "column" : "columns"} · ${filters} ${filters === 1 ? "filter" : "filters"} · changed ${updated}`,
+    metaLocked: (dataset: string, updated: string) =>
+      `${dataset} · details hidden · changed ${updated}`,
+    run: "Run",
+    runName: (name: string) => `Run ${name}`,
+    rename: "Rename",
+    renameName: (name: string) => `Rename ${name}`,
+    archive: "Archive",
+    archiveName: (name: string) => `Archive ${name}`,
+    notRunnable:
+      "Your current role can no longer run this report, so it is greyed out. You can still archive it.",
+    limitReached: (max: number) =>
+      `You have ${max} saved reports, the most you can keep. Archive one to save another.`,
+    savedDone: () => "Report saved.",
+    renamedDone: () => "Report renamed.",
+    archivedDone: () => "Report archived.",
+    loaded: () => "The saved report is loaded in the builder.",
+  },
+  dialog: {
+    saveTitle: "Save report",
+    saveIntro:
+      "Give it a name you will recognise. Only the columns, filters and order are kept.",
+    renameTitle: "Rename report",
+    renameIntro: "The columns, filters and order stay as they are.",
+    name: "Report name",
+    nameHint: "3 to 80 characters.",
+    nameBad: "Use between 3 and 80 characters.",
+    nameTaken: "You already have a saved report with this name. Pick another.",
+    submitSave: "Save report",
+    submitRename: "Rename report",
+    saving: "Saving…",
+    cancel: "Cancel",
+    archiveTitle: "Archive report",
+    archiveBody: (name: string) =>
+      `Archive “${name}”? It leaves your saved reports and cannot be brought back from this screen.`,
+    archiveSubmit: "Archive report",
+    archiving: "Archiving…",
+    keep: "Keep it",
+    failed: "That change could not be saved. Try again.",
+    stale:
+      "This saved report changed elsewhere. Reload the list and try again.",
+    limit: "You have reached the saved report limit. Archive one first.",
+  },
+  loadingLabel: "Loading reports",
+};

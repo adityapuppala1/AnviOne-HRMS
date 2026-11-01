@@ -1,0 +1,221 @@
+/* Recruitment (ATS): tabs, boards and funnel bars built on Loom tokens. */
+.recruit-page {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.recruit-page > *,
+.recruit-page .leave-tabs,
+.recruit-page .tab-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+.recruit-tab {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.recruit-toolbar,
+.recruit-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.recruit-toolbar {
+  justify-content: space-between;
+}
+.recruit-filters .kit-search,
+.recruit-toolbar > .kit-filter {
+  flex: 1 1 14rem;
+  max-width: 22rem;
+  min-width: 0;
+}
+.recruit-filters .kit-filter {
+  flex: 0 1 13rem;
+  min-width: 0;
+}
+.recruit-limits {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 78ch;
+}
+.recruit-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+.recruit-notice {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.recruit-modal.modal {
+  width: min(600px, calc(100vw - 32px));
+}
+.recruit-people {
+  display: grid;
+  gap: 8px;
+}
+.recruit-chosen,
+.recruit-results,
+.recruit-panel-list,
+.recruit-cards,
+.recruit-funnel-panel ul,
+.recruit-column ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.recruit-chosen li,
+.recruit-panel-list li,
+.recruit-cards li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  font-size: 13px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.recruit-chosen li {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.recruit-chosen li span,
+.recruit-results button {
+  display: grid;
+  gap: 2px;
+}
+.recruit-panel-list li span,
+.recruit-cards li span,
+.recruit-chosen small,
+.recruit-results small {
+  color: var(--muted);
+}
+.recruit-results button {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+}
+.recruit-results button:hover {
+  border-color: var(--brand);
+}
+.recruit-results li.recruit-muted {
+  padding: 8px 4px;
+}
+
+/* Pipeline board: columns wrap instead of scrolling sideways. */
+.recruit-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.recruit-column {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-panel);
+  background: var(--surface-subtle);
+  min-width: 0;
+}
+.recruit-column h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font:
+    650 14px/1.3 var(--display),
+    sans-serif;
+}
+.recruit-app {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.recruit-app > span {
+  color: var(--muted);
+}
+.recruit-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Funnel: plain bars, numbers always in text. */
+.recruit-funnel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.recruit-funnel-panel {
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+.recruit-funnel-panel h3 {
+  font:
+    650 16px/1.3 var(--display),
+    sans-serif;
+}
+.recruit-funnel-panel li {
+  display: grid;
+  gap: 6px;
+}
+.recruit-funnel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.recruit-funnel-head span {
+  color: var(--muted);
+}
+.recruit-bar {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+.recruit-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+}
+[data-mode="dark"] .recruit-bar {
+  background: color-mix(in srgb, var(--line) 80%, transparent);
+}
+@media (max-width: 600px) {
+  .recruit-filters .kit-search,
+  .recruit-filters .kit-filter,
+  .recruit-toolbar > .kit-filter {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .recruit-toolbar > .button {
+    width: 100%;
+  }
+}

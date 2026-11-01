@@ -1,0 +1,66 @@
+{
+  "name": "anvione",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.21.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.22.1",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "scripts": {
+    "contracts:generate": "tsx scripts/generate-contracts.ts && prettier --write docs/api/*.json",
+    "dev": "pnpm --parallel --filter @anvi/api --filter @anvi/portal dev",
+    "db:up": "docker compose up -d --wait",
+    "db:migrate": "tsx --env-file=.env packages/database/src/migrate.ts",
+    "db:seed": "tsx --env-file=.env packages/database/src/seed.ts && pnpm -s demo:personas",
+    "demo:personas": "tsx --env-file=.env scripts/demo-personas.ts",
+    "setup:local": "node scripts/setup-local.mjs",
+    "start:all": "node scripts/start.mjs",
+    "typecheck": "pnpm --filter @anvi/portal typegen && tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:integration": "tsx --env-file=.env --import ./tests/support/reset-rate-limits.ts --test --test-concurrency=1 tests/*.integration.ts",
+    "identity:bind": "tsx --env-file=.env scripts/bind-identity.ts",
+    "candidate:api": "pnpm --filter @anvi/api candidate:dev",
+    "candidate:dev": "pnpm --filter @anvi/candidate dev",
+    "test:e2e": "playwright test",
+    "test:audit": "playwright test -c playwright.audit.config.ts",
+    "build": "node scripts/build-server.mjs && pnpm --filter @anvi/portal build && pnpm --filter @anvi/candidate build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "worker": "tsx --env-file=.env apps/worker/src/main.ts",
+    "profile:apply-due": "tsx --env-file=.env scripts/profile-apply-due.ts",
+    "profile:rekey": "tsx --env-file=.env scripts/profile-rekey.ts",
+    "recruit:rehash": "tsx --env-file=.env scripts/recruit-rehash.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/express": "5.0.3",
+    "@types/node": "24.10.1",
+    "@types/pg": "8.15.6",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "esbuild": "0.28.2",
+    "eslint": "10.13.0",
+    "globals": "16.5.0",
+    "pg": "8.23.1",
+    "prettier": "3.9.10",
+    "redis": "6.3.0",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "zod": "4.6.7"
+  }
+}

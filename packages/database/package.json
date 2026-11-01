@@ -1,0 +1,12 @@
+{
+  "name": "@anvi/database",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "pg": "8.23.1",
+    "@anvi/authz": "workspace:*",
+    "@anvi/contracts": "workspace:*"
+  }
+}

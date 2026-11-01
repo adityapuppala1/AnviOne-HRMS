@@ -1,0 +1,143 @@
+/* Helpdesk: case thread, service targets and settings sections on Loom tokens. */
+.hd-page {
+  min-width: 0;
+}
+.hd-tab {
+  min-width: 0;
+}
+.hd-section {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.hd-settings {
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+.hd-h2 {
+  font:
+    650 18px/1.3 var(--display),
+    sans-serif;
+}
+.hd-sla {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.hd-sla > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  font-size: 14px;
+}
+.hd-sla dt {
+  color: var(--muted);
+}
+.hd-sla dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.hd-thread {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.hd-message {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.hd-message[data-mine] {
+  background: var(--brand-soft);
+}
+.hd-message[data-kind="internal"] {
+  border: 1px dashed var(--line);
+  background: transparent;
+}
+.hd-message-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 13px;
+}
+.hd-message-body,
+.hd-article-body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.hd-composer {
+  display: grid;
+  gap: 10px;
+}
+.hd-suggest {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+}
+.hd-suggest h3 {
+  font:
+    650 14px/1.3 var(--display),
+    sans-serif;
+}
+.hd-suggest ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.hd-suggest summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.hd-suggest details p {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+.hd-suggest summary:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.hd-wallclock {
+  max-width: 78ch;
+}
+.hd-page .recruit-toolbar > .recruit-filters,
+.hd-page .recruit-toolbar > div {
+  flex: 1 1 20rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.hd-page .recruit-filters .kit-filter {
+  flex: 1 1 11rem;
+}
+/* The empty state draws a decorative backdrop wider than a phone; clip it. */
+.hd-tab [data-collection] header {
+  overflow: hidden;
+}

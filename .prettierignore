@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+docs/requirements/
+dist/
+build/
+.react-router/
+test-results/
+.scratch/

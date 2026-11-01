@@ -1,0 +1,15 @@
+import { defineConfig } from "vite";
+import { reactRouter } from "@react-router/dev/vite";
+import tailwind from "@tailwindcss/vite";
+export default defineConfig({
+  plugins: [tailwind(), reactRouter()],
+  // Scan every route up front: discovering icons after navigation otherwise
+  // causes dependency-optimizer reloads that discard in-progress UI state.
+  optimizeDeps: { entries: ["app/**/*.tsx"] },
+  server: {
+    port: 5173,
+    strictPort: true,
+    host: "127.0.0.1",
+    proxy: { "/api": "http://127.0.0.1:4000" },
+  },
+});

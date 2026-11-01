@@ -1,0 +1,5015 @@
+{
+  "visits": 177,
+  "findings": [
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "employee",
+      "route": "/tasks",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "infra-gateway",
+      "severity": "low",
+      "detail": "502 GET /api/v1/me"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No leave requested yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No leave requested yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/attendance",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "employee",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "employee",
+      "route": "/expenses",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/expenses",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 320x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Previous\" 80x40"
+    },
+    {
+      "persona": "employee",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Next\" 62x40"
+    },
+    {
+      "persona": "employee",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "employee",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n1",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "employee",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n1",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.leave-requests \"Your requestsComing up first, then every\""
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No leave requested yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.leave-requests \"Your requestsComing up first, then every\""
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No leave requested yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.leave-requests \"Your correctionsRequests to fix a past d\""
+    },
+    {
+      "persona": "employee",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "employee",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"My entries0 entriesNo time logged yetUse\""
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"My entries0 entriesNo time logged yetUse\""
+    },
+    {
+      "persona": "employee",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 330x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "1 node(s), e.g. .text-md.text-quaternary.font-semibold"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "employee",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "infra-gateway",
+      "severity": "low",
+      "detail": "502 GET /api/v1/me"
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Your documentsNewest first. Withdraw a f\""
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Your documentsNewest first. Withdraw a f\""
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "employee",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "manager",
+      "route": "/attendance",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "manager",
+      "route": "/attendance",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Your attendance",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "manager",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/reports",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:My claims",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering3\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture2\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 320x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Previous\" 80x40"
+    },
+    {
+      "persona": "manager",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Next\" 62x40"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering3\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture2\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering3\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture2\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering3\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture2\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "manager",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Team requests",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"You're all caught upNew requests routed \""
+    },
+    {
+      "persona": "manager",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"You're all caught upNew requests routed \""
+    },
+    {
+      "persona": "manager",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "manager",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Your attendance",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ol.attendance-grid \"2930123456789101112131415161718192021222\" renders 30 li items"
+    },
+    {
+      "persona": "manager",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Team today",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"No corrections to reviewRequests routed \""
+    },
+    {
+      "persona": "manager",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"You're all caught upNew requests routed \""
+    },
+    {
+      "persona": "manager",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "1 node(s), e.g. .loom-date"
+    },
+    {
+      "persona": "manager",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"My entries0 entriesNo time logged yetUse\""
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My time",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No time logged yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Time approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/reports",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MIMaya IyerPeople experience leadPeople \" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"NRNeel RaoYouEngineering managerEngineer\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ASAarav ShahCustomer success leadCustome\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ASAnanya SenBrand designerDesignNo repor\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"DKDiya KapoorFinance analystFinanceNo re\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"IRIshaan RoyPlatform engineerEngineering\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"KSKabir SethiWorkplace coordinatorPeople\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MNMeera NairProduct managerProductNo rep\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"RDRohan DasPeople partnerPeople & cultur\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"TBTara BoseQuality engineerEngineeringNo\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"Customer experience\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MIMaya IyerPeople experience leadPeople \" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"NRNeel RaoYouEngineering managerEngineer\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ASAarav ShahCustomer success leadCustome\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ASAnanya SenBrand designerDesignNo repor\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"DKDiya KapoorFinance analystFinanceNo re\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"IRIshaan RoyPlatform engineerEngineering\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"KSKabir SethiWorkplace coordinatorPeople\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MNMeera NairProduct managerProductNo rep\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"RDRohan DasPeople partnerPeople & cultur\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"TBTara BoseQuality engineerEngineeringNo\" 76x29"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 330x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "9 node(s), e.g. .chart-tree > li > .chart-row > .chart-card > .size-10.inline-flex[data-avatar=\"true\"] > .size-full.overflow-hidden.bg-tertiary > .text-md.text-quaternary.font-semibold"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No change has been applied yet."
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Your claims0 claimsNo claims yetWhen you\""
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My claims",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Your claims0 claimsNo claims yetWhen you\""
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:My claims",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No claims yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Your documentsNewest first. Withdraw a f\""
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Your documentsNewest first. Withdraw a f\""
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "manager",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No documents yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "hr",
+      "route": "/approvals",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.leave-cards \"Onboarding readiness reviewA8Avery 8107e\" renders 46 li items"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/reports",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 320x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Previous\" 80x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Next\" 62x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Designations",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Grades",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Cost centres",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 310x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "hr",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"No corrections to reviewRequests routed \""
+    },
+    {
+      "persona": "hr",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.leave-cards \"Onboarding readiness reviewA8Avery 8107e\" renders 46 li items"
+    },
+    {
+      "persona": "hr",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "1 node(s), e.g. .loom-date"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.assets-panel \"Inventory0 assetsAll statuses All status\""
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.assets-panel \"Inventory0 assetsAll statuses All status\""
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.policies-panel \"Policies0 policiesAll categories All cat\""
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.policies-panel \"Policies0 policiesAll categories All cat\""
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Time approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/reports",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 330x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "4 node(s), e.g. .chart-tree > li > .chart-row > .chart-card > .size-10.inline-flex[data-avatar=\"true\"] > .size-full.overflow-hidden.bg-tertiary > .text-md.text-quaternary.font-semibold"
+    },
+    {
+      "persona": "hr",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.details-panel \"Requests0 requestsAllAwaiting HRApproved\""
+    },
+    {
+      "persona": "hr",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Pay and settle",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Waiting for paymentApproved claims that \""
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.exit-panel \"Exit cases0 casesAllAwaiting decisionAcc\""
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.exit-panel \"Exit cases0 casesAllAwaiting decisionAcc\""
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "hr",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Waiting for verificationOpen the file, c\""
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Mon\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Tue\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Wed\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Thu\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Fri\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday. \"Sat\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday. \"Sun\" 40x40"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "hr",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "tbody.react-aria-TableBody \"Adminadmin.readRead the permission matri\" renders 33 tr items"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "tbody.react-aria-TableBody \"Adminadmin.readRead the permission matri\" renders 33 tr items"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 326x38"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.config-cards \"Adminadmin.readRead the permission matri\" renders 33 li items"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 326x38"
+    },
+    {
+      "persona": "auditor",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.config-cards \"Adminadmin.readRead the permission matri\" renders 33 li items"
+    },
+    {
+      "persona": "auditor",
+      "route": "/activity",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 88x38"
+    },
+    {
+      "persona": "auditor",
+      "route": "/activity",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.group.relative \"\" 36x36"
+    },
+    {
+      "persona": "auditor",
+      "route": "/activity",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.group.relative \"\" 36x36"
+    },
+    {
+      "persona": "platform",
+      "route": "/configuration",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "tbody.react-aria-TableBody \"Adminadmin.readRead the permission matri\" renders 33 tr items"
+    },
+    {
+      "persona": "platform",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 326x38"
+    },
+    {
+      "persona": "platform",
+      "route": "/configuration",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Access",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.config-cards \"Adminadmin.readRead the permission matri\" renders 33 li items"
+    },
+    {
+      "persona": "platform",
+      "route": "/settings",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 314x37"
+    },
+    {
+      "persona": "platform",
+      "route": "/settings",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 314x37"
+    },
+    {
+      "persona": "platform",
+      "route": "/settings",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 314x37"
+    },
+    {
+      "persona": "platform",
+      "route": "/settings",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "platform",
+      "route": "/settings",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/approvals",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.leave-cards \"Onboarding readiness reviewA8Avery 8107e\" renders 45 li items"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/reports",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 320x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-icon \"\" 34x34"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Previous\" 80x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-secondary \"Next\" 62x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments\n6",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Engineering4\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"People & culture3\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Design2\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Customer experience1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Finance1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/teams",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations\n2",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.button.button-ghost \"Product1\" 147x42"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Departments",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Locations",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Designations",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Grades",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Cost centres",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/organization",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 324x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 310x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 318x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/leave",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"You're all caught upNew requests routed \""
+    },
+    {
+      "persona": "maya",
+      "route": "/attendance",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"No corrections to reviewRequests routed \""
+    },
+    {
+      "persona": "maya",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "div.panel \"You're all caught upNew requests routed \""
+    },
+    {
+      "persona": "maya",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.leave-cards \"Onboarding readiness reviewA8Avery 8107e\" renders 45 li items"
+    },
+    {
+      "persona": "maya",
+      "route": "/approvals",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "1 node(s), e.g. .loom-date"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.assets-panel \"Inventory0 assetsAll statuses All status\""
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.assets-panel \"Inventory0 assetsAll statuses All status\""
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.policies-panel \"Policies0 policiesAll categories All cat\""
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.policies-panel \"Policies0 policiesAll categories All cat\""
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"All projects0 projectsAll (0)Planned (0)\""
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Time approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.projects-panel \"Time awaiting a decision0 entries waitin\""
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/reports",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MIMaya IyerYouPeople experience leadPeop\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"AMArjun MehtaSenior product designerDesi\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"NRNeel RaoEngineering managerEngineering\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ZKZara KhanFrontend engineerEngineeringN\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"MIMaya IyerYouPeople experience leadPeop\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"AMArjun MehtaSenior product designerDesi\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"NRNeel RaoEngineering managerEngineering\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Network",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.oc-node \"ZKZara KhanFrontend engineerEngineeringN\" 87x33"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 330x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Whole tree",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "4 node(s), e.g. .chart-tree > li > .chart-row > .chart-card > .size-10.inline-flex[data-avatar=\"true\"] > .size-full.overflow-hidden.bg-tertiary > .text-md.text-quaternary.font-semibold"
+    },
+    {
+      "persona": "maya",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.details-panel \"Requests0 requestsAllAwaiting HRApproved\""
+    },
+    {
+      "persona": "maya",
+      "route": "/details",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Claims to decide0 claimsAll (0)Awaiting \""
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Approvals",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "tab:Pay and settle",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.expenses-panel \"Waiting for paymentApproved claims that \""
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/expenses",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 381x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.exit-panel \"Exit cases0 casesAllAwaiting decisionAcc\""
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 322x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.exit-panel \"Exit cases0 casesAllAwaiting decisionAcc\""
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/documents",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "section.panel.documents-list \"Waiting for verificationOpen the file, c\""
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Mon\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Tue\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Wed\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Thu\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday.is-on \"Fri\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday. \"Sat\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "page",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "button.calendar-weekday. \"Sun\" 40x40"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/calendar",
+      "viewport": "390x844",
+      "theme": "light",
+      "state": "dialog",
+      "kind": "small-target",
+      "severity": "medium",
+      "detail": "input.m-0.w-full \"\" 316x38"
+    },
+    {
+      "persona": "maya",
+      "route": "/people",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "p.truncate.font-medium \"All departments\""
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "dialog",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "div.intake-rows \"A8Avery 82e191dbProduct designerForm app\" renders 50 button items"
+    },
+    {
+      "persona": "maya",
+      "route": "/candidates",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "dialog",
+      "kind": "axe:color-contrast",
+      "severity": "high",
+      "detail": "3 node(s), e.g. #react-aria5791983816-_r_1t_ > .text-placeholder.text-md"
+    },
+    {
+      "persona": "maya",
+      "route": "/approvals",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "no-pagination",
+      "severity": "medium",
+      "detail": "ul.leave-cards \"Onboarding readiness reviewA8Avery 8107e\" renders 45 li items"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/assets",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No assets yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/policies",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No policies yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/projects",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "tab:Projects",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No projects yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/reports",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "tab:Saved reports (0)",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No saved reports yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/chart",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "tab:Network",
+      "kind": "clipped-text",
+      "severity": "medium",
+      "detail": "span \"People & culture\""
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "page",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    },
+    {
+      "persona": "maya",
+      "route": "/exit",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "state": "dialog",
+      "kind": "empty-state",
+      "severity": "low",
+      "detail": "No exits yet"
+    }
+  ]
+}

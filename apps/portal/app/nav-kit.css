@@ -1,0 +1,75 @@
+/* Untitled UI sidebar navigation (SidebarNavSections) dressed in Anvi Loom.
+   The kit items read semantic tokens; this scope points them at the indigo rail
+   so light and dark mode both keep the rail look. */
+.kit-nav {
+  --color-bg-primary: transparent;
+  --color-bg-primary_hover: #ffffff12;
+  --color-bg-secondary: var(--marigold);
+  --color-bg-secondary_hover: var(--marigold);
+  --color-text-secondary: #dedcfb;
+  --color-text-secondary_hover: #ffffff;
+  --color-text-quaternary: #c3c1ec;
+  --color-fg-quaternary: #c3c1ec;
+  --color-fg-quaternary_hover: #ffffff;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.kit-nav ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.kit-nav .nav-link {
+  margin-bottom: 0;
+  border-radius: 14px;
+  color: #dedcfb;
+}
+.kit-nav h3.sidebar-label {
+  margin: 0 0 4px;
+  padding: 0 12px;
+  letter-spacing: 0.04em;
+}
+.kit-nav .nav-link[aria-current="page"] {
+  background: var(--marigold);
+  color: var(--indigo-deep);
+  box-shadow: 0 10px 22px -12px var(--marigold);
+}
+.kit-nav .nav-link[aria-current="page"] span,
+.kit-nav .nav-link[aria-current="page"] svg {
+  color: var(--indigo-deep);
+}
+.kit-nav .nav-link[aria-current="page"] .nav-count {
+  background: var(--indigo-deep);
+  color: #fff;
+}
+.nav-collapsed > .sidebar .kit-nav h3.sidebar-label {
+  display: none;
+}
+.nav-collapsed > .sidebar .kit-nav .nav-link svg {
+  margin-right: 0;
+}
+
+/* Phone and tablet drawer: the kit's slide-in modal holds this sheet. */
+.mobile-nav-sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 27px 14px 12px;
+  color: var(--sidebar-ink);
+  background:
+    repeating-linear-gradient(90deg, #ffffff07 0 1px, transparent 1px 22px),
+    linear-gradient(180deg, var(--indigo) 0%, var(--indigo-deep) 100%);
+}
+.mobile-nav-sheet .collapse-toggle {
+  display: none;
+}
+.mobile-nav-sheet .sidebar-brand {
+  padding-bottom: 22px;
+}
+.mobile-nav-sheet .sidebar-bottom {
+  margin-top: auto;
+}
+.mobile-nav-sheet .kit-nav .nav-link {
+  min-height: 48px;
+}

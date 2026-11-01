@@ -1,0 +1,496 @@
+.expenses-page {
+  min-width: 0;
+}
+.expenses-page .panel,
+.expenses-page .expenses-help {
+  margin-top: 20px;
+}
+.expenses-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+.expenses-stats-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.expenses-panel {
+  padding-bottom: 20px;
+}
+.expenses-heading {
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.expenses-muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.expenses-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+.expenses-warning {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-left: 4px solid var(--accent);
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.expenses-amount {
+  font-family: var(--display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Twelve-month ledger bars: plain CSS, a table below carries the same numbers. */
+.expenses-bars {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+  height: 150px;
+  padding: 0 24px;
+}
+.expenses-bar-col {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+}
+.expenses-bar {
+  align-self: end;
+  width: 100%;
+  max-width: 28px;
+  height: var(--h, 0%);
+  border-radius: 8px 8px 3px 3px;
+  background: var(--brand);
+  transition: height 0.4s ease;
+}
+.expenses-bar[data-empty="true"] {
+  height: 3px;
+  background: var(--line);
+}
+.expenses-bar-col small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* Rows */
+.expenses-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 24px;
+}
+.expenses-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.expenses-main {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+}
+.expenses-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.expenses-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.expenses-meta small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.expenses-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.expenses-row-actions .button,
+.expenses-actions .button,
+.expenses-table-actions .button {
+  min-height: 44px;
+  flex: 0 0 auto;
+}
+
+/* Toolbar + chips */
+.expenses-toolbar {
+  padding: 0 24px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.expenses-toolbar .expenses-search {
+  flex: 1 1 240px;
+  width: auto;
+  min-width: 0;
+}
+.expenses-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.expenses-chip {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.expenses-chip:hover {
+  background: var(--brand-soft);
+}
+.expenses-chip[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  font-weight: 600;
+}
+.expenses-chip:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Help note */
+.expenses-help {
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  max-width: 100%;
+}
+.expenses-help h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+.expenses-help p {
+  margin: 0;
+  font-size: 13px;
+  max-width: 72ch;
+}
+
+/* Categories table */
+.expenses-table-box {
+  padding: 0 24px;
+  min-width: 0;
+}
+.expenses-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.expenses-table th,
+.expenses-table td {
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: middle;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.expenses-table thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.expenses-table tbody th {
+  font-weight: 600;
+}
+.expenses-table code {
+  font-size: 12px;
+}
+.expenses-table-actions {
+  text-align: right;
+}
+
+/* Dialog forms */
+.expenses-modal.modal {
+  width: min(680px, calc(100vw - 32px));
+}
+input[data-rac][readonly] {
+  color: var(--muted);
+}
+.expenses-note-input {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* Details */
+.expenses-detail {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.expenses-detail-head {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.expenses-section {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.expenses-section h3 {
+  font-size: 15px;
+  margin: 4px 0 0;
+}
+.expenses-decide {
+  display: grid;
+  gap: 12px;
+}
+.expenses-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.expenses-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+.expenses-facts dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.expenses-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.expenses-facts .expenses-wide {
+  grid-column: 1 / -1;
+}
+
+/* Status timeline */
+.expenses-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 3), minmax(0, 1fr));
+  gap: 8px;
+}
+.expenses-step {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding-top: 2px;
+  min-width: 0;
+}
+.expenses-step::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 34px;
+  right: -8px;
+  height: 2px;
+  background: var(--line);
+}
+.expenses-step:last-child::before {
+  display: none;
+}
+.expenses-step[data-state="done"]::before {
+  background: var(--brand);
+}
+.expenses-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.expenses-step[data-state="done"] .expenses-marker {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+.expenses-step[data-state="current"] .expenses-marker {
+  border-color: var(--brand);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px var(--brand-soft);
+}
+.expenses-step[data-state="stopped"] .expenses-marker {
+  border-color: var(--accent);
+  background: var(--surface-subtle);
+  color: var(--ink);
+}
+[data-mode="dark"] .expenses-step[data-state="done"] .expenses-marker {
+  color: var(--ink);
+}
+.expenses-step-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.expenses-step-text strong {
+  font-size: 13px;
+}
+.expenses-step-text small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.expenses-step[data-state="current"] .expenses-step-text small,
+.expenses-step[data-state="stopped"] .expenses-step-text small {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.expenses-bar-col small {
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+  .expenses-chip {
+    min-height: 48px;
+  }
+}
+@media (max-width: 1000px) {
+  .expenses-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 719px) {
+  .expenses-toolbar,
+  .expenses-list,
+  .expenses-table-box {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .expenses-bars {
+    padding: 0 16px;
+    gap: 3px;
+  }
+  .expenses-stats,
+  .expenses-stats-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .expenses-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .expenses-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .expenses-row-actions .button,
+  .expenses-actions .button {
+    flex: 1 1 100%;
+  }
+  /* The rail turns vertical on narrow screens. */
+  .expenses-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .expenses-step {
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+  }
+  .expenses-step::before {
+    top: 32px;
+    bottom: -16px;
+    left: 15px;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+  /* The categories table becomes one stacked card per category. */
+  .expenses-table,
+  .expenses-table tbody,
+  .expenses-table tr,
+  .expenses-table th,
+  .expenses-table td {
+    display: block;
+  }
+  .expenses-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .expenses-table tr {
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .expenses-table th,
+  .expenses-table td {
+    border: 0;
+    padding: 6px 0;
+  }
+  .expenses-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .expenses-table-actions {
+    text-align: left;
+  }
+  .expenses-table-actions .button {
+    width: 100%;
+  }
+}
+@media (max-width: 479px) {
+  .expenses-bar-col small {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .expenses-chip,
+  .expenses-bar {
+    transition: none;
+  }
+}
+
+/* Inside a CollectionView card the row stacks. */
+[data-collection] .expenses-row {
+  flex-direction: column;
+  align-items: stretch;
+  border-top: 0;
+  padding: 0;
+}

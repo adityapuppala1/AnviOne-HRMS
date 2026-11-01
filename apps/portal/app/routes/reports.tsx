@@ -30,7 +30,6 @@ import {
   Button,
   Checkbox,
   CollectionView,
-  DataCard,
   DetailFields,
   DialogPanel,
   EmptyBlock,
@@ -1228,22 +1227,22 @@ function Results({ result }: { result: ReportResult }) {
           </span>
         </p>
       )}
-      <DataCard
-        title={text.results.title}
-        description={`${text.results.showing(shown, totalLabel(result))}. ${text.results.sortNote}`}
+      <h3 className="reports-results-title">{text.results.title}</h3>
+      <p className="reports-quiet">
+        {`${text.results.showing(shown, totalLabel(result))}. ${text.results.sortNote}`}
+      </p>
+      <CollectionView
+        id="reports-results"
         label={text.results.label}
-        columns={columns}
-        rows={rows}
+        noun="rows"
+        items={rows}
         getKey={(row) => row.id}
-        pageSize={25}
-        empty={
-          <EmptyBlock
-            icon={TableIcon}
-            title={text.results.emptyTitle}
-            description={text.results.emptyBody}
-          />
-        }
-        mobileRow={(row) => (
+        columns={columns}
+        defaultView="table"
+        emptyIcon={TableIcon}
+        emptyTitle={text.results.emptyTitle}
+        emptyDescription={text.results.emptyBody}
+        renderCard={(row) => (
           <dl className="reports-card">
             {result.columns.map((column, index) => (
               <div key={column.key}>

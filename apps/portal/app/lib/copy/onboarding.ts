@@ -125,7 +125,8 @@ export const candidateDocumentsCopy = {
     },
     previous_employment: {
       label: "Previous Employment Records",
-      description: "Relieving letter, experience certificate or recent payslips.",
+      description:
+        "Relieving letter, experience certificate or recent payslips.",
       required: false,
     },
   },
@@ -147,7 +148,8 @@ export const candidateDocumentsCopy = {
     confirm: "Save review",
     saving: "Saving review…",
   },
-  errorMinReason: "Rejection requires an explanation of at least 10 characters.",
+  errorMinReason:
+    "Rejection requires an explanation of at least 10 characters.",
   reviewFailed: "Could not submit document review.",
 };
 

@@ -218,7 +218,8 @@ export class OnboardingController {
   ) {
     return this.onboarding.documents(req.actor, parse(z.uuid(), id));
   }
-  @Post("api/v1/candidates/:id/documents/:docId/review") reviewCandidateDocument(
+  @Post("api/v1/candidates/:id/documents/:docId/review")
+  reviewCandidateDocument(
     @Req() req: AppRequest,
     @Param("id") id: string,
     @Param("docId") docId: string,

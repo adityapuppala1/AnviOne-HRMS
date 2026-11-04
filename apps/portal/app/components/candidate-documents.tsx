@@ -1,11 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
-import {
-  Button,
-  DialogPanel,
-  StatusBadge,
-  TextArea,
-} from "@anvi/ui";
+import { Button, DialogPanel, StatusBadge, TextArea } from "@anvi/ui";
 import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
@@ -29,31 +24,31 @@ const CATEGORIES: {
   description: string;
   required: boolean;
 }[] = [
-    {
-      category: "government_id",
-      label: text.categories.government_id.label,
-      description: text.categories.government_id.description,
-      required: text.categories.government_id.required,
-    },
-    {
-      category: "proof_of_address",
-      label: text.categories.proof_of_address.label,
-      description: text.categories.proof_of_address.description,
-      required: text.categories.proof_of_address.required,
-    },
-    {
-      category: "education_certificate",
-      label: text.categories.education_certificate.label,
-      description: text.categories.education_certificate.description,
-      required: text.categories.education_certificate.required,
-    },
-    {
-      category: "previous_employment",
-      label: text.categories.previous_employment.label,
-      description: text.categories.previous_employment.description,
-      required: text.categories.previous_employment.required,
-    },
-  ];
+  {
+    category: "government_id",
+    label: text.categories.government_id.label,
+    description: text.categories.government_id.description,
+    required: text.categories.government_id.required,
+  },
+  {
+    category: "proof_of_address",
+    label: text.categories.proof_of_address.label,
+    description: text.categories.proof_of_address.description,
+    required: text.categories.proof_of_address.required,
+  },
+  {
+    category: "education_certificate",
+    label: text.categories.education_certificate.label,
+    description: text.categories.education_certificate.description,
+    required: text.categories.education_certificate.required,
+  },
+  {
+    category: "previous_employment",
+    label: text.categories.previous_employment.label,
+    description: text.categories.previous_employment.description,
+    required: text.categories.previous_employment.required,
+  },
+];
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) {
@@ -65,10 +60,10 @@ function formatSize(bytes: number): string {
 const formatDate = (value?: string | null) =>
   value
     ? new Intl.DateTimeFormat("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "Asia/Kolkata",
-    }).format(new Date(value))
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Kolkata",
+      }).format(new Date(value))
     : "";
 
 export function CandidateDocumentReview({
@@ -85,8 +80,11 @@ export function CandidateDocumentReview({
     catLabel: string;
   } | null>(null);
 
-  const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter((cat) =>
-    value.documents.some((d) => d.category === cat && d.status === "verified"),
+  const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter(
+    (cat) =>
+      value.documents.some(
+        (d) => d.category === cat && d.status === "verified",
+      ),
   ).length;
 
   return (
@@ -141,13 +139,25 @@ export function CandidateDocumentReview({
                 <div className="candidate-doc-title-group">
                   <span className="candidate-doc-icon" aria-hidden="true">
                     {status === "verified" ? (
-                      <CheckCircle weight="fill" size={20} className="icon-success" />
+                      <CheckCircle
+                        weight="fill"
+                        size={20}
+                        className="icon-success"
+                      />
                     ) : status === "rejected" ? (
-                      <WarningCircle weight="fill" size={20} className="icon-error" />
+                      <WarningCircle
+                        weight="fill"
+                        size={20}
+                        className="icon-error"
+                      />
                     ) : status === "pending" ? (
                       <Clock weight="bold" size={18} className="icon-brand" />
                     ) : (
-                      <FileText weight="regular" size={18} className="icon-muted" />
+                      <FileText
+                        weight="regular"
+                        size={18}
+                        className="icon-muted"
+                      />
                     )}
                   </span>
                   <div>
@@ -167,11 +177,15 @@ export function CandidateDocumentReview({
               {doc ? (
                 <div className="candidate-doc-body">
                   <div className="candidate-doc-file-info">
-                    <span className="candidate-doc-filename">{doc.fileName}</span>
+                    <span className="candidate-doc-filename">
+                      {doc.fileName}
+                    </span>
                     <span className="candidate-doc-filesize">
                       ({formatSize(doc.sizeBytes)})
                     </span>
-                    <span className="candidate-doc-version">v{doc.version}</span>
+                    <span className="candidate-doc-version">
+                      v{doc.version}
+                    </span>
                     <a
                       href={`/api/v1/candidates/${value.candidate.id}/documents/${doc.id}/content`}
                       download={doc.fileName}
@@ -267,7 +281,8 @@ function ReviewDialog({
 
   const reasonTrimmed = reason.trim();
   const isValid =
-    decision === "verified" || (decision === "rejected" && reasonTrimmed.length >= 10);
+    decision === "verified" ||
+    (decision === "rejected" && reasonTrimmed.length >= 10);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -340,9 +355,13 @@ function ReviewDialog({
         </div>
 
         <div className="doc-review-decision-group">
-          <label className="doc-review-decision-label">{text.dialog.decisionLabel}</label>
+          <label className="doc-review-decision-label">
+            {text.dialog.decisionLabel}
+          </label>
           <div className="doc-review-radios">
-            <label className={`decision-radio-card ${decision === "verified" ? "selected" : ""}`}>
+            <label
+              className={`decision-radio-card ${decision === "verified" ? "selected" : ""}`}
+            >
               <input
                 type="radio"
                 name="decision"
@@ -356,7 +375,9 @@ function ReviewDialog({
                 <span>Document matches requirements and is verified.</span>
               </div>
             </label>
-            <label className={`decision-radio-card ${decision === "rejected" ? "selected" : ""}`}>
+            <label
+              className={`decision-radio-card ${decision === "rejected" ? "selected" : ""}`}
+            >
               <input
                 type="radio"
                 name="decision"
@@ -367,7 +388,10 @@ function ReviewDialog({
               />
               <div>
                 <strong>{text.dialog.rejectOption}</strong>
-                <span>Document is unreadable, expired, or incorrect. Candidate will be asked to re-upload.</span>
+                <span>
+                  Document is unreadable, expired, or incorrect. Candidate will
+                  be asked to re-upload.
+                </span>
               </div>
             </label>
           </div>

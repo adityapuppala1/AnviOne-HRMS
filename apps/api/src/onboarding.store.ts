@@ -628,13 +628,17 @@ export class OnboardingStore {
       const documents = await this.readDocuments(client, id);
       const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter(
         (cat) =>
-          documents.some((doc) => doc.category === cat && doc.status === "verified"),
+          documents.some(
+            (doc) => doc.category === cat && doc.status === "verified",
+          ),
       );
       if (
         candidate.state !== "approved" ||
         !required.length ||
         required.some((task) => task.state !== "completed") ||
-        (documents.length > 0 && mandatoryVerified.length !== MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.length)
+        (documents.length > 0 &&
+          mandatoryVerified.length !==
+            MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.length)
       )
         throw new ConflictException(
           "Approve the form, complete every required task and verify all mandatory documents before requesting review.",
@@ -853,7 +857,8 @@ export class OnboardingStore {
         `SELECT ${docColumns} FROM candidate_document d WHERE d.id=$1 AND d.candidate_id=$2 FOR UPDATE`,
         [docId, candidateId],
       );
-      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      if (!rows[0])
+        throw new NotFoundException("This document is unavailable.");
       const current = rows[0];
       if (current.version !== input.version) {
         throw new ConflictException(
@@ -881,7 +886,7 @@ export class OnboardingStore {
           input.decision,
           actor.actorId,
           actor.name,
-          input.decision === "rejected" ? input.reason?.trim() ?? null : null,
+          input.decision === "rejected" ? (input.reason?.trim() ?? null) : null,
         ],
       );
 
@@ -938,7 +943,8 @@ export class OnboardingStore {
          WHERE d.id = $1 AND d.candidate_id = $2`,
         [docId, candidateId],
       );
-      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      if (!rows[0])
+        throw new NotFoundException("This document is unavailable.");
       await audit(
         client,
         actor,

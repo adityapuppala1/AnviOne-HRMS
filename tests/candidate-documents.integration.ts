@@ -142,30 +142,42 @@ await test("Candidate document intake, verification, rejection, and readiness in
       reason,
     });
     assert.equal(inviteRes.status, 201);
-    const delivery = await (await hr(`/candidates/${id}/delivery-preview`)).json();
+    const delivery = await (
+      await hr(`/candidates/${id}/delivery-preview`)
+    ).json();
     token = new URL(delivery.invitationUrl).hash.slice(8);
 
-    const challengeRes = await fetch("http://127.0.0.1:4487/api/candidate/challenge", {
-      method: "POST",
-      headers: {
-        Origin: config.CANDIDATE_ORIGIN,
-        "Content-Type": "application/json",
+    const challengeRes = await fetch(
+      "http://127.0.0.1:4487/api/candidate/challenge",
+      {
+        method: "POST",
+        headers: {
+          Origin: config.CANDIDATE_ORIGIN,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
       },
-      body: JSON.stringify({ token }),
-    });
+    );
     assert.equal(challengeRes.status, 201);
-    const { challengeId } = (await challengeRes.json()) as { challengeId: string };
+    const { challengeId } = (await challengeRes.json()) as {
+      challengeId: string;
+    };
 
-    const freshDelivery = await (await hr(`/candidates/${id}/delivery-preview`)).json();
+    const freshDelivery = await (
+      await hr(`/candidates/${id}/delivery-preview`)
+    ).json();
 
-    const exchangeRes = await fetch("http://127.0.0.1:4487/api/candidate/exchange", {
-      method: "POST",
-      headers: {
-        Origin: config.CANDIDATE_ORIGIN,
-        "Content-Type": "application/json",
+    const exchangeRes = await fetch(
+      "http://127.0.0.1:4487/api/candidate/exchange",
+      {
+        method: "POST",
+        headers: {
+          Origin: config.CANDIDATE_ORIGIN,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, challengeId, code: freshDelivery.code }),
       },
-      body: JSON.stringify({ token, challengeId, code: freshDelivery.code }),
-    });
+    );
     assert.equal(exchangeRes.status, 201);
     cookie = exchangeRes.headers.get("set-cookie")!.split(";")[0]!;
 
@@ -176,37 +188,49 @@ await test("Candidate document intake, verification, rejection, and readiness in
     version = sessionData.candidate.version;
     assert.equal(sessionData.documents.length, 0);
 
-    await t.test("File upload validations (size, active content, mime)", async () => {
-      // 1. Active content PDF should be rejected
-      const activeRes = await upload("government_id", "active.pdf", activePdf);
-      assert.equal(activeRes.status, 400);
-      const activeErr = await activeRes.json();
-      assert.match(activeErr.title, /active content/i);
+    await t.test(
+      "File upload validations (size, active content, mime)",
+      async () => {
+        // 1. Active content PDF should be rejected
+        const activeRes = await upload(
+          "government_id",
+          "active.pdf",
+          activePdf,
+        );
+        assert.equal(activeRes.status, 400);
+        const activeErr = await activeRes.json();
+        assert.match(activeErr.title, /active content/i);
 
-      // 2. Non-supported MIME (plain text) should be rejected
-      const textRes = await upload(
-        "government_id",
-        "notes.txt",
-        Buffer.from("Hello world, this is a plain text file."),
-      );
-      assert.equal(textRes.status, 400);
+        // 2. Non-supported MIME (plain text) should be rejected
+        const textRes = await upload(
+          "government_id",
+          "notes.txt",
+          Buffer.from("Hello world, this is a plain text file."),
+        );
+        assert.equal(textRes.status, 400);
 
-      // 3. Valid PDF should succeed
-      const validRes = await upload("government_id", "passport.pdf", dummyPdf, "Passport ID");
-      if (validRes.status !== 201) {
-        console.error("VALID RES ERROR:", await validRes.json());
-      }
-      assert.equal(validRes.status, 201);
-      const doc = await validRes.json();
-      assert.equal(doc.category, "government_id");
-      assert.equal(doc.status, "pending");
-      assert.equal(doc.fileName, "passport.pdf");
-      assert.equal(doc.version, 1);
+        // 3. Valid PDF should succeed
+        const validRes = await upload(
+          "government_id",
+          "passport.pdf",
+          dummyPdf,
+          "Passport ID",
+        );
+        if (validRes.status !== 201) {
+          console.error("VALID RES ERROR:", await validRes.json());
+        }
+        assert.equal(validRes.status, 201);
+        const doc = await validRes.json();
+        assert.equal(doc.category, "government_id");
+        assert.equal(doc.status, "pending");
+        assert.equal(doc.fileName, "passport.pdf");
+        assert.equal(doc.version, 1);
 
-      // 4. Double upload for pending category should be rejected
-      const dupRes = await upload("government_id", "another.pdf", dummyPdf);
-      assert.equal(dupRes.status, 409);
-    });
+        // 4. Double upload for pending category should be rejected
+        const dupRes = await upload("government_id", "another.pdf", dummyPdf);
+        assert.equal(dupRes.status, 409);
+      },
+    );
 
     await t.test("HR document retrieval and content download", async () => {
       // HR retrieves candidate documents list
@@ -217,7 +241,9 @@ await test("Candidate document intake, verification, rejection, and readiness in
       const docId = docs[0].id;
 
       // HR downloads document content
-      const contentRes = await hr(`/candidates/${id}/documents/${docId}/content`);
+      const contentRes = await hr(
+        `/candidates/${id}/documents/${docId}/content`,
+      );
       assert.equal(contentRes.status, 200);
       assert.equal(contentRes.headers.get("content-type"), "application/pdf");
       assert.equal(contentRes.headers.get("x-content-type-options"), "nosniff");
@@ -225,53 +251,69 @@ await test("Candidate document intake, verification, rejection, and readiness in
       assert.equal(contentBytes.length, dummyPdf.length);
     });
 
-    await t.test("HR rejection requires reason >= 10 chars, candidate re-upload", async () => {
-      const docs = await (await hr(`/candidates/${id}/documents`)).json();
-      const docId = docs[0].id;
+    await t.test(
+      "HR rejection requires reason >= 10 chars, candidate re-upload",
+      async () => {
+        const docs = await (await hr(`/candidates/${id}/documents`)).json();
+        const docId = docs[0].id;
 
-      // Rejection with short reason (< 10 chars) should be rejected
-      const shortRes = await hr(`/candidates/${id}/documents/${docId}/review`, {
-        decision: "rejected",
-        version: docs[0].version,
-        reason: "Blurry",
-      });
-      assert.equal(shortRes.status, 400);
+        // Rejection with short reason (< 10 chars) should be rejected
+        const shortRes = await hr(
+          `/candidates/${id}/documents/${docId}/review`,
+          {
+            decision: "rejected",
+            version: docs[0].version,
+            reason: "Blurry",
+          },
+        );
+        assert.equal(shortRes.status, 400);
 
-      // Rejection with valid reason (>= 10 chars)
-      const rejectRes = await hr(`/candidates/${id}/documents/${docId}/review`, {
-        decision: "rejected",
-        version: docs[0].version,
-        reason: "The passport image is cropped and expiry date is cut off.",
-      });
-      assert.equal(rejectRes.status, 201);
+        // Rejection with valid reason (>= 10 chars)
+        const rejectRes = await hr(
+          `/candidates/${id}/documents/${docId}/review`,
+          {
+            decision: "rejected",
+            version: docs[0].version,
+            reason: "The passport image is cropped and expiry date is cut off.",
+          },
+        );
+        assert.equal(rejectRes.status, 201);
 
-      // Check candidate sees rejection
-      const cSession = (await (await candidateFetch("session")).json()) as CandidatePortal;
-      const rejectedDoc = cSession.documents.find((d: CandidateDocument) => d.id === docId);
-      assert.ok(rejectedDoc);
-      assert.equal(rejectedDoc.status, "rejected");
-      assert.equal(
-        rejectedDoc.reviewNote,
-        "The passport image is cropped and expiry date is cut off.",
-      );
+        // Check candidate sees rejection
+        const cSession = (await (
+          await candidateFetch("session")
+        ).json()) as CandidatePortal;
+        const rejectedDoc = cSession.documents.find(
+          (d: CandidateDocument) => d.id === docId,
+        );
+        assert.ok(rejectedDoc);
+        assert.equal(rejectedDoc.status, "rejected");
+        assert.equal(
+          rejectedDoc.reviewNote,
+          "The passport image is cropped and expiry date is cut off.",
+        );
 
-      // Candidate can now re-upload for government_id
-      const reuploadRes = await upload(
-        "government_id",
-        "passport_full.png",
-        dummyPng,
-        "Passport ID",
-      );
-      assert.equal(reuploadRes.status, 201);
-      const newDoc = (await reuploadRes.json()) as CandidateDocument;
-      assert.equal(newDoc.status, "pending");
-      assert.equal(newDoc.fileName, "passport_full.png");
-    });
+        // Candidate can now re-upload for government_id
+        const reuploadRes = await upload(
+          "government_id",
+          "passport_full.png",
+          dummyPng,
+          "Passport ID",
+        );
+        assert.equal(reuploadRes.status, 201);
+        const newDoc = (await reuploadRes.json()) as CandidateDocument;
+        assert.equal(newDoc.status, "pending");
+        assert.equal(newDoc.fileName, "passport_full.png");
+      },
+    );
 
     await t.test("HR verification locks document immutably", async () => {
-      const docs = (await (await hr(`/candidates/${id}/documents`)).json()) as CandidateDocument[];
+      const docs = (await (
+        await hr(`/candidates/${id}/documents`)
+      ).json()) as CandidateDocument[];
       const activeDoc = docs.find(
-        (d: CandidateDocument) => d.category === "government_id" && d.status === "pending",
+        (d: CandidateDocument) =>
+          d.category === "government_id" && d.status === "pending",
       );
       assert.ok(activeDoc);
 
@@ -299,148 +341,163 @@ await test("Candidate document intake, verification, rejection, and readiness in
       );
     });
 
-    await t.test("Readiness proposal is gated by mandatory documents", async () => {
-      // 1. Upload proof_of_address and education_certificate while intake is open
-      const addrRes = await upload(
-        "proof_of_address",
-        "utility_bill.pdf",
-        dummyPdf,
-        "Utility Bill",
-      );
-      assert.equal(addrRes.status, 201);
-      const addrDoc = await addrRes.json();
-
-      const eduRes = await upload(
-        "education_certificate",
-        "degree.pdf",
-        dummyPdf,
-        "Bachelor Degree",
-      );
-      assert.equal(eduRes.status, 201);
-      const eduDoc = await eduRes.json();
-
-      // Refresh current candidate version
-      const currentSession = await (await candidateFetch("session")).json();
-      version = currentSession.candidate.version;
-
-      // 2. Complete candidate introduction draft & submit
-      const draftRes = await candidateFetch(
-        "draft",
-        JSON.stringify({
-          version,
-          draft: {
-            preferredName: "Ace",
-            introduction:
-              "Excited to join the engineering team and build reliable systems.",
-            acknowledged: true,
-          },
-        }),
-        { "Content-Type": "application/json" },
-        "PUT",
-      );
-      assert.equal(draftRes.status, 200);
-
-      const submitRes = await candidateFetch(
-        "submit",
-        JSON.stringify({ version: (await draftRes.json()).candidate.version }),
-        { "Content-Type": "application/json" },
-      );
-      assert.equal(submitRes.status, 201);
-
-      // Verify that candidate can upload documents while in 'submitted' state
-      const postSubmitDocRes = await upload(
-        "previous_employment",
-        "relieving_letter.pdf",
-        dummyPdf,
-        "Relieving Letter",
-      );
-      assert.equal(postSubmitDocRes.status, 201);
-      const postSubmitDoc = await postSubmitDocRes.json();
-      assert.equal(postSubmitDoc.category, "previous_employment");
-      assert.equal(postSubmitDoc.status, "pending");
-
-      // 3. HR approves candidate form
-      const detailBefore = await (await hr(`/candidates/${id}`)).json();
-      const approveRes = await hr(`/candidates/${id}/review`, {
-        version: detailBefore.candidate.version,
-        reason: "Introduction form reviewed and accepted.",
-        decision: "approved",
-      });
-      assert.equal(approveRes.status, 201);
-
-      // 4. Apply starter checklist and complete all required tasks
-      const currentDetail = await (await hr(`/candidates/${id}`)).json();
-      const checklistRes = await hr(`/candidates/${id}/checklist`, {
-        version: currentDetail.candidate.version,
-        reason: "Initialize starter checklist tasks",
-      });
-      assert.equal(checklistRes.status, 201);
-
-      const detailWithTasks = await (await hr(`/candidates/${id}`)).json();
-      for (const task of detailWithTasks.tasks.filter((t: CandidateTask) => t.required)) {
-        const tRes = await hr(
-          `/candidates/${id}/tasks/${task.id}`,
-          {
-            caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate.version,
-            version: task.version,
-            state: "completed",
-            reason: "Completed prerequisite checklist task for acceptance test.",
-          },
-          "POST",
+    await t.test(
+      "Readiness proposal is gated by mandatory documents",
+      async () => {
+        // 1. Upload proof_of_address and education_certificate while intake is open
+        const addrRes = await upload(
+          "proof_of_address",
+          "utility_bill.pdf",
+          dummyPdf,
+          "Utility Bill",
         );
-        assert.equal(tRes.status, 201);
-      }
+        assert.equal(addrRes.status, 201);
+        const addrDoc = await addrRes.json();
 
-      // At this point, government_id is verified, but proof_of_address and education_certificate are pending!
-      // Local readiness review proposal MUST be rejected with 409
-      const earlyPropose = await hr(`/candidates/${id}/local-reviews`, {
-        caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate.version,
-        reason: "Attempting readiness review before all mandatory documents.",
-      });
-      assert.equal(earlyPropose.status, 409);
-      assert.match(
-        (await earlyPropose.json()).title,
-        /mandatory documents/i,
-      );
+        const eduRes = await upload(
+          "education_certificate",
+          "degree.pdf",
+          dummyPdf,
+          "Bachelor Degree",
+        );
+        assert.equal(eduRes.status, 201);
+        const eduDoc = await eduRes.json();
 
-      // 5. Verify proof_of_address
-      const vAddr = await hr(`/candidates/${id}/documents/${addrDoc.id}/review`, {
-        decision: "verified",
-        version: addrDoc.version,
-        reason: "Valid address proof within 3 months.",
-      });
-      assert.equal(vAddr.status, 201);
+        // Refresh current candidate version
+        const currentSession = await (await candidateFetch("session")).json();
+        version = currentSession.candidate.version;
 
-      // Still missing education_certificate verification -> still rejected with 409
-      const midPropose = await hr(`/candidates/${id}/local-reviews`, {
-        caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate.version,
-        reason: "Attempting readiness review before education certificate.",
-      });
-      assert.equal(midPropose.status, 409);
+        // 2. Complete candidate introduction draft & submit
+        const draftRes = await candidateFetch(
+          "draft",
+          JSON.stringify({
+            version,
+            draft: {
+              preferredName: "Ace",
+              introduction:
+                "Excited to join the engineering team and build reliable systems.",
+              acknowledged: true,
+            },
+          }),
+          { "Content-Type": "application/json" },
+          "PUT",
+        );
+        assert.equal(draftRes.status, 200);
 
-      // 6. Verify education_certificate
-      const vEdu = await hr(`/candidates/${id}/documents/${eduDoc.id}/review`, {
-        decision: "verified",
-        version: eduDoc.version,
-        reason: "Accredited university degree verified.",
-      });
-      assert.equal(vEdu.status, 201);
+        const submitRes = await candidateFetch(
+          "submit",
+          JSON.stringify({
+            version: (await draftRes.json()).candidate.version,
+          }),
+          { "Content-Type": "application/json" },
+        );
+        assert.equal(submitRes.status, 201);
 
-      // 7. Now all 3 mandatory documents are verified! (previous_employment is optional so missing it doesn't block)
-      const validPropose = await hr(`/candidates/${id}/local-reviews`, {
-        caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate.version,
-        reason: "All requirements met and all mandatory documents verified.",
-      });
-      assert.equal(validPropose.status, 201);
-      assert.equal((await validPropose.json()).changed, true);
+        // Verify that candidate can upload documents while in 'submitted' state
+        const postSubmitDocRes = await upload(
+          "previous_employment",
+          "relieving_letter.pdf",
+          dummyPdf,
+          "Relieving Letter",
+        );
+        assert.equal(postSubmitDocRes.status, 201);
+        const postSubmitDoc = await postSubmitDocRes.json();
+        assert.equal(postSubmitDoc.category, "previous_employment");
+        assert.equal(postSubmitDoc.status, "pending");
 
-      // 8. Verify candidate details reflect passed controls
-      const finalDetail = await (await hr(`/candidates/${id}`)).json();
-      const docControl = finalDetail.readiness.controls.find(
-        (c: { id: string }) => c.id === "documents",
-      );
-      assert.equal(docControl.status, "passed");
-    });
+        // 3. HR approves candidate form
+        const detailBefore = await (await hr(`/candidates/${id}`)).json();
+        const approveRes = await hr(`/candidates/${id}/review`, {
+          version: detailBefore.candidate.version,
+          reason: "Introduction form reviewed and accepted.",
+          decision: "approved",
+        });
+        assert.equal(approveRes.status, 201);
+
+        // 4. Apply starter checklist and complete all required tasks
+        const currentDetail = await (await hr(`/candidates/${id}`)).json();
+        const checklistRes = await hr(`/candidates/${id}/checklist`, {
+          version: currentDetail.candidate.version,
+          reason: "Initialize starter checklist tasks",
+        });
+        assert.equal(checklistRes.status, 201);
+
+        const detailWithTasks = await (await hr(`/candidates/${id}`)).json();
+        for (const task of detailWithTasks.tasks.filter(
+          (t: CandidateTask) => t.required,
+        )) {
+          const tRes = await hr(
+            `/candidates/${id}/tasks/${task.id}`,
+            {
+              caseVersion: (await (await hr(`/candidates/${id}`)).json())
+                .candidate.version,
+              version: task.version,
+              state: "completed",
+              reason:
+                "Completed prerequisite checklist task for acceptance test.",
+            },
+            "POST",
+          );
+          assert.equal(tRes.status, 201);
+        }
+
+        // At this point, government_id is verified, but proof_of_address and education_certificate are pending!
+        // Local readiness review proposal MUST be rejected with 409
+        const earlyPropose = await hr(`/candidates/${id}/local-reviews`, {
+          caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate
+            .version,
+          reason: "Attempting readiness review before all mandatory documents.",
+        });
+        assert.equal(earlyPropose.status, 409);
+        assert.match((await earlyPropose.json()).title, /mandatory documents/i);
+
+        // 5. Verify proof_of_address
+        const vAddr = await hr(
+          `/candidates/${id}/documents/${addrDoc.id}/review`,
+          {
+            decision: "verified",
+            version: addrDoc.version,
+            reason: "Valid address proof within 3 months.",
+          },
+        );
+        assert.equal(vAddr.status, 201);
+
+        // Still missing education_certificate verification -> still rejected with 409
+        const midPropose = await hr(`/candidates/${id}/local-reviews`, {
+          caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate
+            .version,
+          reason: "Attempting readiness review before education certificate.",
+        });
+        assert.equal(midPropose.status, 409);
+
+        // 6. Verify education_certificate
+        const vEdu = await hr(
+          `/candidates/${id}/documents/${eduDoc.id}/review`,
+          {
+            decision: "verified",
+            version: eduDoc.version,
+            reason: "Accredited university degree verified.",
+          },
+        );
+        assert.equal(vEdu.status, 201);
+
+        // 7. Now all 3 mandatory documents are verified! (previous_employment is optional so missing it doesn't block)
+        const validPropose = await hr(`/candidates/${id}/local-reviews`, {
+          caseVersion: (await (await hr(`/candidates/${id}`)).json()).candidate
+            .version,
+          reason: "All requirements met and all mandatory documents verified.",
+        });
+        assert.equal(validPropose.status, 201);
+        assert.equal((await validPropose.json()).changed, true);
+
+        // 8. Verify candidate details reflect passed controls
+        const finalDetail = await (await hr(`/candidates/${id}`)).json();
+        const docControl = finalDetail.readiness.controls.find(
+          (c: { id: string }) => c.id === "documents",
+        );
+        assert.equal(docControl.status, "passed");
+      },
+    );
   } finally {
     if (id) {
       await admin.query(

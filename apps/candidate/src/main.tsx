@@ -61,7 +61,8 @@ const DOCUMENT_CATEGORIES: {
   {
     category: "proof_of_address",
     label: "Proof of Address",
-    description: "Utility bill or bank statement dated within the last 3 months.",
+    description:
+      "Utility bill or bank statement dated within the last 3 months.",
     required: true,
   },
   {
@@ -221,9 +222,7 @@ function Welcome() {
             </li>
             <li
               className={
-                portal?.candidate.state === "approved"
-                  ? "complete"
-                  : ""
+                portal?.candidate.state === "approved" ? "complete" : ""
               }
             >
               <span>04</span>HR review & activation
@@ -347,7 +346,9 @@ function CandidateDocuments({
   portal: Portal;
   onSaved: (p: Portal) => void;
 }) {
-  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(
+    null,
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function setCategoryError(cat: string, msg: string) {
@@ -361,7 +362,9 @@ function CandidateDocuments({
   ) {
     e.preventDefault();
     const form = e.currentTarget;
-    const fileInput = form.elements.namedItem("file") as HTMLInputElement | null;
+    const fileInput = form.elements.namedItem(
+      "file",
+    ) as HTMLInputElement | null;
     const file = fileInput?.files?.[0];
     if (!file) return;
 
@@ -394,12 +397,15 @@ function CandidateDocuments({
   }
 
   return (
-    <section className="candidate-documents" aria-label="Verification documents">
+    <section
+      className="candidate-documents"
+      aria-label="Verification documents"
+    >
       <p className="candidate-eyebrow">Step 03 · Verification documents</p>
       <h2>Documents for verification.</h2>
       <p>
-        Upload clear copies in PDF, JPEG or PNG format (up to 5 MB each).
-        Active content in PDFs is rejected. Documents are reviewed and verified by HR.
+        Upload clear copies in PDF, JPEG or PNG format (up to 5 MB each). Active
+        content in PDFs is rejected. Documents are reviewed and verified by HR.
       </p>
       <div className="candidate-document-list">
         {DOCUMENT_CATEGORIES.map((cat) => {
@@ -453,7 +459,8 @@ function CandidateDocuments({
               )}
               {status === "verified" && (
                 <p className="candidate-small candidate-locked-hint">
-                  ✓ This document has been verified by HR and cannot be modified.
+                  ✓ This document has been verified by HR and cannot be
+                  modified.
                 </p>
               )}
               {status === "pending" && (
@@ -469,7 +476,9 @@ function CandidateDocuments({
               )}
               {canUpload && (
                 <form
-                  onSubmit={(e) => void handleUpload(e, cat.category, cat.label)}
+                  onSubmit={(e) =>
+                    void handleUpload(e, cat.category, cat.label)
+                  }
                   className="candidate-upload-form"
                 >
                   <input

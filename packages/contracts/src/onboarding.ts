@@ -38,7 +38,9 @@ export function activationReadiness(
 
   const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter(
     (cat) =>
-      documents?.some((doc) => doc.category === cat && doc.status === "verified"),
+      documents?.some(
+        (doc) => doc.category === cat && doc.status === "verified",
+      ),
   );
   const allMandatoryVerified =
     Boolean(documents) &&

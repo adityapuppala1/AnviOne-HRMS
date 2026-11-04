@@ -284,7 +284,10 @@ export class CandidateStore {
     if (!file || !file.buffer || !file.buffer.length) {
       throw new BadRequestException("A document file is required.");
     }
-    if (file.size > MAX_DOCUMENT_BYTES || file.buffer.length > MAX_DOCUMENT_BYTES) {
+    if (
+      file.size > MAX_DOCUMENT_BYTES ||
+      file.buffer.length > MAX_DOCUMENT_BYTES
+    ) {
       throw new BadRequestException("Files must be 5 MB or smaller.");
     }
 
@@ -299,7 +302,10 @@ export class CandidateStore {
     }
 
     const sha256 = createHash("sha256").update(file.buffer).digest("hex");
-    const fileName = sanitizeFileName(file.originalname || "document", detected);
+    const fileName = sanitizeFileName(
+      file.originalname || "document",
+      detected,
+    );
 
     return this.scoped(actor, async (client) => {
       await client.query(
@@ -310,9 +316,12 @@ export class CandidateStore {
         [actor.id],
       );
       const c = caseRows[0];
-      if (!c) throw new NotFoundException("Your candidate record is unavailable.");
+      if (!c)
+        throw new NotFoundException("Your candidate record is unavailable.");
       if (c.state === "cancelled") {
-        throw new ConflictException("Cancelled intake cannot accept documents.");
+        throw new ConflictException(
+          "Cancelled intake cannot accept documents.",
+        );
       }
       if (c.state === "approved") {
         throw new ConflictException("Approved intake cannot accept documents.");
@@ -405,7 +414,8 @@ export class CandidateStore {
          WHERE d.id = $1 AND d.candidate_id = $2`,
         [documentId, actor.id],
       );
-      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      if (!rows[0])
+        throw new NotFoundException("This document is unavailable.");
       return {
         fileName: rows[0].fileName,
         contentType: rows[0].contentType,

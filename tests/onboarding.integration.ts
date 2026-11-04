@@ -1429,6 +1429,8 @@ await test("Isolated candidate onboarding", async (t) => {
         [cleanupId],
       );
       for (const table of [
+        "candidate_document_content",
+        "candidate_document",
         "candidate_local_review",
         "candidate_task",
         "candidate_delivery_preview",

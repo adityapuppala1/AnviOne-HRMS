@@ -97,6 +97,60 @@ export const candidatesCopy = {
   },
 };
 
+export const candidateDocumentsCopy = {
+  sectionTitle: "Candidate verification documents",
+  sectionSubtitle:
+    "Verification documents uploaded by the candidate for identity, address, and qualifications.",
+  badgeStatus: {
+    missing: "Not uploaded",
+    pending: "Pending review",
+    verified: "Verified",
+    rejected: "Changes requested",
+  },
+  categories: {
+    government_id: {
+      label: "Government ID",
+      description: "Passport, national identity card or driving license.",
+      required: true,
+    },
+    proof_of_address: {
+      label: "Proof of Address",
+      description: "Utility bill or bank statement dated within 3 months.",
+      required: true,
+    },
+    education_certificate: {
+      label: "Highest Education Certificate",
+      description: "Degree certificate, diploma or qualification award.",
+      required: true,
+    },
+    previous_employment: {
+      label: "Previous Employment Records",
+      description: "Relieving letter, experience certificate or recent payslips.",
+      required: false,
+    },
+  },
+  download: "Download document",
+  reviewButton: "Review document",
+  verifiedHint: "This document has been verified by HR and is locked.",
+  dialog: {
+    title: "Review candidate document",
+    intro:
+      "Inspect the candidate-provided document before recording an approval or rejection.",
+    decisionLabel: "Review decision",
+    verifyOption: "Verify document",
+    rejectOption: "Request changes (Reject)",
+    reasonLabel: "Review note / reason",
+    reasonRequiredHelp:
+      "Provide specific feedback on why the document is rejected (minimum 10 characters).",
+    reasonOptionalHelp: "Optional note for verification audit log.",
+    cancel: "Cancel",
+    confirm: "Save review",
+    saving: "Saving review…",
+  },
+  errorMinReason: "Rejection requires an explanation of at least 10 characters.",
+  reviewFailed: "Could not submit document review.",
+};
+
 export const assignedTasksCopy = {
   statuses: {
     pending: "To do",

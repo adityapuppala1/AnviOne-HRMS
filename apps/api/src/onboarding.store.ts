@@ -9,9 +9,13 @@ import {
   candidateSchema,
   candidateSubmissionSchema,
   candidateDeliverySchema,
+  candidateDocumentSchema,
+  candidateDocumentReviewSchema,
+  MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES,
   activationReadiness,
   localReviewSchema,
   assignedTaskListSchema,
+  type CandidateDocument,
   type candidateCreateSchema,
   type candidateQuerySchema,
   type candidateActionSchema,
@@ -35,6 +39,18 @@ import {
 } from "@anvi/contracts";
 const columns = `c.id,c.name,c.email,c.title,c.joined_on::text AS "joinedOn",c.state,c.version,c.invitation_expires_at AS "invitationExpiresAt",c.review_note AS "reviewNote",c.draft,d.name AS department,l.name AS location,p.name AS manager`;
 const joins = `candidate_case c JOIN org_unit d ON d.id=c.department_id JOIN org_unit l ON l.id=c.location_id JOIN employee e ON e.id=c.manager_id JOIN person p ON p.id=e.person_id`;
+const docColumns = `d.id, d.candidate_id AS "candidateId", d.category, d.title, d.file_name AS "fileName",
+  d.content_type AS "contentType", d.size_bytes AS "sizeBytes", d.sha256, d.status, d.version,
+  d.review_note AS "reviewNote", d.reviewer_label AS "reviewedBy",
+  to_char(d.reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "reviewedAt",
+  to_char(d.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "createdAt",
+  to_char(d.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "updatedAt"`;
+const docReturning = `id, candidate_id AS "candidateId", category, title, file_name AS "fileName",
+  content_type AS "contentType", size_bytes AS "sizeBytes", sha256, status, version,
+  review_note AS "reviewNote", reviewer_label AS "reviewedBy",
+  to_char(reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "reviewedAt",
+  to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "createdAt",
+  to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "updatedAt"`;
 const CANDIDATE_SORT = {
   name: "lower(c.name)",
   title: "lower(c.title)",
@@ -128,6 +144,18 @@ export class OnboardingStore {
       };
     });
   }
+  async readDocuments(
+    client: PoolClient,
+    candidateId: string,
+  ): Promise<CandidateDocument[]> {
+    const { rows } = await client.query(
+      `SELECT ${docColumns} FROM candidate_document d
+       WHERE d.candidate_id = $1
+       ORDER BY d.created_at DESC, d.id`,
+      [candidateId],
+    );
+    return rows.map((r) => candidateDocumentSchema.parse(r));
+  }
   async detail(actor: Principal, id: string) {
     this.allow(actor);
     return scoped(this.platform.pool, actor, async (client) => {
@@ -137,6 +165,7 @@ export class OnboardingStore {
         [id],
       );
       const tasks = await readTasks(client, id);
+      const documents = await this.readDocuments(client, id);
       const reviews = await client.query(
         `SELECT id,state,version,proposed_by AS "proposedBy",proposer_label AS "proposerLabel",
          proposal_note AS "proposalNote",proposed_at AS "proposedAt",decided_by AS "decidedBy",
@@ -147,7 +176,8 @@ export class OnboardingStore {
       return {
         candidate,
         tasks,
-        readiness: activationReadiness(candidate.state, tasks),
+        documents,
+        readiness: activationReadiness(candidate.state, tasks, documents),
         localReviews: reviews.rows.map((row) =>
           localReviewSchema.parse({
             ...row,
@@ -595,13 +625,19 @@ export class OnboardingStore {
       const required = (await readTasks(client, id)).filter(
         (task) => task.required,
       );
+      const documents = await this.readDocuments(client, id);
+      const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter(
+        (cat) =>
+          documents.some((doc) => doc.category === cat && doc.status === "verified"),
+      );
       if (
         candidate.state !== "approved" ||
         !required.length ||
-        required.some((task) => task.state !== "completed")
+        required.some((task) => task.state !== "completed") ||
+        (documents.length > 0 && mandatoryVerified.length !== MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.length)
       )
         throw new ConflictException(
-          "Approve the form and complete every required task before requesting review.",
+          "Approve the form, complete every required task and verify all mandatory documents before requesting review.",
         );
       try {
         await client.query(
@@ -793,5 +829,131 @@ export class OnboardingStore {
         version,
       ],
     );
+  }
+
+  async documents(actor: Principal, candidateId: string) {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.record(client, candidateId);
+      return this.readDocuments(client, candidateId);
+    });
+  }
+
+  async reviewDocument(
+    actor: Principal,
+    candidateId: string,
+    docId: string,
+    input: z.infer<typeof candidateDocumentReviewSchema>,
+    requestId: string,
+  ): Promise<CandidateDocument> {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      const candidate = await this.record(client, candidateId, true);
+      const { rows } = await client.query(
+        `SELECT ${docColumns} FROM candidate_document d WHERE d.id=$1 AND d.candidate_id=$2 FOR UPDATE`,
+        [docId, candidateId],
+      );
+      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      const current = rows[0];
+      if (current.version !== input.version) {
+        throw new ConflictException(
+          "This document changed. Reload before deciding.",
+        );
+      }
+      if (current.status !== "pending") {
+        throw new ConflictException("Only a pending document can be reviewed.");
+      }
+      if (
+        input.decision === "rejected" &&
+        (!input.reason || input.reason.trim().length < 10)
+      ) {
+        throw new BadRequestException("Explain why the document is rejected.");
+      }
+
+      const { rows: updatedRows } = await client.query(
+        `UPDATE candidate_document
+         SET status=$3, version=version+1, reviewed_by=$4, reviewer_label=$5, review_note=$6, reviewed_at=now(), updated_at=now()
+         WHERE id=$1 AND candidate_id=$2
+         RETURNING ${docReturning}`,
+        [
+          docId,
+          candidateId,
+          input.decision,
+          actor.actorId,
+          actor.name,
+          input.decision === "rejected" ? input.reason?.trim() ?? null : null,
+        ],
+      );
+
+      await client.query(
+        "UPDATE candidate_case SET version=version+1 WHERE id=$1",
+        [candidateId],
+      );
+
+      await audit(
+        client,
+        actor,
+        "candidate.document_reviewed",
+        docId,
+        requestId,
+        {
+          reason: input.reason?.trim(),
+          details: {
+            candidateId,
+            category: current.category,
+            decision: input.decision,
+          },
+        },
+      );
+
+      await client.query(
+        `INSERT INTO outbox_event(id, tenant_id, entity_id, event_type, aggregate_id, aggregate_version)
+         VALUES($1, $2, $3, 'candidate.document_reviewed.v1', $4, $5)`,
+        [
+          randomUUID(),
+          actor.tenantId,
+          actor.entityId,
+          candidateId,
+          candidate.version + 1,
+        ],
+      );
+
+      return candidateDocumentSchema.parse(updatedRows[0]);
+    });
+  }
+
+  async documentContent(
+    actor: Principal,
+    candidateId: string,
+    docId: string,
+    requestId: string,
+  ): Promise<{ fileName: string; contentType: string; bytes: Buffer }> {
+    this.allow(actor);
+    return scoped(this.platform.pool, actor, async (client) => {
+      await this.record(client, candidateId);
+      const { rows } = await client.query(
+        `SELECT d.file_name AS "fileName", d.content_type AS "contentType", c.bytes
+         FROM candidate_document d
+         JOIN candidate_document_content c ON c.document_id = d.id
+         WHERE d.id = $1 AND d.candidate_id = $2`,
+        [docId, candidateId],
+      );
+      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      await audit(
+        client,
+        actor,
+        "candidate.document_downloaded",
+        docId,
+        requestId,
+        {
+          details: { candidateId },
+        },
+      );
+      return {
+        fileName: rows[0].fileName,
+        contentType: rows[0].contentType,
+        bytes: rows[0].bytes,
+      };
+    });
   }
 }

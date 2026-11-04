@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
-import { candidatePortalSchema, type CandidateDraft } from "@anvi/contracts";
+import {
+  candidatePortalSchema,
+  type CandidateDraft,
+  type CandidateDocumentCategory,
+  MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES,
+} from "@anvi/contracts";
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/public-sans";
 import "@anvi/ui/theme.css";
@@ -16,14 +21,20 @@ async function request(
   csrf?: string,
   method = "POST",
 ) {
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
   const response = await fetch(`/api/candidate/${path}`, {
     method: body === undefined && method === "POST" ? "GET" : method,
     credentials: "same-origin",
     headers: {
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(body !== undefined && !isFormData
+        ? { "Content-Type": "application/json" }
+        : {}),
       ...(csrf ? { "X-CSRF-Token": csrf } : {}),
     },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    ...(body !== undefined
+      ? { body: isFormData ? body : JSON.stringify(body) }
+      : {}),
   });
   const value = (await response.json().catch(() => null)) as {
     title?: string;
@@ -35,6 +46,38 @@ async function request(
     );
   return value;
 }
+const DOCUMENT_CATEGORIES: {
+  category: CandidateDocumentCategory;
+  label: string;
+  description: string;
+  required: boolean;
+}[] = [
+  {
+    category: "government_id",
+    label: "Government ID",
+    description: "Passport, national identity card or driving license.",
+    required: true,
+  },
+  {
+    category: "proof_of_address",
+    label: "Proof of Address",
+    description: "Utility bill or bank statement dated within the last 3 months.",
+    required: true,
+  },
+  {
+    category: "education_certificate",
+    label: "Highest Education Certificate",
+    description: "Degree certificate, diploma or highest qualification award.",
+    required: true,
+  },
+  {
+    category: "previous_employment",
+    label: "Previous Employment Records",
+    description: "Relieving letter, experience certificate or recent payslips.",
+    required: false,
+  },
+];
+
 function Welcome() {
   const [phase, setPhase] = useState<"loading" | "entry" | "code" | "form">(
       invitation ? "entry" : "loading",
@@ -151,18 +194,39 @@ function Welcome() {
             >
               <span>01</span>Verify your invitation
             </li>
-            <li className={phase === "form" ? "complete" : ""}>
-              <span>02</span>Your introduction
-            </li>
             <li
               className={
                 portal?.candidate.state === "submitted" ||
                 portal?.candidate.state === "approved"
                   ? "complete"
+                  : phase === "form"
+                    ? ""
+                    : ""
+              }
+            >
+              <span>02</span>Your introduction
+            </li>
+            <li
+              className={
+                MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.every((cat) =>
+                  portal?.documents.some(
+                    (d) => d.category === cat && d.status === "verified",
+                  ),
+                )
+                  ? "complete"
                   : ""
               }
             >
-              <span>03</span>HR form review
+              <span>03</span>Verification documents
+            </li>
+            <li
+              className={
+                portal?.candidate.state === "approved"
+                  ? "complete"
+                  : ""
+              }
+            >
+              <span>04</span>HR review & activation
             </li>
           </ol>
           <p className="candidate-preview">
@@ -187,6 +251,7 @@ function Welcome() {
                   onSaved={setPortal}
                   onPendingChange={setFormPending}
                 />
+                <CandidateDocuments portal={portal} onSaved={setPortal} />
                 <CandidateChecklist
                   portal={portal}
                   onSaved={setPortal}
@@ -268,6 +333,178 @@ function Welcome() {
     </div>
   );
 }
+function formatSize(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function CandidateDocuments({
+  portal,
+  onSaved,
+}: {
+  portal: Portal;
+  onSaved: (p: Portal) => void;
+}) {
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  function setCategoryError(cat: string, msg: string) {
+    setErrors((prev) => ({ ...prev, [cat]: msg }));
+  }
+
+  async function handleUpload(
+    e: FormEvent<HTMLFormElement>,
+    category: CandidateDocumentCategory,
+    title: string,
+  ) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fileInput = form.elements.namedItem("file") as HTMLInputElement | null;
+    const file = fileInput?.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setCategoryError(category, "Files must be 5 MB or smaller.");
+      return;
+    }
+
+    setUploadingCategory(category);
+    setCategoryError(category, "");
+
+    const formData = new FormData();
+    formData.append("category", category);
+    formData.append("title", title);
+    formData.append("file", file);
+
+    try {
+      await request("documents", formData, portal.csrfToken);
+      const updated = candidatePortalSchema.parse(await request("session"));
+      onSaved(updated);
+      form.reset();
+    } catch (err) {
+      setCategoryError(
+        category,
+        err instanceof Error ? err.message : "Upload failed. Please try again.",
+      );
+    } finally {
+      setUploadingCategory(null);
+    }
+  }
+
+  return (
+    <section className="candidate-documents" aria-label="Verification documents">
+      <p className="candidate-eyebrow">Step 03 · Verification documents</p>
+      <h2>Documents for verification.</h2>
+      <p>
+        Upload clear copies in PDF, JPEG or PNG format (up to 5 MB each).
+        Active content in PDFs is rejected. Documents are reviewed and verified by HR.
+      </p>
+      <div className="candidate-document-list">
+        {DOCUMENT_CATEGORIES.map((cat) => {
+          const doc = portal.documents.find((d) => d.category === cat.category);
+          const status = doc?.status ?? "missing";
+          const canUpload =
+            portal.candidate.state !== "approved" &&
+            portal.candidate.state !== "cancelled" &&
+            status !== "verified" &&
+            status !== "pending";
+
+          return (
+            <div
+              key={cat.category}
+              className={`candidate-doc-card doc-${status}`}
+            >
+              <div className="candidate-doc-header">
+                <div>
+                  <h3>{cat.label}</h3>
+                  <span className="candidate-doc-req">
+                    {cat.required ? "Required" : "Optional"}
+                  </span>
+                </div>
+                <span className={`candidate-badge badge-${status}`}>
+                  {status === "verified"
+                    ? "✓ Verified & Locked"
+                    : status === "pending"
+                      ? "⏳ Under review"
+                      : status === "rejected"
+                        ? "⚠ Changes requested"
+                        : "Not uploaded"}
+                </span>
+              </div>
+              <p className="candidate-small">{cat.description}</p>
+              {doc && (
+                <div className="candidate-doc-meta">
+                  <span className="candidate-doc-filename">{doc.fileName}</span>
+                  <span className="candidate-doc-size">
+                    ({formatSize(doc.sizeBytes)})
+                  </span>
+                  <a
+                    href={`/api/candidate/documents/${doc.id}/content`}
+                    className="candidate-doc-download"
+                    download={doc.fileName}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Download
+                  </a>
+                </div>
+              )}
+              {status === "verified" && (
+                <p className="candidate-small candidate-locked-hint">
+                  ✓ This document has been verified by HR and cannot be modified.
+                </p>
+              )}
+              {status === "pending" && (
+                <p className="candidate-small candidate-pending-hint">
+                  HR is currently reviewing this document.
+                </p>
+              )}
+              {status === "rejected" && (
+                <div className="candidate-rejection-note" role="alert">
+                  <strong>HR feedback:</strong>{" "}
+                  {doc?.reviewNote || "Please provide an updated document."}
+                </div>
+              )}
+              {canUpload && (
+                <form
+                  onSubmit={(e) => void handleUpload(e, cat.category, cat.label)}
+                  className="candidate-upload-form"
+                >
+                  <input
+                    type="file"
+                    name="file"
+                    accept=".pdf,image/png,image/jpeg"
+                    required
+                    disabled={uploadingCategory === cat.category}
+                  />
+                  <button
+                    type="submit"
+                    className="button button-secondary candidate-upload-btn"
+                    disabled={uploadingCategory === cat.category}
+                  >
+                    {uploadingCategory === cat.category
+                      ? "Uploading…"
+                      : status === "rejected"
+                        ? "Upload replacement"
+                        : "Upload document"}
+                  </button>
+                </form>
+              )}
+              {errors[cat.category] && (
+                <p className="candidate-error" role="alert">
+                  {errors[cat.category]}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function CandidateChecklist({
   portal,
   onSaved,

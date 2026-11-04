@@ -763,3 +763,234 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Candidate Document Review Section */
+.candidate-docs-section {
+  padding: 28px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.candidate-docs-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.candidate-docs-heading h3 {
+  font-size: 18px;
+  margin: 4px 0 0;
+  color: var(--ink);
+}
+.candidate-docs-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+.candidate-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.candidate-doc-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: var(--canvas);
+}
+.candidate-doc-item.candidate-doc-verified {
+  border-color: rgba(18, 114, 84, 0.25);
+  background: rgba(18, 114, 84, 0.02);
+}
+.candidate-doc-item.candidate-doc-rejected {
+  border-color: rgba(178, 59, 35, 0.25);
+  background: rgba(178, 59, 35, 0.02);
+}
+.candidate-doc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.candidate-doc-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.candidate-doc-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.candidate-doc-title-group h4 {
+  font-size: 14px;
+  margin: 0;
+  color: var(--ink);
+}
+.candidate-doc-tag {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-top: 2px;
+  display: block;
+}
+.candidate-doc-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0 0 32px;
+  line-height: 1.5;
+}
+.candidate-doc-body {
+  margin: 14px 0 0 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.candidate-doc-file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.candidate-doc-filename {
+  font-weight: 600;
+  color: var(--ink);
+}
+.candidate-doc-filesize {
+  color: var(--muted);
+}
+.candidate-doc-version {
+  background: var(--surface-subtle);
+  color: var(--muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.candidate-doc-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand-ink);
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 6px;
+}
+.candidate-doc-download-link:hover {
+  color: var(--brand);
+}
+.candidate-doc-date {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.candidate-doc-verified-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #127254;
+  margin-top: 10px;
+  font-weight: 500;
+}
+.candidate-doc-rejection-note {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fff0ed;
+  border-left: 3px solid #b23b23;
+  color: #792514;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 4px;
+}
+.candidate-doc-actions {
+  margin-top: 12px;
+}
+.candidate-doc-empty {
+  margin: 12px 0 0 32px;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Document Review Dialog */
+.candidate-doc-review-dialog {
+  max-width: 540px;
+}
+.doc-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 16px;
+}
+.doc-review-intro {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+.doc-review-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: -10px 0 0;
+  line-height: 1.4;
+}
+.doc-review-meta {
+  padding: 14px 16px;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.doc-review-decision-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.doc-review-decision-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.doc-review-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.decision-radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color 0.15s ease;
+}
+.decision-radio-card.selected {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.decision-radio-card input {
+  margin-top: 3px;
+}
+.decision-radio-card strong {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+}
+.decision-radio-card span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+

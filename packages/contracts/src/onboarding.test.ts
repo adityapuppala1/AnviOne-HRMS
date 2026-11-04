@@ -6,6 +6,7 @@ import {
   assignedTaskUpdateSchema,
   localReviewDecisionSchema,
   localReviewProposalSchema,
+  candidateDocumentReviewSchema,
   activationReadiness,
   onboardingStarter,
   submissionChanges,
@@ -164,5 +165,63 @@ describe("onboarding checklist contracts", () => {
     ]);
     expect(submissionChanges(before, before)).toEqual([]);
     expect(before.acknowledged).toBe(false);
+  });
+  it("validates candidate document review schema and requires reason on rejection", () => {
+    expect(
+      candidateDocumentReviewSchema.safeParse({
+        decision: "verified",
+        version: 1,
+      }).success,
+    ).toBe(true);
+    expect(
+      candidateDocumentReviewSchema.safeParse({
+        decision: "rejected",
+        version: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      candidateDocumentReviewSchema.safeParse({
+        decision: "rejected",
+        reason: "Too short",
+        version: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      candidateDocumentReviewSchema.safeParse({
+        decision: "rejected",
+        reason: "Document is unreadable and edges are cropped.",
+        version: 1,
+      }).success,
+    ).toBe(true);
+  });
+  it("evaluates document gate in activation readiness", () => {
+    // Missing documents blocks document gate
+    const missingDocs = activationReadiness("approved", [], []);
+    expect(missingDocs.controls.find((c) => c.id === "documents")).toMatchObject({
+      status: "blocked",
+      detail: "0 of 3 mandatory documents verified.",
+    });
+
+    // Partial documents (e.g. 2 of 3 verified)
+    const partialDocs = activationReadiness("approved", [], [
+      { category: "government_id", status: "verified" },
+      { category: "proof_of_address", status: "verified" },
+      { category: "education_certificate", status: "pending" },
+    ]);
+    expect(partialDocs.controls.find((c) => c.id === "documents")).toMatchObject({
+      status: "blocked",
+      detail: "2 of 3 mandatory documents verified.",
+    });
+
+    // All 3 mandatory verified passes document gate even if optional previous_employment is missing
+    const passedDocs = activationReadiness("approved", [], [
+      { category: "government_id", status: "verified" },
+      { category: "proof_of_address", status: "verified" },
+      { category: "education_certificate", status: "verified" },
+    ]);
+    expect(passedDocs.controls.find((c) => c.id === "documents")).toMatchObject({
+      status: "passed",
+      detail: "All mandatory candidate documents are verified.",
+    });
   });
 });

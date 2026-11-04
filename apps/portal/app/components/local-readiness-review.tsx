@@ -6,7 +6,10 @@ import { CheckCircle } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
 import { ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { UserCircleCheck } from "@phosphor-icons/react/dist/csr/UserCircleCheck";
-import type { candidateDetailSchema } from "@anvi/contracts";
+import {
+  type candidateDetailSchema,
+  MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES,
+} from "@anvi/contracts";
 import { api } from "../lib/api";
 
 type Detail = z.infer<typeof candidateDetailSchema>;
@@ -42,10 +45,17 @@ export function LocalReadinessReview({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const required = value.tasks.filter((task) => task.required);
+  const mandatoryDocsVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.every(
+    (cat) =>
+      value.documents.some(
+        (doc) => doc.category === cat && doc.status === "verified",
+      ),
+  );
   const eligible =
     value.candidate.state === "approved" &&
     required.length > 0 &&
-    required.every((task) => task.state === "completed");
+    required.every((task) => task.state === "completed") &&
+    mandatoryDocsVerified;
   const pending = value.localReviews.find(
     (review) => review.state === "pending",
   );
@@ -166,7 +176,7 @@ export function LocalReadinessReview({
                 ? `Handed over ${formatDate(pending.proposedAt)}`
                 : eligible
                   ? "Ready to hand over"
-                  : "Approve the form and complete every required checklist task first."}
+                  : "Approve the form, complete required checklist tasks, and verify mandatory documents first."}
             </p>
           </div>
         </article>

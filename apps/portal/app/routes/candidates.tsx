@@ -43,6 +43,7 @@ import {
   SubmissionComparison,
 } from "../components/onboarding-checklist";
 import { LocalReadinessReview } from "../components/local-readiness-review";
+import { CandidateDocumentReview } from "../components/candidate-documents";
 import { candidatesCopy as text } from "../lib/copy/onboarding";
 const labels: Record<Candidate["state"], string> = text.states;
 const stateColor = (state: Candidate["state"]) =>
@@ -517,6 +518,11 @@ function CaseReview({
         )}
       </div>
       <SubmissionComparison value={value} />
+      <CandidateDocumentReview
+        value={value}
+        csrf={me.csrfToken}
+        onSaved={onSaved}
+      />
       <ActivationReadiness value={value} />
       <LocalReadinessReview
         value={value}

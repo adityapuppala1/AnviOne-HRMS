@@ -1,8 +1,9 @@
-import { randomUUID, randomInt } from "node:crypto";
+import { randomUUID, randomInt, createHash } from "node:crypto";
 import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
 } from "@nestjs/common";
 import { makePool, transaction, type PoolClient } from "@anvi/database";
 import {
@@ -10,6 +11,9 @@ import {
   candidateDraftSchema,
   type CandidateDraft,
   candidateOwnTaskSchema,
+  candidateDocumentSchema,
+  type CandidateDocument,
+  type CandidateDocumentCategory,
   type candidateTaskUpdateSchema,
 } from "@anvi/contracts";
 import type { z } from "zod";
@@ -17,11 +21,26 @@ import { readTasks, changeTask } from "./checklist";
 import { hash, opaque } from "./platform.store";
 import { otpHash, seal, previewKey } from "./onboarding.crypto";
 import type { Config } from "./config";
+import {
+  MAX_DOCUMENT_BYTES,
+  detectType,
+  hasActivePdfContent,
+  sanitizeFileName,
+} from "./document.validation";
+import type { UploadedFile } from "./document.store";
+
 export type CandidateActor = {
   id: string;
   csrfToken: string;
   tokenHash: string;
 };
+
+const docColumns = `d.id, d.candidate_id AS "candidateId", d.category, d.title, d.file_name AS "fileName",
+  d.content_type AS "contentType", d.size_bytes AS "sizeBytes", d.sha256, d.status, d.version,
+  d.review_note AS "reviewNote", d.reviewer_label AS "reviewedBy",
+  to_char(d.reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "reviewedAt",
+  to_char(d.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "createdAt",
+  to_char(d.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "updatedAt"`;
 export class CandidateStore {
   readonly pool;
   private readonly key;
@@ -106,6 +125,18 @@ export class CandidateStore {
       return work(client);
     });
   }
+  async readDocuments(
+    client: PoolClient,
+    candidateId: string,
+  ): Promise<CandidateDocument[]> {
+    const { rows } = await client.query(
+      `SELECT ${docColumns} FROM candidate_document d
+       WHERE d.candidate_id = $1
+       ORDER BY d.created_at DESC, d.id`,
+      [candidateId],
+    );
+    return rows.map((r) => candidateDocumentSchema.parse(r));
+  }
   private async record(client: PoolClient, actor: CandidateActor) {
     const { rows } = await client.query(
       `SELECT id,name,title,joined_on::text AS "joinedOn",state,version,review_note AS "reviewNote",draft FROM candidate_case WHERE id=$1`,
@@ -113,12 +144,14 @@ export class CandidateStore {
     );
     if (!rows[0])
       throw new UnauthorizedException("Your candidate record is unavailable.");
+    const documents = await this.readDocuments(client, actor.id);
     return candidatePortalSchema.parse({
       tasks: (await readTasks(client, actor.id, true)).map((t) =>
         candidateOwnTaskSchema.parse(t),
       ),
       candidate: rows[0],
       csrfToken: actor.csrfToken,
+      documents,
     });
   }
   async me(actor: CandidateActor) {
@@ -235,6 +268,149 @@ export class CandidateStore {
         [randomUUID(), c.tenant_id, c.entity_id, actor.id, c.version],
       );
       return this.record(client, actor);
+    });
+  }
+
+  async documents(actor: CandidateActor): Promise<CandidateDocument[]> {
+    return this.scoped(actor, (client) => this.readDocuments(client, actor.id));
+  }
+
+  async uploadDocument(
+    actor: CandidateActor,
+    input: { category: CandidateDocumentCategory; title: string },
+    file: UploadedFile | undefined,
+    requestId: string,
+  ): Promise<CandidateDocument> {
+    if (!file || !file.buffer || !file.buffer.length) {
+      throw new BadRequestException("A document file is required.");
+    }
+    if (file.size > MAX_DOCUMENT_BYTES || file.buffer.length > MAX_DOCUMENT_BYTES) {
+      throw new BadRequestException("Files must be 5 MB or smaller.");
+    }
+
+    const detected = detectType(file.buffer);
+    if (!detected) {
+      throw new BadRequestException("Upload a PDF, PNG or JPEG file.");
+    }
+    if (detected === "application/pdf" && hasActivePdfContent(file.buffer)) {
+      throw new BadRequestException(
+        "This PDF contains active content (scripts, launch actions or embedded files) and cannot be accepted.",
+      );
+    }
+
+    const sha256 = createHash("sha256").update(file.buffer).digest("hex");
+    const fileName = sanitizeFileName(file.originalname || "document", detected);
+
+    return this.scoped(actor, async (client) => {
+      await client.query(
+        "SELECT set_config('candidate.operation', 'document', true)",
+      );
+      const { rows: caseRows } = await client.query(
+        "SELECT id, tenant_id, entity_id, state, version FROM candidate_case WHERE id=$1 FOR UPDATE",
+        [actor.id],
+      );
+      const c = caseRows[0];
+      if (!c) throw new NotFoundException("Your candidate record is unavailable.");
+      if (c.state === "cancelled") {
+        throw new ConflictException("Cancelled intake cannot accept documents.");
+      }
+      if (c.state === "approved") {
+        throw new ConflictException("Approved intake cannot accept documents.");
+      }
+
+      const { rows: existingRows } = await client.query(
+        "SELECT id, status, version FROM candidate_document WHERE candidate_id=$1 AND category=$2 ORDER BY created_at DESC",
+        [actor.id, input.category],
+      );
+      const verified = existingRows.find((r) => r.status === "verified");
+      if (verified) {
+        throw new ConflictException(
+          "This document category is already verified and locked.",
+        );
+      }
+      const pending = existingRows.find((r) => r.status === "pending");
+      if (pending) {
+        throw new ConflictException(
+          "A document for this category is already pending review.",
+        );
+      }
+
+      const docId = randomUUID();
+      await client.query(
+        `INSERT INTO candidate_document(
+          id, candidate_id, category, title, file_name, content_type, size_bytes, sha256, status, version
+        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, 'pending', 1)`,
+        [
+          docId,
+          actor.id,
+          input.category,
+          input.title.trim(),
+          fileName,
+          detected,
+          file.buffer.length,
+          sha256,
+        ],
+      );
+
+      await client.query(
+        "INSERT INTO candidate_document_content(document_id, candidate_id, bytes) VALUES($1, $2, $3)",
+        [docId, actor.id, file.buffer],
+      );
+
+      await client.query(
+        "SELECT set_config('candidate.operation', 'document', true)",
+      );
+      await client.query(
+        "UPDATE candidate_case SET version=version+1 WHERE id=$1",
+        [actor.id],
+      );
+
+      await client.query(
+        `INSERT INTO audit_event(id, tenant_id, entity_id, actor_id, actor_label, role, action, target, request_id, details)
+         VALUES($1, $2, $3, $4, 'Candidate', 'candidate', 'candidate.document_uploaded', $5, $6, $7)`,
+        [
+          randomUUID(),
+          c.tenant_id,
+          c.entity_id,
+          actor.id,
+          docId,
+          requestId,
+          JSON.stringify({ category: input.category, docId }),
+        ],
+      );
+
+      await client.query(
+        `INSERT INTO outbox_event(id, tenant_id, entity_id, event_type, aggregate_id, aggregate_version)
+         VALUES($1, $2, $3, 'candidate.document_uploaded.v1', $4, $5)`,
+        [randomUUID(), c.tenant_id, c.entity_id, actor.id, c.version + 1],
+      );
+
+      const { rows: newDocRows } = await client.query(
+        `SELECT ${docColumns} FROM candidate_document d WHERE d.id=$1`,
+        [docId],
+      );
+      return candidateDocumentSchema.parse(newDocRows[0]);
+    });
+  }
+
+  async documentContent(
+    actor: CandidateActor,
+    documentId: string,
+  ): Promise<{ fileName: string; contentType: string; bytes: Buffer }> {
+    return this.scoped(actor, async (client) => {
+      const { rows } = await client.query(
+        `SELECT d.file_name AS "fileName", d.content_type AS "contentType", c.bytes
+         FROM candidate_document d
+         JOIN candidate_document_content c ON c.document_id = d.id
+         WHERE d.id = $1 AND d.candidate_id = $2`,
+        [documentId, actor.id],
+      );
+      if (!rows[0]) throw new NotFoundException("This document is unavailable.");
+      return {
+        fileName: rows[0].fileName,
+        contentType: rows[0].contentType,
+        bytes: rows[0].bytes,
+      };
     });
   }
 }

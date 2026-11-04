@@ -7,7 +7,9 @@ import {
   Param,
   Query,
   Req,
+  Res,
 } from "@nestjs/common";
+import type { Response } from "express";
 import { z } from "zod";
 import {
   candidateCreateSchema,
@@ -20,9 +22,16 @@ import {
   localReviewDecisionSchema,
   candidateTaskAssignmentSchema,
   assignedTaskUpdateSchema,
+  candidateDocumentReviewSchema,
 } from "@anvi/contracts";
 import { PlatformStore } from "./platform.store";
 import { OnboardingStore } from "./onboarding.store";
+
+const encodeRfc5987 = (value: string) =>
+  encodeURIComponent(value).replace(
+    /['()*!]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
 import { parse } from "./http";
 import { type AppRequest } from "./auth";
 
@@ -202,5 +211,51 @@ export class OnboardingController {
       "review",
       input.decision,
     );
+  }
+  @Get("api/v1/candidates/:id/documents") candidateDocuments(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+  ) {
+    return this.onboarding.documents(req.actor, parse(z.uuid(), id));
+  }
+  @Post("api/v1/candidates/:id/documents/:docId/review") reviewCandidateDocument(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Param("docId") docId: string,
+    @Body() body: unknown,
+  ) {
+    const input = parse(candidateDocumentReviewSchema, body);
+    return this.onboarding.reviewDocument(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(z.uuid(), docId),
+      input,
+      req.requestId,
+    );
+  }
+  @Get("api/v1/candidates/:id/documents/:docId/content")
+  async downloadCandidateDocument(
+    @Req() req: AppRequest,
+    @Param("id") id: string,
+    @Param("docId") docId: string,
+    @Res() res: Response,
+  ) {
+    const file = await this.onboarding.documentContent(
+      req.actor,
+      parse(z.uuid(), id),
+      parse(z.uuid(), docId),
+      req.requestId,
+    );
+    const ascii = file.fileName.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "");
+    res
+      .status(200)
+      .set({
+        "Content-Type": file.contentType,
+        "Content-Length": String(file.bytes.length),
+        "Content-Disposition": `attachment; filename="${ascii}"; filename*=UTF-8''${encodeRfc5987(file.fileName)}`,
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      })
+      .end(file.bytes);
   }
 }

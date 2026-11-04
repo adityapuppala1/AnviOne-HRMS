@@ -667,6 +667,80 @@ export const activationControlSchema = z.strictObject({
   source: z.enum(["preview", "external"]),
   detail: z.string(),
 });
+export const candidateDocumentCategorySchema = z.enum([
+  "government_id",
+  "proof_of_address",
+  "education_certificate",
+  "previous_employment",
+]);
+export type CandidateDocumentCategory = z.infer<
+  typeof candidateDocumentCategorySchema
+>;
+
+export const candidateDocumentStatusSchema = z.enum([
+  "pending",
+  "verified",
+  "rejected",
+  "withdrawn",
+]);
+export type CandidateDocumentStatus = z.infer<
+  typeof candidateDocumentStatusSchema
+>;
+
+export const candidateDocumentSchema = z.object({
+  id: z.uuid(),
+  candidateId: z.uuid(),
+  category: candidateDocumentCategorySchema,
+  title: z.string(),
+  fileName: z.string(),
+  contentType: z.enum(["application/pdf", "image/png", "image/jpeg"]),
+  sizeBytes: z.number().int().positive(),
+  sha256: z.string(),
+  status: candidateDocumentStatusSchema,
+  version: z.number().int().positive(),
+  reviewNote: z.string().nullable(),
+  reviewedBy: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CandidateDocument = z.infer<typeof candidateDocumentSchema>;
+
+export const candidateDocumentUploadSchema = z.object({
+  category: candidateDocumentCategorySchema,
+  title: z.string().trim().min(2).max(80),
+});
+
+export const candidateDocumentReviewSchema = z
+  .object({
+    decision: z.enum(["verified", "rejected"]),
+    reason: z.string().trim().max(300).optional(),
+    version: z.number().int().positive(),
+  })
+  .refine(
+    (val) =>
+      val.decision !== "rejected" ||
+      (val.reason && val.reason.trim().length >= 10),
+    {
+      message:
+        "A reason of at least 10 characters is required when rejecting a document.",
+      path: ["reason"],
+    },
+  );
+export type CandidateDocumentReview = z.infer<
+  typeof candidateDocumentReviewSchema
+>;
+
+export const MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES: CandidateDocumentCategory[] =
+  ["government_id", "proof_of_address", "education_certificate"];
+
+export const ALL_CANDIDATE_DOCUMENT_CATEGORIES: CandidateDocumentCategory[] = [
+  "government_id",
+  "proof_of_address",
+  "education_certificate",
+  "previous_employment",
+];
+
 export const activationReadinessSchema = z.strictObject({
   activationReady: z.boolean(),
   controls: z.array(activationControlSchema).length(6),
@@ -677,6 +751,7 @@ export const candidateDetailSchema = z.object({
   tasks: z.array(candidateTaskSchema),
   readiness: activationReadinessSchema,
   localReviews: z.array(localReviewSchema),
+  documents: z.array(candidateDocumentSchema).default([]),
 });
 export const candidatePortalSchema = z.object({
   tasks: z.array(candidateOwnTaskSchema),
@@ -691,7 +766,9 @@ export const candidatePortalSchema = z.object({
     draft: true,
   }),
   csrfToken: z.string(),
+  documents: z.array(candidateDocumentSchema).default([]),
 });
+export type CandidatePortal = z.infer<typeof candidatePortalSchema>;
 export const candidateSaveSchema = z
   .object({ version: z.number().int().positive(), draft: candidateDraftSchema })
   .strict();

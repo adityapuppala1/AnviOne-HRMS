@@ -361,6 +361,128 @@ body {
   color: var(--muted);
   border-top: 1px solid var(--line);
 }
+.candidate-documents {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.candidate-document-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.candidate-doc-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.candidate-doc-card.candidate-doc-verified {
+  border-color: #8edfc4;
+  background: #f4fbf8;
+}
+.candidate-doc-card.candidate-doc-rejected {
+  border-color: #f7c5ba;
+  background: #fff8f6;
+}
+.candidate-doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.candidate-doc-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.candidate-doc-req {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.candidate-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.badge-verified {
+  background: #e2f7ef;
+  color: #127254;
+}
+.badge-pending {
+  background: #f0f0f5;
+  color: #494764;
+}
+.badge-rejected {
+  background: #fde8e4;
+  color: #b23b23;
+}
+.badge-missing {
+  background: #f7f7f9;
+  color: var(--muted);
+}
+.candidate-doc-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0 6px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.candidate-doc-filename {
+  font-weight: 600;
+  color: var(--ink);
+}
+.candidate-doc-size {
+  color: var(--muted);
+}
+.candidate-doc-download {
+  color: var(--brand);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.candidate-rejection-note {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: #fff0ed;
+  border-left: 3px solid #b23b23;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #792514;
+  border-radius: 4px;
+}
+.candidate-locked-hint {
+  color: #127254;
+  font-weight: 500;
+  margin: 8px 0 0;
+}
+.candidate-pending-hint {
+  color: var(--muted);
+  font-style: italic;
+  margin: 8px 0 0;
+}
+.candidate-upload-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+.candidate-upload-form input[type="file"] {
+  border: 1px dashed var(--line);
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--canvas);
+}
+.candidate-upload-btn {
+  margin-top: 10px;
+}
+
 @media (max-width: 800px) {
   .candidate-top {
     padding: 20px;

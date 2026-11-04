@@ -1,9 +1,21 @@
-import type { CandidateDraft } from "./index";
-import { activationReadinessSchema } from "./index";
+import type {
+  CandidateDraft,
+  CandidateDocumentCategory,
+  CandidateDocumentStatus,
+} from "./index";
+import {
+  activationReadinessSchema,
+  MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES,
+} from "./index";
 
-type ReadinessTask = {
+export type ReadinessTask = {
   required: boolean;
   state: "pending" | "blocked" | "completed";
+};
+
+export type ReadinessDocument = {
+  category: CandidateDocumentCategory;
+  status: CandidateDocumentStatus;
 };
 
 export function activationReadiness(
@@ -16,12 +28,32 @@ export function activationReadiness(
     | "approved"
     | "cancelled",
   tasks: ReadinessTask[],
+  documents?: ReadinessDocument[],
 ) {
   const required = tasks.filter((task) => task.required);
   const completed = required.filter(
     (task) => task.state === "completed",
   ).length;
   const remaining = required.length - completed;
+
+  const mandatoryVerified = MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.filter(
+    (cat) =>
+      documents?.some((doc) => doc.category === cat && doc.status === "verified"),
+  );
+  const allMandatoryVerified =
+    Boolean(documents) &&
+    mandatoryVerified.length === MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.length;
+
+  const documentDetail =
+    documents === undefined
+      ? "Private upload, scanning and authorized verification are not available."
+      : allMandatoryVerified
+        ? "All mandatory candidate documents are verified."
+        : `${mandatoryVerified.length} of ${MANDATORY_CANDIDATE_DOCUMENT_CATEGORIES.length} mandatory documents verified.`;
+
+  const documentStatus = allMandatoryVerified ? "passed" : "blocked";
+  const documentSource = allMandatoryVerified ? "preview" : "external";
+
   const controls = [
     {
       id: "form",
@@ -63,10 +95,9 @@ export function activationReadiness(
     {
       id: "documents",
       label: "Required documents and checks",
-      status: "blocked",
-      source: "external",
-      detail:
-        "Private upload, scanning and authorized verification are not available.",
+      status: documentStatus,
+      source: documentSource,
+      detail: documentDetail,
     },
     {
       id: "privacy",
